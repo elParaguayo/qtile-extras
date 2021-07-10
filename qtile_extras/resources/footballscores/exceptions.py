@@ -1,0 +1,2 @@
+class FSConnectionError(Exception):
+    pass

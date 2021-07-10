@@ -24,6 +24,7 @@ from libqtile.widget.import_error import make_error
 widgets = {
     "ALSAWidget": "alsavolumecontrol",
     "BrightnessControl": "brightnesscontrol",
+    "LiveFootballScores": "livefootballscores",
     "ScriptExit": "scriptexit",
     "UPowerWidget": "upower"
 }

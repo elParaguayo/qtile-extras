@@ -288,6 +288,154 @@ The widget allows for significant customisation and can accept the following par
 </table>
 
 
+## Live Football Scores
+
+This module provides a simple widget showing the live football (soccer for any of you in the US) scores.
+
+### About
+
+The module uses a module I wrote a number of years ago that parses data from the BBC Sport website.
+
+The underlying module needs work so it will probably only work if you pick a "big" team.
+
+You can select more than one team and league. Scores can be scrolled by using the mousewheel over the widget.
+
+### Demo
+
+Here is a screenshot showing the widget in the bar.
+
+![Screenshot](images/livefootballscores.gif?raw=true)</br>
+(The different screens show: live score, elapsed time, home and away goalscorers and competition name. In addition, the amount of text shown can be customised by using python's string formatting techniques e.g. the default line "{H:.3} {h}-{a} {A:.3}" shows the first 3 letters of team names rather than the full name as shown above.)
+
+### Indicators
+
+Goals and red cards are indicated by a coloured bar next to the relevant team name. The match status is indicated by a coloured bar underneath the match summary. All colours are customisable.
+
+### Configuration
+
+Add the code to your config (`~/.config/qtile/config.py`):
+
+```python
+from qtile_extras import widget as extrawidgets
+...
+screens = [
+    Screen(
+        top=bar.Bar(
+            [
+                widget.CurrentLayout(),
+                widget.GroupBox(),
+                widget.Prompt(),
+                widget.WindowName(),
+                extrawidgets.LiveFootballScores(team="St Mirren"),     # As shown in screenshot
+                widget.Clock(format='%Y-%m-%d %a %I:%M %p'),
+                widget.QuickExit(),
+            ],
+            24,
+        ),
+    ),
+]
+```
+
+### Customising
+
+The widget allows the battery icon to be resized and to display colours for different states.
+
+The widget can be customised with the following arguments:
+
+<table>
+        <tr>
+                <td>font</td>
+                <td>Default font</td>
+        </tr>
+        <tr>
+                <td>fontsize</td>
+                <td>Font size</td>
+        </tr>
+        <tr>
+                <td>font_colour</td>
+                <td>Text colour</td>
+        </tr>
+        <tr>
+                <td>team</td>
+                <td>Team whose scores you want to display</td>
+        </tr>
+        <tr>
+                <td>teams</td>
+                <td>List of other teams whose scores you want to display</td>
+        </tr>
+        <tr>
+                <td>leagues</td>
+                <td>Leagues whose scores you want to display</td>
+        </tr>
+        <tr>
+                <td>status_text</td>
+                <td>Default widget match text</td>
+        </tr>
+        <tr>
+                <td>info_text</td>
+                <td>Add extra text lines which can be displayed by clicking on widget.
+        Available fields are:</br>
+         {H}: Home Team name</br>
+         {A}: Away Team name</br>
+         {h}: Home score</br>
+         {a}: Away score</br>
+         {C}: Competition</br>
+         {v}: Venue</br>
+         {T}: Display time (kick-off, elapsed time, HT, FT)</br>
+         {S}: Status (as above but no elapsed time)</br>
+         {G}: Home goalscorers</br>
+         {g}: Away goalscorers</br>
+         {R}: Home red cards</br>
+         {r}: Away red cards</td></blockquote>
+        </tr>
+        <tr>
+                <td>refresh_interval</td>
+                <td>Time to update data</td>
+        </tr>
+        <tr>
+                <td>info_timeout</td>
+                <td>Time before reverting to default text</td>
+        </tr>
+        <tr>
+                <td>startup_delay</td>
+                <td>TDelay before first data request (enables quicker loading)</td>
+        </tr>
+        <tr>
+                <td>goal_indicator</td>
+                <td>Colour of line to show team that scores</td>
+        </tr>
+        <tr>
+                <td>red_card_indicator</td>
+                <td>Colour of line to show team has had a player sent off.</td>
+        </tr>
+        <tr>
+                <td>always_show_red</td>
+                <td>Continue to show red card indicator</td>
+        </tr>
+        <tr>
+                <td>underline_status</td>
+                <td>Bar at bottom of widget to indicate status.</td>
+        </tr>
+        <tr>
+                <td>status_fixture</td>
+                <td>Colour when match has not started</td>
+        </tr>
+        <tr>
+                <td>status_live</td>
+                <td>Colour when match is live</td>
+        </tr>
+        <tr>
+                <td>status_halftime</td>
+                <td>Colour when half time</td>
+        </tr>
+        <tr>
+                <td>status_fulltime</td>
+                <td>Colour when match has ended</td>
+        </tr>
+</table>
+
+
+
 ## Script Exit
 
 A modified version of the QuickExit widget that take an additional parameter (`exit_script`) which is the path of a script to be run before exiting Qtile.
