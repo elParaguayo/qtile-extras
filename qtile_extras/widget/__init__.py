@@ -26,6 +26,7 @@ widgets = {
     "BrightnessControl": "brightnesscontrol",
     "LiveFootballScores": "livefootballscores",
     "ScriptExit": "scriptexit",
+    "UnitStatus": "unitstatus",
     "UPowerWidget": "upower"
 }
 
