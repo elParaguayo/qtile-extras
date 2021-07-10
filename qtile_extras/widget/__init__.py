@@ -22,6 +22,7 @@ from libqtile.utils import lazify_imports
 from libqtile.widget.import_error import make_error
 
 widgets = {
+    "ALSAWidget": "alsavolumecontrol",
     "UPowerWidget": "upower"
 }
 

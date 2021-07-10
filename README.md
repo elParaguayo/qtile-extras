@@ -4,6 +4,151 @@ This is a separate repo where I share things that I made for qtile that (probabl
 
 This things were really just made for use by me so your mileage may vary.
 
+Currently available extras:
+* Widgets
+  * [ALSA Volume Control](#alsa-volume-control-and-widget)
+  * [UPower battery indicator](#upower-widget)
+
+
+## ALSA Volume Control and Widget
+
+This module provides basic volume controls and a simple icon widget showing volume level for Qtile.
+
+### About
+
+The module is very simple and, so far, just allows controls for volume up, down and mute.
+
+Volume control is handled by running the appropriate amixer command. The widget is updated instantly when volume is changed via this code, but will also update on an interval (i.e. it will reflect changes to volume made by other programs).
+
+The widget displays volume level via an icon, bar or both. The icon is permanently visible while the bar only displays when the volume is changed and will hide after a user-defined period.
+
+### Demo
+
+Here is a screenshot from my HTPC showing the widget in the bar. The icon theme currently shown is called "Paper".
+
+_"Icon" mode:_</br>
+![Screenshot](images/volumecontrol-icon.gif?raw=true)
+
+_"Bar" mode:_</br>
+![Screenshot](images/volumecontrol-bar.gif?raw=true)
+
+_"Both" mode:_</br>
+![Screenshot](images/volumecontrol-both.gif?raw=true)
+
+
+### Configuration
+
+Add the code to your config (`~/.config/qtile/config.py`):
+
+```python
+from qtile_extras import widget as extrawidgets
+
+keys = [
+...
+Key([], "XF86AudioRaiseVolume", lazy.widget["alsawidget"].volume_up()),
+Key([], "XF86AudioLowerVolume", lazy.widget["alsawidget"].volume_down()),
+Key([], "XF86AudioMute", lazy.widget["alsawidget"].toggle_mute()),
+...
+]
+
+screens = [
+    Screen(
+        top=bar.Bar(
+            [
+                widget.CurrentLayout(),
+                widget.GroupBox(),
+                widget.Prompt(),
+                widget.WindowName(),
+                extrawidgets.ALSAWidget(),
+                widget.Clock(format='%Y-%m-%d %a %I:%M %p'),
+                widget.QuickExit(),
+            ],
+            24,
+        ),
+    ),
+]
+```
+
+### Customising
+
+The volume control assumes the "Master" device is being updated and that volume is changed by 5%. 
+
+The widget can be customised with the following arguments:
+
+<table>
+    <tr>
+            <td>font</td>
+            <td>Default font</td>
+    </tr>
+    <tr>
+            <td>fontsize</td>
+            <td>Font size</td>
+    </tr>
+    <tr>
+            <td>mode</td>
+            <td>Display mode: 'icon', 'bar', 'both'.</td>
+    </tr>
+    <tr>
+            <td>hide_interval</td>
+            <td>Timeout before bar is hidden after update</td>
+    </tr>
+    <tr>
+            <td>text_format</td>
+            <td>String format</td>
+    </tr>
+    <tr>
+            <td>bar_width</td>
+            <td>Width of display bar</td>
+    </tr>
+    <tr>
+            <td>bar_colour_normal</td>
+            <td>Colour of bar in normal range</td>
+    </tr>
+    <tr>
+            <td>bar_colour_high</td>
+            <td>Colour of bar if high range</td>
+    </tr>
+    <tr>
+            <td>bar_colour_loud</td>
+            <td>Colour of bar in loud range</td>
+    </tr>
+    <tr>
+            <td>bar_colour_mute</td>
+            <td>Colour of bar if muted</td>
+    </tr>
+    <tr>
+            <td>limit_normal</td>
+            <td>Max percentage for normal range</td>
+    </tr>
+    <tr>
+            <td>limit_high</td>
+            <td>Max percentage for high range</td>
+    </tr>
+    <tr>
+            <td>limit_loud</td>
+            <td>Max percentage for loud range</td>
+    </tr>
+    <tr>
+            <td>update_interval</td>
+            <td>Interval to update widget (e.g. if changes made in other apps).</td>
+    </tr>
+    <tr>
+            <td>theme_path</td>
+            <td>Path to theme icons.</td>
+    </tr>
+    <tr>
+            <td>device</td>
+            <td>Name of ALSA output (default: "Master").</td>
+    </tr>
+    <tr>
+            <td>tstep</td>
+            <td>Amount to change volume by.</td>
+    </tr>
+</table>
+
+Note: it may be preferable to set the "theme_path" via the "widget_defaults" variable in your config.py so that themes are applied consistently across widgets.
+
+
 
 ## UPower Widget
 
