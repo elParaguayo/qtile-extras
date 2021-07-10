@@ -25,6 +25,7 @@ widgets = {
     "ALSAWidget": "alsavolumecontrol",
     "BrightnessControl": "brightnesscontrol",
     "LiveFootballScores": "livefootballscores",
+    "NetworkWidget": "network",
     "ScriptExit": "scriptexit",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower"

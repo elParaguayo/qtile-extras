@@ -9,6 +9,7 @@ Currently available extras:
   * [ALSA Volume Control](#alsa-volume-control-and-widget)
   * [Brightness Control](#brightness-control)
   * [Live Football Scores](#live-football-scores)
+  * [Network Widget](#network)
   * [Script Exit](#script-exit)
   * [Unit Status](#unit-status)
   * [UPower battery indicator](#upower-widget)
@@ -436,6 +437,12 @@ The widget can be customised with the following arguments:
         </tr>
 </table>
 
+
+## Network
+
+An experimental graphical widget that shows network status. Currently working with wifi connections managed by `iwd` (although could be extended for other managers).
+
+May well break on other people's computers.
 
 
 ## Script Exit
