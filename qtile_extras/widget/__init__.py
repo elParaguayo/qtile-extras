@@ -28,6 +28,7 @@ widgets = {
     "NetworkWidget": "network",
     "ScriptExit": "scriptexit",
     "StravaWidget": "strava",
+    "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower"
 }
