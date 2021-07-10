@@ -27,6 +27,7 @@ widgets = {
     "LiveFootballScores": "livefootballscores",
     "NetworkWidget": "network",
     "ScriptExit": "scriptexit",
+    "StravaWidget": "strava",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower"
 }
