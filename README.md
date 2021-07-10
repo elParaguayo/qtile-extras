@@ -8,6 +8,7 @@ Currently available extras:
 * Widgets
   * [ALSA Volume Control](#alsa-volume-control-and-widget)
   * [Brightness Control](#brightness-control)
+  * [Script Exit](#script-exit)
   * [UPower battery indicator](#upower-widget)
 
 
@@ -286,6 +287,32 @@ The widget allows for significant customisation and can accept the following par
     </tr>
 </table>
 
+
+## Script Exit
+
+A modified version of the QuickExit widget that take an additional parameter (`exit_script`) which is the path of a script to be run before exiting Qtile.
+
+```python
+from qtile_extras import widget as extrawidgets
+
+screens = [
+    Screen(
+        top=bar.Bar(
+            [
+                widget.CurrentLayout(),
+                widget.GroupBox(),
+                widget.Prompt(),
+                widget.WindowName(),
+                widget.Clock(format='%Y-%m-%d %a %I:%M %p'),
+                extrawidgets.ScriptExit(
+                    exit_script='/path/to/exit/script'
+                ),
+            ],
+            24,
+        ),
+    ),
+]
+```
 
 
 ## UPower Widget
