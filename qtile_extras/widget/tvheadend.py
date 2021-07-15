@@ -200,7 +200,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
                                          hide_duplicates=self.hide_duplicates)
 
         except (requests.exceptions.Timeout, requests.ConnectionError):
-            logger.warning("Couldn't connect to TVH server")
+            logger.info("Couldn't connect to TVH server")
             data = None
 
         return data

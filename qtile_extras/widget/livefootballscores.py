@@ -198,7 +198,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         except FSConnectionError:
 
-            logger.warning("Unable to get football scores data.")
+            logger.info("Unable to get football scores data.")
 
             # Check if we managed to create all teams and leagues objects
             if len(self.sources[1]) != len(self.teams):
@@ -265,7 +265,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             success = True
 
         except FSConnectionError:
-            logger.warning("Unable to refresh football scores data.")
+            logger.info("Unable to refresh football scores data.")
             if self.queue_timer:
                 self.queue_timer.cancel()
 
