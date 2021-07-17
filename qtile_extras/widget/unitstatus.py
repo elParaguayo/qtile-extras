@@ -158,8 +158,6 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         self.state = await self.unit.get_active_state()
 
-        logger.warning("Subscribed state: {}".format(self.state))
-
         props.on_properties_changed(self._changed)
 
         self.draw()

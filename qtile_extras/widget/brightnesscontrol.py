@@ -114,7 +114,6 @@ class BrightnessControl(base._Widget):
         self.text_width = self.max_text_width()
 
     async def _config_async(self):
-        logger.warning("Adding signal receiver")
         subscribe = await add_signal_receiver(
                         self.message,
                         session_bus=False,
