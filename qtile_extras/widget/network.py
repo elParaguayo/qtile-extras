@@ -23,6 +23,7 @@ import math
 
 from dbus_next.aio import MessageBus
 from dbus_next.constants import BusType
+from dbus_next.errors import DBusError
 
 from libqtile import bar
 from libqtile.images import Img
@@ -221,12 +222,16 @@ class IWD(BackendBase):
         self.connection.name = network
 
     async def get_diagnostics(self):
-        return await self.diagnostics.call_get_diagnostics()
+        try:
+            return await self.diagnostics.call_get_diagnostics()
+        except DBusError:
+            return None
 
     def update_diagnostics(self, task):
         diags = task.result()
-        strength = min((getattr(diags.get("RSSI"), "value", -100) + 100) * 2, 100)
-        self.connection.strength = strength
+        if diags is not None:
+            strength = min((getattr(diags.get("RSSI"), "value", -100) + 100) * 2, 100)
+            self.connection.strength = strength
 
     def poll(self):
         task = asyncio.create_task(self.get_diagnostics())
