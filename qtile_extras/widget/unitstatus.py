@@ -198,7 +198,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
                             2,
                             self.colours[self.state])
 
-        self.drawer.draw(offsetx=self.offset, width=self.width)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
 
     # This is just Drawer's "_rounded_rect" but with a bigger corner radius
     def circle(self, x, y, width, height, linewidth):

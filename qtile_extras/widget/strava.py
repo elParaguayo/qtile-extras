@@ -155,7 +155,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
             # Draw it
             layout.draw(x_offset + self.margin_x, y_offset)
 
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def button_press(self, x, y, button):
         self.show_popup_summary()

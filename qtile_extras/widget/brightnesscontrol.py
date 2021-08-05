@@ -223,7 +223,7 @@ class BrightnessControl(base._Widget):
         layout.draw(0, y_offset)
 
         # Redraw the bar
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def set_timer(self):
 

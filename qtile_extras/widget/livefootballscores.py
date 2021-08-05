@@ -389,7 +389,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         # # Redraw the bar
         # self.bar.draw()
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def draw_goal(self, home):
         offset = 0 if home else (self.width - 2)

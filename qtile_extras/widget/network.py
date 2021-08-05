@@ -377,7 +377,7 @@ class NetworkWidget(base._Widget, base.PaddingMixin):
 
         self.drawer.clear(self.background or self.bar.background)
         self.draw_connections()
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def update(self):
         if self.update_count == 0:

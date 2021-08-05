@@ -404,7 +404,7 @@ class UPowerWidget(base._Widget):
 
         # Redraw the bar
         # self.bar.draw()
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def secs_to_hm(self, secs):
         # Basic maths to convert seconds to h:mm format
@@ -413,9 +413,6 @@ class UPowerWidget(base._Widget):
 
         # Need to mke sure minutes are zero padded in case single digit
         return ("{}:{:02d}".format(h, m))
-
-    # def draw(self):
-    #     self.drawer.draw(offsetx=self.offset, width=self.length)
 
     def toggle_text(self):
 

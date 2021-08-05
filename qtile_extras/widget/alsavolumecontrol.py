@@ -218,7 +218,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             # Add the text to our drawer
             layout.draw(x_offset, y_offset)
 
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def refresh(self):
         # Check the volume levels to see if they've changed

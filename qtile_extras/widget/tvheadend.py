@@ -253,7 +253,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         elif self.is_recording:
             self.draw_highlight(top=False, colour=self.recording_colour)
 
-        self.drawer.draw(offsetx=self.offset, width=self.length)
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     @property
     def is_recording(self):
