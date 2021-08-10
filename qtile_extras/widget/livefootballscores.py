@@ -428,16 +428,17 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         elif m.isFinished:
             fill = self.status_fulltime
         else:
-            fill = "000000"
+            fill = None
 
-        self.drawer.set_source_rgb(fill)
+        if fill is not None:
+            self.drawer.set_source_rgb(fill)
 
-        # Draw the bar
-        self.drawer.fillrect(offset,
-                             self.height - 2,
-                             width,
-                             2,
-                             2)
+            # Draw the bar
+            self.drawer.fillrect(offset,
+                                self.height - 2,
+                                width,
+                                2,
+                                2)
 
     def loop_match_info(self):
         self.set_default_timer()
