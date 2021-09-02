@@ -1,6 +1,8 @@
 import re
+import shutil
 import subprocess
 
+from libqtile.log_utils import logger
 from libqtile.widget import base
 from libqtile import bar, images
 
@@ -14,7 +16,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
-        ("mode", "both", "Display mode: 'icon', 'bar', 'both'."),
+        ("mode", "bar", "Display mode: 'icon', 'bar', 'both'."),
         ("hide_interval", 5, "Timeout before bar is hidden after update"),
         ("text_format", "{volume}%", "String format"),
         ("bar_width", 75, "Width of display bar"),
@@ -252,6 +254,10 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         self.bar.draw()
 
     def _run(self, cmd):
+
+        if not shutil.which("amixer"):
+            logger.warning("'amixer' is not installed. Unable to set volume.")
+            return
 
         # Run the amixer command and use regex to capture volume line
         proc = subprocess.run(cmd.split(), capture_output=True)
