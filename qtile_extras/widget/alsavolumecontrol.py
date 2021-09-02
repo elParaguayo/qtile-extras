@@ -14,7 +14,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
-        ("mode", "both", "Display mode: 'icon', 'bar', 'both'."),
+        ("mode", "bar", "Display mode: 'icon', 'bar', 'both'."),
         ("hide_interval", 5, "Timeout before bar is hidden after update"),
         ("text_format", "{volume}%", "String format"),
         ("bar_width", 75, "Width of display bar"),
