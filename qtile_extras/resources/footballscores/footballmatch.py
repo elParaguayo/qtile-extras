@@ -4,14 +4,15 @@ from itertools import groupby
 
 import requests
 
-from .base import matchcommon
-from .exceptions import FSConnectionError
-from .matchdict import MatchDict
-from .matchdict import MatchDictKeys as MDKey
-from .matchevent import MatchEvent
-from .morphlinks import ML
-from .playeraction import PlayerAction
-from .utils import UTC
+from qtile_extras.resources.footballscores.base import matchcommon
+from qtile_extras.resources.footballscores.exceptions import FSConnectionError
+from qtile_extras.resources.footballscores.matchdict import MatchDict
+from qtile_extras.resources.footballscores.matchdict import \
+    MatchDictKeys as MDKey
+from qtile_extras.resources.footballscores.matchevent import MatchEvent
+from qtile_extras.resources.footballscores.morphlinks import ML
+from qtile_extras.resources.footballscores.playeraction import PlayerAction
+from qtile_extras.resources.footballscores.utils import UTC
 
 # dateutil is not part of the standard library so let's see if we can import
 # and set a flag showing success or otherwise

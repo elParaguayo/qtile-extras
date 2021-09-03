@@ -3,14 +3,14 @@ import time
 
 import requests
 
-from .exceptions import FSConnectionError
+from qtile_extras.resources.footballscores.exceptions import FSConnectionError
 
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
     JSONDecodeError = ValueError
 
-from .morphlinks import ML
+from qtile_extras.resources.footballscores.morphlinks import ML
 
 API_BASE = "http://push.api.bbci.co.uk/p"
 API_MORPH = "morph:/"

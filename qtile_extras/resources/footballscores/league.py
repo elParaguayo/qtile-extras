@@ -2,8 +2,8 @@ from datetime import datetime
 
 import requests
 
-from .base import matchcommon
-from .footballmatch import FootballMatch
+from qtile_extras.resources.footballscores.base import matchcommon
+from qtile_extras.resources.footballscores.footballmatch import FootballMatch
 
 API_BASE = "http://push.api.bbci.co.uk"
 
