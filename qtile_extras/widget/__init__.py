@@ -25,7 +25,7 @@ widgets = {
     "ALSAWidget": "alsavolumecontrol",
     "BrightnessControl": "brightnesscontrol",
     "LiveFootballScores": "livefootballscores",
-    "NetworkWidget": "network",
+    "WiFiIcon": "network",
     "ScriptExit": "scriptexit",
     "StravaWidget": "strava",
     "TVHWidget": "tvheadend",

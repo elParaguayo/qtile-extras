@@ -9,7 +9,7 @@ Currently available extras:
   * [ALSA Volume Control](#alsa-volume-control-and-widget)
   * [Brightness Control](#brightness-control)
   * [Live Football Scores](#live-football-scores)
-  * [Network Widget](#network)
+  * [WiFi Icon](#wifi)
   * [Script Exit](#script-exit)
   * [Strava](#strava)
   * [TVHeadend](#tvheadend)
@@ -440,11 +440,32 @@ The widget can be customised with the following arguments:
 </table>
 
 
-## Network
+## WiFi
 
-An experimental graphical widget that shows network status. Currently working with wifi connections managed by `iwd` (although could be extended for other managers).
+An simple graphical widget that shows WiFi status. 
 
-May well break on other people's computers.
+```python
+from qtile_extras import widget as extrawidgets
+
+screens = [
+    Screen(
+        top=bar.Bar(
+            [
+                widget.CurrentLayout(),
+                widget.GroupBox(),
+                widget.Prompt(),
+                widget.WindowName(),
+                extrawidgets.WiFiIcon(interface="wlan0")
+                widget.Clock(format='%Y-%m-%d %a %I:%M %p'),
+                widget.QuickExit(),
+            ],
+            24,
+        ),
+    ),
+]
+```
+
+
 
 
 ## Script Exit
