@@ -23,17 +23,17 @@ from datetime import datetime
 from pathlib import Path
 
 import requests
-from requests.auth import HTTPBasicAuth
-
 from libqtile import bar, images, pangocffi
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.widget import base
+from requests.auth import HTTPBasicAuth
 
 
 def icon_path():
     """Get the path to tv icon"""
-    dir_path = Path(__file__).resolve() / ".." / ".." / "resources" / "tvheadend-icons"
+    dir_path = Path(__file__).resolve() / ".." / ".."
+    dir_path = dir_path / "resources" / "tvheadend-icons"
     return str(dir_path.resolve())
 
 
@@ -86,9 +86,9 @@ class TVHWidget(base._Widget, base.MarginMixin):
 
     The widget will also show a popup displaying upcoming recordings.
 
-    This widget requires a third-party library, 'requests', in order to work. If
-    this is not already installed in your system, you will need to install it
-    before running the widget.
+    This widget requires a third-party library, 'requests', in order to work.
+    If this is not already installed in your system, you will need to install
+    it before running the widget.
 
     NB if you use a username and password, these are stored in plain text. You
     may therefore wish to create an unprivileged user account in TVHeadend that
@@ -185,8 +185,8 @@ class TVHWidget(base._Widget, base.MarginMixin):
         base._Widget._configure(self, qtile, bar)
         self.setup_images()
 
-        if type(self.auth) == tuple:  # pylint: disable=access-member-before-definition
-            self.auth = HTTPBasicAuth(*self.auth)  # pylint: disable=not-an-iterable
+        if type(self.auth) == tuple:
+            self.auth = HTTPBasicAuth(*self.auth)
 
         self.tvh = TVHJobServer(host=self.host,
                                 auth=self.auth,
@@ -253,7 +253,11 @@ class TVHWidget(base._Widget, base.MarginMixin):
         elif self.is_recording:
             self.draw_highlight(top=False, colour=self.recording_colour)
 
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.drawer.draw(
+            offsetx=self.offset,
+            offsety=self.offsety,
+            width=self.length
+        )
 
     @property
     def is_recording(self):

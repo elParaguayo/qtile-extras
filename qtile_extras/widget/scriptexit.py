@@ -24,19 +24,25 @@ import shlex
 import subprocess
 
 from libqtile import bar
-from libqtile.widget import base
 from libqtile.log_utils import logger
+from libqtile.widget import base
 
 
 class ScriptExit(base._TextBox):
     """
-    A button of exiting the running qtile easily. When clicked this button, a countdown
-    start. If the button pushed with in the countdown again, the qtile shutdown.
+    An updated version of Qtile's QuickExit widget.
+
+    Takes an additional argument 'exit_script' which will
+    be run before qtile exits.
     """
 
     defaults = [
         ('default_text', '[ shutdown ]', 'A text displayed as a button'),
-        ('countdown_format', '[ {} seconds ]', 'This text is showed when counting down.'),
+        (
+            'countdown_format',
+            '[ {} seconds ]',
+            'This text is showed when counting down.'
+        ),
         ('timer_interval', 1, 'A countdown interval.'),
         ('countdown_start', 5, 'Time to accept the second pushing.'),
         ('exit_script', '', 'Script to run on exit.'),

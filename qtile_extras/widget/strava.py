@@ -1,7 +1,7 @@
-from libqtile.widget import base
 from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
+from libqtile.widget import base
 
 from qtile_extras.resources.stravadata import get_strava_data
 
@@ -155,7 +155,11 @@ class StravaWidget(base._Widget, base.MarginMixin):
             # Draw it
             layout.draw(x_offset + self.margin_x, y_offset)
 
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.drawer.draw(
+            offsetx=self.offset,
+            offsety=self.offsety,
+            width=self.length
+        )
 
     def button_press(self, x, y, button):
         self.show_popup_summary()

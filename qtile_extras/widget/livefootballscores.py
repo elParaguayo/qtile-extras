@@ -1,9 +1,10 @@
-from libqtile.widget import base
 from libqtile import bar, pangocffi
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
+from libqtile.widget import base
 
-from qtile_extras.resources.footballscores import FootballMatch, League, FSConnectionError
+from qtile_extras.resources.footballscores import (FootballMatch,
+                                                   FSConnectionError, League)
 
 
 # Massively overkill to use a class here...
@@ -388,8 +389,11 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
                     self.draw_underline(m)
 
         # # Redraw the bar
-        # self.bar.draw()
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.drawer.draw(
+            offsetx=self.offset,
+            offsety=self.offsety,
+            width=self.length
+        )
 
     def draw_goal(self, home):
         offset = 0 if home else (self.width - 2)
@@ -434,11 +438,13 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             self.drawer.set_source_rgb(fill)
 
             # Draw the bar
-            self.drawer.fillrect(offset,
-                                self.height - 2,
-                                width,
-                                2,
-                                2)
+            self.drawer.fillrect(
+                offset,
+                self.height - 2,
+                width,
+                2,
+                2
+            )
 
     def loop_match_info(self):
         self.set_default_timer()
@@ -456,7 +462,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         if self.matches:
             self.match_index = (self.match_index + step) % len(self.matches)
             self.bar.draw()
-
 
     def set_default_timer(self):
         if self.default_timer:
@@ -563,7 +568,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         else:
             lines.extend(self._format_matches())
-
 
         self.popup = Popup(self.qtile,
                            width=self.bar.screen.width,

@@ -1,6 +1,7 @@
-import requests
-import time
 import json
+import time
+
+import requests
 
 from .exceptions import FSConnectionError
 
@@ -10,7 +11,6 @@ except ImportError:
     JSONDecodeError = ValueError
 
 from .morphlinks import ML
-
 
 API_BASE = "http://push.api.bbci.co.uk/p"
 API_MORPH = "morph:/"

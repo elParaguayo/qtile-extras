@@ -3,7 +3,6 @@ import time
 
 from .locations import RECORDS
 
-
 MILE = 1.60934
 
 DISTANCES = {"400m": 0.4,

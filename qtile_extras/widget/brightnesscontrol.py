@@ -1,9 +1,9 @@
 import os
 
-from libqtile.widget import base
 from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.utils import add_signal_receiver
+from libqtile.widget import base
 
 ERROR_VALUE = -1
 
@@ -24,27 +24,57 @@ class BrightnessControl(base._Widget):
         (
             "enable_power_saving",
             False,
-            ("Automatically set brightness depending on status. "
-             "Note: this is not checked when the widget is first started.")
+            (
+                "Automatically set brightness depending on status. "
+                "Note: this is not checked when the widget is first started."
+            )
         ),
         (
             "brightness_on_mains",
             "100%",
-            ("Brightness level on mains power (accepts integer value"
-            "or percentage as string)")
+            (
+                "Brightness level on mains power (accepts integer value"
+                "or percentage as string)"
+            )
         ),
         (
             "brightness_on_battery",
             "50%",
-            ("Brightness level on battery power "
-            "(accepts integer value or percentage as string)")
-         ),
-         ("device", "/sys/class/backlight/intel_backlight", "Path to backlight device"),
-         ("step", "5%", "Amount to change brightness (accepts int or percentage as string)"),
-         ("brightness_path", "brightness", "Name of file holding brightness value"),
-         ("max_brightness_path", "max_brightness", "Name of file holding max brightness value"),
-         ("min_brightness", 100, "Minimum brightness. Do not set to 0!"),
-         ("max_brightness", None, "Set value or leave as None to allow device maximum")
+            (
+                "Brightness level on battery power "
+                "(accepts integer value or percentage as string)"
+            )
+        ),
+        (
+            "device",
+            "/sys/class/backlight/intel_backlight",
+            "Path to backlight device"
+        ),
+        (
+            "step",
+            "5%",
+            "Amount to change brightness (accepts int or percentage as string)"
+        ),
+        (
+            "brightness_path",
+            "brightness",
+            "Name of file holding brightness value"
+        ),
+        (
+            "max_brightness_path",
+            "max_brightness",
+            "Name of file holding max brightness value"
+        ),
+        (
+            "min_brightness",
+            100,
+            "Minimum brightness. Do not set to 0!"
+        ),
+        (
+            "max_brightness",
+            None,
+            "Set value or leave as None to allow device maximum"
+        )
 
     ]
 
@@ -96,8 +126,8 @@ class BrightnessControl(base._Widget):
 
         # If we've defined a percentage step, calculate this in relation
         # to max value
-        if isinstance(self.step, str):  # pylint: disable=access-member-before-definition
-            if self.step.endswith("%"):  # pylint: disable=access-member-before-definition
+        if isinstance(self.step, str):
+            if self.step.endswith("%"):
                 self.step = self.step[:-1]
             val = int(self.step)
             self.step = int(self.max * val / 100)
@@ -128,8 +158,9 @@ class BrightnessControl(base._Widget):
     def message(self, message):
         self.update(*message.body)
 
-    def update(self, interface_name, changed_properties, _invalidated_properties):
-        if not "OnBattery" in changed_properties:
+    def update(self, interface_name, changed_properties,
+               invalidated_properties):
+        if "OnBattery" not in changed_properties:
             return
 
         onbattery = changed_properties["OnBattery"].value
@@ -223,7 +254,11 @@ class BrightnessControl(base._Widget):
         layout.draw(0, y_offset)
 
         # Redraw the bar
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.drawer.draw(
+            offsetx=self.offset,
+            offsety=self.offsety,
+            width=self.length
+        )
 
     def set_timer(self):
 

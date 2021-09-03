@@ -1,6 +1,7 @@
+import json
 from datetime import datetime
 from itertools import groupby
-import json
+
 import requests
 
 from .base import matchcommon
@@ -8,9 +9,9 @@ from .exceptions import FSConnectionError
 from .matchdict import MatchDict
 from .matchdict import MatchDictKeys as MDKey
 from .matchevent import MatchEvent
+from .morphlinks import ML
 from .playeraction import PlayerAction
 from .utils import UTC
-from .morphlinks import ML
 
 # dateutil is not part of the standard library so let's see if we can import
 # and set a flag showing success or otherwise
@@ -220,7 +221,7 @@ class FootballMatch(matchcommon):
         comps = raw.get("matchData", None)
 
         if not comps:
-            return Nonce
+            return None
 
         for comp in comps:
             matches = list(comp["tournamentDatesWithEvents"].values())[0][0]
@@ -232,16 +233,19 @@ class FootballMatch(matchcommon):
         return None
 
     def checkTeamInMatch(self, m):
-        home = [m["homeTeam"]["name"][x].lower()
-                    for x in ["first", "full", "abbreviation", "last"]
-                    if m["homeTeam"]["name"][x]]
+        home = [
+            m["homeTeam"]["name"][x].lower()
+            for x in ["first", "full", "abbreviation", "last"]
+            if m["homeTeam"]["name"][x]
+        ]
 
-        away = [m["awayTeam"]["name"][x].lower()
-                    for x in ["first", "full", "abbreviation", "last"]
-                    if m["awayTeam"]["name"][x]]
+        away = [
+            m["awayTeam"]["name"][x].lower()
+            for x in ["first", "full", "abbreviation", "last"]
+            if m["awayTeam"]["name"][x]
+        ]
 
         return self.myteam.lower() in (home + away)
-
 
     def _findTeamPage(self):
         team = "-".join(self.myteam.lower().split(" "))

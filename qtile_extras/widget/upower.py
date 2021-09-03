@@ -22,11 +22,11 @@ import asyncio
 
 from dbus_next.aio import MessageBus
 from dbus_next.constants import BusType
-
 from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
+PROPS_IFACE = "org.freedesktop.DBus.Properties"
 UPOWER_INTERFACE = "org.freedesktop.UPower"
 UPOWER_PATH = "/org/freedesktop/UPower"
 UPOWER_DEVICE = UPOWER_INTERFACE + ".Device"
@@ -39,11 +39,11 @@ class UPowerWidget(base._Widget):
     The widget uses dbus to read the battery information from the UPower
     interface.
 
-    The widget will display one icon for each battery found or users can specify
-    the name of the battery if they only wish to display one.
+    The widget will display one icon for each battery found or users can
+    specify the name of the battery if they only wish to display one.
 
-    Clicking on the widget will display the battery level and the time to empty/
-    full.
+    Clicking on the widget will display the battery level and the time to
+    empty/full.
 
     All colours can be customised as well as low/critical percentage levels.
     """
@@ -261,7 +261,7 @@ class UPowerWidget(base._Widget):
                                                     battery,
                                                     introspection)
             battery_dev = battery_obj.get_interface(UPOWER_DEVICE)
-            props = battery_obj.get_interface("org.freedesktop.DBus.Properties")
+            props = battery_obj.get_interface(PROPS_IFACE)
 
             bat["device"] = battery_dev
             bat["props"] = props
@@ -403,8 +403,11 @@ class UPowerWidget(base._Widget):
                 offset += layout.width
 
         # Redraw the bar
-        # self.bar.draw()
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.drawer.draw(
+            offsetx=self.offset,
+            offsety=self.offsety,
+            width=self.length
+        )
 
     def secs_to_hm(self, secs):
         # Basic maths to convert seconds to h:mm format

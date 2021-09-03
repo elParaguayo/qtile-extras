@@ -23,13 +23,11 @@
 import asyncio
 import math
 
-from dbus_next import Message
 from dbus_next.aio import MessageBus
-from dbus_next.constants import BusType, MessageType
-
-from libqtile.widget import base
-from libqtile.log_utils import logger
+from dbus_next.constants import BusType
 from libqtile import bar
+from libqtile.log_utils import logger
+from libqtile.widget import base
 
 
 class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
@@ -92,7 +90,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
             wrap=False
         )
 
-        if self.indicator_size is not None:  # pylint: disable=access-member-before-definition
+        if self.indicator_size is not None:
             self.indicator_size = max(self.indicator_size, 6)
 
         max_indicator = self.bar.height - 2 * self.margin
@@ -114,7 +112,6 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
 
     async def _connect_dbus(self):
         self.bus = await MessageBus(bus_type=self.bus_type).connect()
-
 
         introspection = await self.bus.introspect("org.freedesktop.systemd1",
                                                   "/org/freedesktop/systemd1")
@@ -198,7 +195,11 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
                             2,
                             self.colours[self.state])
 
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
+        self.drawer.draw(
+            offsetx=self.offset,
+            offsety=self.offsety,
+            width=self.width
+        )
 
     # This is just Drawer's "_rounded_rect" but with a bigger corner radius
     def circle(self, x, y, width, height, linewidth):

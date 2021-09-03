@@ -3,12 +3,12 @@ import json
 import os
 import pickle
 import time
-from units import unit
 
 from stravalib import Client
 from stravalib.model import Activity
+from units import unit
 
-from .locations import CREDS, RECORDS, AUTH, TIMESTAMP, CACHE
+from .locations import AUTH, CACHE, CREDS, RECORDS, TIMESTAMP
 
 NUM_EVENTS = 5
 
