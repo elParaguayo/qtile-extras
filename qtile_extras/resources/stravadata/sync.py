@@ -8,7 +8,8 @@ from stravalib import Client
 from stravalib.model import Activity
 from units import unit
 
-from .locations import AUTH, CACHE, CREDS, RECORDS, TIMESTAMP
+from qtile_extras.resources.stravadata.locations import (AUTH, CACHE, CREDS,
+                                                         RECORDS, TIMESTAMP)
 
 NUM_EVENTS = 5
 
@@ -47,43 +48,43 @@ class ActivitySummary(object):
         self._name = ""
 
     @classmethod
-    def fromActivity(cls, activity, distance_unit=unit("km"), child=False):
+    def from_activity(cls, activity, distance_unit=unit("km"), child=False):
         act = cls(distance_unit=distance_unit, child=child)
         act.add_activity(activity)
         return act
 
     @classmethod
-    def fromActivities(cls, activities, distance_unit=unit("km"), child=False):
+    def from_activities(cls, activities, distance_unit=unit("km"), child=False):
         act = cls(distance_unit=distance_unit, child=child)
         act.add_activities(activities)
         return act
 
-    def _isActivity(self, activity):
+    def _is_activity(self, activity):
         return (type(activity) == Activity and activity.type == "Run")
 
-    def createChild(self, activity):
+    def create_child(self, activity):
         if not self.child:
-            self.children.append(ActivitySummary.fromActivity(activity,
-                                                              child=True))
+            self.children.append(ActivitySummary.from_activity(activity,
+                                                               child=True))
 
     def add_activity(self, activity):
-        if self._isActivity(activity):
+        if self._is_activity(activity):
             self.activities.append(activity)
-            if not self.isMultiActivity:
+            if not self.is_multi_activity:
                 self._date = activity.start_date_local
                 self._name = activity.name
 
             self.dist += activity.distance
             self.time += activity.moving_time.total_seconds()
 
-            self.createChild(activity)
+            self.create_child(activity)
 
     def add_activities(self, activities):
         for act in activities:
             self.add_activity(act)
 
     @property
-    def isMultiActivity(self):
+    def is_multi_activity(self):
         return len(self.activities) > 1
 
     @property
@@ -100,49 +101,49 @@ class ActivitySummary(object):
         return self.dist.num
 
     @property
-    def formatPace(self):
+    def format_pace(self):
         min, sec = self.pace
         return self.paceformat.format(min=min, sec=sec)
 
     @property
-    def formatTime(self):
+    def format_time(self):
         return self.timeformat.format(hr=self.hours,
                                       min=self.mins,
                                       sec=self.secs)
 
     @property
-    def elapsedTimeHMS(self):
+    def elapsed_time_hms(self):
         m, s = divmod(self.time, 60)
         h, m = divmod(m, 60)
         return (int(h), int(m), int(s))
 
     @property
     def hours(self):
-        return self.elapsedTimeHMS[0]
+        return self.elapsed_time_hms[0]
 
     @property
     def mins(self):
-        return self.elapsedTimeHMS[1]
+        return self.elapsed_time_hms[1]
 
     @property
     def secs(self):
-        return self.elapsedTimeHMS[2]
+        return self.elapsed_time_hms[2]
 
     @property
     def date(self):
-        if self.isMultiActivity:
+        if self.is_multi_activity:
             return self.groupdate
         else:
             return self._date
 
     @property
-    def isPlural(self):
+    def is_plural(self):
         return len(self.activities) != 1
 
     @property
     def name(self):
-        if self.isMultiActivity or self.groupdate:
-            runs = "runs" if self.isPlural else "run"
+        if self.is_multi_activity or self.groupdate:
+            runs = "runs" if self.is_plural else "run"
             return "{} {}".format(len(self.activities), runs)
         else:
             try:
@@ -211,10 +212,10 @@ def pace(mtime, distance):
 
 def get_activities(activities):
     data = ActivityHistory()
-    ActSum = ActivitySummary
+    act_sum = ActivitySummary
     cmonth = current_month()
     current = [a for a in activities if same_month(a.start_date_local, cmonth)]
-    curacs = ActivitySummary.fromActivities(current)
+    curacs = ActivitySummary.from_activities(current)
     curacs.groupdate = cmonth
     data.current = curacs
 
@@ -223,18 +224,18 @@ def get_activities(activities):
         month = previous_month(month)
         previous = [a for a in activities
                     if same_month(a.start_date_local, month)]
-        summary = ActSum()
+        summary = act_sum()
         summary.add_activities(previous)
         summary.groupdate = month
         data.add_month(summary)
 
-    ysum = ActSum()
+    ysum = act_sum()
     yacts = [a for a in activities if same_year(a.start_date_local, cmonth)]
     ysum.add_activities(yacts)
     ysum.groupdate = cmonth
     data.year = ysum
 
-    summary = ActSum()
+    summary = act_sum()
     summary.add_activities(activities)
     summary.groupdate = month
     data.alltime = summary

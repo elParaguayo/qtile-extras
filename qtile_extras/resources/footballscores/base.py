@@ -17,7 +17,7 @@ API_MORPH = "morph:/"
 REFERER = "http://www.bbc.co.uk/sport/football/scores-fixtures"
 
 
-class matchcommon(object):
+class FSBase(object):
     '''class for common functions for match classes.'''
 
     LAST_REQUEST = 0
@@ -41,7 +41,7 @@ class matchcommon(object):
 
         return {"t": page, "c": type(self).REQUEST_COUNT}
 
-    def checkPage(self, page):
+    def check_page(self, page):
 
         try:
             rq = requests.head(page)
@@ -50,7 +50,7 @@ class matchcommon(object):
                 requests.exceptions.Timeout):
             return False
 
-    def sendRequest(self, page):
+    def send_request(self, page):
 
         payload = self.__create_payload(page)
 
@@ -71,7 +71,7 @@ class matchcommon(object):
         return None
 
     # Unused?
-    def requestPushStream(self, page):
+    def request_push_stream(self, page):
 
         payload = self.__create_payload(page)
 
@@ -80,26 +80,26 @@ class matchcommon(object):
 
         return r
 
-    def getTeams(self):
+    def get_teams(self):
 
-        teams = self.sendRequest(ML.MORPH_TEAMS_COMPS)
+        teams = self.send_request(ML.MORPH_TEAMS_COMPS)
 
         if teams:
             teams = json.loads(teams[0]["payload"])
             return [x for x in teams if "teams" in x["url"]]
 
-    def getTournaments(self):
+    def get_tournaments(self):
 
-        teams = self.sendRequest(ML.MORPH_TEAMS_COMPS)
+        teams = self.send_request(ML.MORPH_TEAMS_COMPS)
 
         if teams:
             teams = json.loads(teams[0]["payload"])
             return [x for x in teams if "teams" not in x["url"]]
 
 
-def getAllTeams():
-    return matchcommon().getTeams()
+def get_all_teams():
+    return FSBase().get_teams()
 
 
-def getAllTournaments():
-    return matchcommon().getTournaments()
+def get_all_tournaments():
+    return FSBase().get_tournaments()

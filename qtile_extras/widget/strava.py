@@ -23,20 +23,20 @@ class StravaWidget(base._Widget, base.MarginMixin):
     format_map = {
         "CD": ("current", "distance"),
         "CC": ("current", "count"),
-        "CT": ("current", "formatTime"),
-        "CP": ("current", "formatPace"),
+        "CT": ("current", "format_time"),
+        "CP": ("current", "format_pace"),
         "CN": ("current", "name"),
         "CA": ("current", "date"),
         "YD": ("year", "distance"),
         "YC": ("year", "count"),
-        "YT": ("year", "formatTime"),
-        "YP": ("year", "formatPace"),
+        "YT": ("year", "format_time"),
+        "YP": ("year", "format_pace"),
         "YN": ("year", "name"),
         "YA": ("year", "date"),
         "AD": ("alltime", "distance"),
         "AC": ("alltime", "count"),
-        "AT": ("alltime", "formatTime"),
-        "AP": ("alltime", "formatPace"),
+        "AT": ("alltime", "format_time"),
+        "AP": ("alltime", "format_pace"),
         "AN": ("alltime", "name"),
         "AA": ("alltime", "date"),
     }
@@ -85,7 +85,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
 
         if self.data is not None and self.text:
 
-            text = self.formatText(self.text)
+            text = self.format_text(self.text)
 
             width, _ = self.drawer.max_layout_size(
                 [text],
@@ -139,7 +139,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
             self.draw_highlight(top=True, colour=self.warning_colour)
 
         else:
-            text = self.formatText(self.text)
+            text = self.format_text(self.text)
 
             # Create a text box
             layout = self.drawer.textlayout(text,
@@ -167,7 +167,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
     def mouse_enter(self, x, y):
         pass
 
-    def formatText(self, text):
+    def format_text(self, text):
         try:
             return text.format(**self.formatted_data)
         except Exception as e:
@@ -189,27 +189,27 @@ class StravaWidget(base._Widget, base.MarginMixin):
 
         for act in self.data.current.children:
             line = ("{a.date:%d %b}: {a.name:<20.20} {a.distance:7,.1f} "
-                    "{a.formatTime:>10} {a.formatPace:>6}").format(a=act)
+                    "{a.format_time:>10} {a.format_pace:>6}").format(a=act)
             lines.append(line)
 
         sub = ("\n{a.date:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
-               "{a.formatTime:>10} "
-               "{a.formatPace:>6}").format(a=self.data.current)
+               "{a.format_time:>10} "
+               "{a.format_pace:>6}").format(a=self.data.current)
         lines.append(sub)
 
         for month in self.data.previous:
             line = ("{a.groupdate:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
-                    "{a.formatTime:>10} {a.formatPace:>6}").format(a=month)
+                    "{a.format_time:>10} {a.format_pace:>6}").format(a=month)
             lines.append(line)
 
         year = ("\n{a.groupdate:%Y}  : {a.name:<20.20} {a.distance:7,.1f} "
-                "{a.formatTime:>10} "
-                "{a.formatPace:>6}").format(a=self.data.year)
+                "{a.format_time:>10} "
+                "{a.format_pace:>6}").format(a=self.data.year)
         lines.append(year)
 
         alltime = ("\nTOTAL : {a.name:<20.20} {a.distance:7,.1f} "
-                   "{a.formatTime:>10} "
-                   "{a.formatPace:>6}").format(a=self.data.alltime)
+                   "{a.format_time:>10} "
+                   "{a.format_pace:>6}").format(a=self.data.alltime)
         lines.append(alltime)
 
         self.popup = Popup(self.qtile,

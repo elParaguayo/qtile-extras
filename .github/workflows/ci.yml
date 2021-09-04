@@ -86,4 +86,4 @@ jobs:
             - name: run tests
               run: |
                 # [ "$(grep -c -P '\t' CHANGELOG)" = "0" ]
-                tox -e py39
+                tox -e py39,pep8

@@ -231,10 +231,10 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
     def set_flags(self):
         for m in self.matches:
-            if m.HomeTeam not in self.flags:
-                self.flags[m.HomeTeam] = MatchFlags()
+            if m.home_team not in self.flags:
+                self.flags[m.home_team] = MatchFlags()
 
-        current = [x.HomeTeam for x in self.matches]
+        current = [x.home_team for x in self.matches]
 
         for old in [x for x in self.flags if x not in current]:
             del self.flags[old]
@@ -278,7 +278,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         self.set_flags()
 
-        team = event.match.HomeTeam
+        team = event.match.home_team
 
         try:
             flags = self.flags[team]
@@ -292,15 +292,15 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             self.flags[team] = MatchFlags()
             flags = self.flags[team]
 
-        if event.isGoal:
+        if event.is_goal:
             flags.homegoal = event.home
             flags.awaygoal = not event.home
 
-        elif event.isRed:
+        elif event.is_red:
             flags.homered = event.home
             flags.awayred = not event.home
 
-        elif event.isStatusChange:
+        elif event.is_status_change:
             flags.statuschange = True
 
         if flags.changes:
@@ -328,7 +328,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         if m:
             screen = self.screens[self.screen_index]
-            text = m.formatText(screen)
+            text = m.format_text(screen)
         else:
             text = ""
 
@@ -348,7 +348,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         if m:
             screen = self.screens[self.screen_index]
-            text = m.formatText(screen)
+            text = m.format_text(screen)
         else:
             text = ""
 
@@ -368,7 +368,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         if m:
 
-            flags = self.flags[m.HomeTeam]
+            flags = self.flags[m.home_team]
 
             if self.screen_index == 0:
                 if flags.homegoal:
@@ -378,11 +378,11 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
                     self.draw_goal(False)
 
                 if flags.homered or (self.always_show_red and
-                                     m.HomeRedCards):
+                                     m.home_red_cards):
                     self.draw_red(True)
 
                 if flags.awayred or (self.always_show_red and
-                                     m.AwayRedCards):
+                                     m.away_red_cards):
                     self.draw_red(False)
 
                 if self.underline_status:
@@ -423,13 +423,13 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         offset = 2
         width = self.width - 2
 
-        if m.isFixture:
+        if m.is_fixture:
             fill = self.status_fixture
-        elif m.isLive:
+        elif m.is_live:
             fill = self.status_live
-        elif m.isHalfTime:
+        elif m.is_half_time:
             fill = self.status_halftime
-        elif m.isFinished:
+        elif m.is_finished:
             fill = self.status_fulltime
         else:
             fill = None
@@ -516,21 +516,21 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         lines = []
 
         for team in [m for m in self.sources[0] if m]:
-            lines.append(team.Competition)
-            lines.append(team.formatText(self.popup_text))
+            lines.append(team.competition)
+            lines.append(team.format_text(self.popup_text))
             lines.append("")
 
         if self.sources[1]:
             lines.append("Selected Teams:")
             for team in [m for m in self.sources[1] if m]:
-                lines.append(team.formatText(self.popup_text))
+                lines.append(team.format_text(self.popup_text))
             lines.append("")
 
         for league in self.sources[2]:
             if league:
-                lines.append("{}:".format(league.LeagueName))
+                lines.append("{}:".format(league.league_name))
                 for team in league:
-                    lines.append(team.formatText(self.popup_text))
+                    lines.append(team.format_text(self.popup_text))
                 lines.append("")
 
         # Last line is always blank so remove it

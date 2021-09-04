@@ -48,58 +48,58 @@ class PlayerAction(object):
                                       self._actiondisplaytime)
 
     @property
-    def FullName(self):
+    def full_name(self):
         return self._fullname
 
     @property
-    def FirstName(self):
+    def first_name(self):
         return self._firstname
 
     @property
-    def LastName(self):
+    def last_name(self):
         return self._lastname
 
     @property
-    def AbbreviatedName(self):
+    def abbreviated_name(self):
         return self._abbreviatedname
 
     @property
-    def ActionType(self):
+    def action_type(self):
         return self._actiontype
 
     @property
-    def DisplayTime(self):
+    def display_time(self):
         return self._actiondisplaytime
 
     @property
-    def ElapsedTime(self):
+    def elapsed_time(self):
         return self._actiontime
 
     @property
-    def AddedTime(self):
+    def added_time(self):
         return self._actionaddedtime
 
     @property
-    def isGoal(self):
+    def is_goal(self):
         return self._actiontype == ACTION_GOAL
 
     @property
-    def isRedCard(self):
+    def is_red_card(self):
         return (self._actiontype == ACTION_RED_CARD or
                 self._actiontype == ACTION_YELLOW_RED_CARD)
 
     @property
-    def isStraightRed(self):
+    def is_straight_red(self):
         return self._actiontype == ACTION_RED_CARD
 
     @property
-    def isSecondBooking(self):
+    def is_second_booking(self):
         return self._actiontype == ACTION_YELLOW_RED_CARD
 
     @property
-    def isPenalty(self):
+    def is_penalty(self):
         return self._actionpenalty
 
     @property
-    def isOwnGoal(self):
+    def is_own_goal(self):
         return self._actionowngoal

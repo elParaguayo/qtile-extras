@@ -2,13 +2,13 @@ from datetime import datetime
 
 import requests
 
-from qtile_extras.resources.footballscores.base import matchcommon
+from qtile_extras.resources.footballscores.base import FSBase
 from qtile_extras.resources.footballscores.footballmatch import FootballMatch
 
 API_BASE = "http://push.api.bbci.co.uk"
 
 
-class League(matchcommon):
+class League(FSBase):
 
     leaguelink = ("/proxy/data/bbc-morph-football-scores-match-list-data/"
                   "endDate/{end_date}/startDate/{start_date}/"
@@ -58,7 +58,7 @@ class League(matchcommon):
         lg = "-".join(self.league.lower().split(" "))
         self.leagueid = lg
         if self.leagueid:
-            self.matches = self.getMatches()
+            self.matches = self.get_matches()
 
     def _request(self, url):
         url = API_BASE + url
@@ -69,7 +69,7 @@ class League(matchcommon):
             return dict()
 
     def findleague(self, league):
-        leagues = self.getTournaments()
+        leagues = self.get_tournaments()
         if leagues:
             for lg in leagues:
                 if lg["name"].lower() == league.lower():
@@ -77,8 +77,8 @@ class League(matchcommon):
 
         return None
 
-    def _getScoresFixtures(self, start_date=None, end_date=None,
-                           source=None, detailed=None):
+    def _get_scores_fixtures(self, start_date=None, end_date=None,
+                             source=None, detailed=None):
         if start_date is None:
             start_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -98,8 +98,8 @@ class League(matchcommon):
 
         return self._request(pl)
 
-    def _getRawData(self):
-        rawdata = self._getScoresFixtures()
+    def _get_raw_data(self):
+        rawdata = self._get_scores_fixtures()
         if not rawdata:
             return []
 
@@ -114,11 +114,11 @@ class League(matchcommon):
 
         return mdata
 
-    def getMatches(self):
+    def get_matches(self):
 
         matches = []
 
-        data = self._getRawData()
+        data = self._get_raw_data()
 
         for m in data:
             home = m["homeTeam"]["name"]["abbreviation"]
@@ -134,7 +134,7 @@ class League(matchcommon):
         return matches
 
     def _update(self):
-        data = self._getRawData()
+        data = self._get_raw_data()
 
         for m in data:
             home = m["homeTeam"]["name"]["abbreviation"]
@@ -148,7 +148,7 @@ class League(matchcommon):
         if not self.leagueid:
             self._setup()
 
-        matches = self.getMatches()
+        matches = self.get_matches()
 
         current = [x for x in self.matches if x in matches]
         current += [x for x in matches if x not in self.matches]
@@ -159,8 +159,8 @@ class League(matchcommon):
             self._update()
 
     @property
-    def LeagueName(self):
+    def league_name(self):
         if not self.matches:
             return self.league
 
-        return self.matches[0].Competition
+        return self.matches[0].competition

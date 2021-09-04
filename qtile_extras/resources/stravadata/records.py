@@ -1,7 +1,7 @@
 import json
 import time
 
-from .locations import RECORDS
+from qtile_extras.resources.stravadata.locations import RECORDS
 
 MILE = 1.60934
 

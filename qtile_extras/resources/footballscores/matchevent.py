@@ -11,47 +11,47 @@ class MatchEvent(object):
         self.match = match
 
     @property
-    def isRed(self):
+    def is_red(self):
         return self.eventType == self.TYPE_RED_CARD
 
     @property
-    def isGoal(self):
+    def is_goal(self):
         return self.eventType == self.TYPE_GOAL
 
     @property
-    def isStatusChange(self):
+    def is_status_change(self):
         return self.eventType == self.TYPE_STATUS
 
     @property
-    def isNewMatch(self):
+    def is_new_match(self):
         return self.eventType == self.TYPE_NEW_MATCH
 
     @property
-    def isLive(self):
-        return self.match.isLive
+    def is_live(self):
+        return self.match.is_live
 
     @property
-    def isFixture(self):
-        return self.match.isFixture
+    def is_fixture(self):
+        return self.match.is_fixture
 
     @property
-    def isFinished(self):
-        return self.match.isFinished
+    def is_finished(self):
+        return self.match.is_finished
 
     @property
-    def Scorer(self):
+    def scorer(self):
 
-        if self.isGoal:
+        if self.is_goal:
             if self.home:
-                return self.match.LastHomeGoal
+                return self.match.last_home_goal
             else:
-                return self.match.LastAwayGoal
+                return self.match.last_away_goal
 
     @property
-    def RedCard(self):
+    def red_card(self):
 
-        if self.isRed:
+        if self.is_red:
             if self.home:
-                return self.match.LastHomeRedCard
+                return self.match.last_home_red_card
             else:
-                return self.match.LastAwayRedCard
+                return self.match.last_away_red_card
