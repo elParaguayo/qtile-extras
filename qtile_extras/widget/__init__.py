@@ -33,6 +33,7 @@ widgets = {
     "LiveFootballScores": "livefootballscores",
     "WiFiIcon": "network",
     "ScriptExit": "scriptexit",
+    "StatusNotifier": "statusnotifier",
     "StravaWidget": "strava",
     "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",

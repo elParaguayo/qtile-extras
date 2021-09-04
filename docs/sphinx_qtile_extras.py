@@ -30,7 +30,7 @@ from libqtile import command, configurable, widget
 from libqtile.utils import import_class
 from sphinx.util.nodes import nested_parse_with_titles
 
-from qtile_extras.widget import qtile_widgets
+from qtile_extras.widget import widgets
 
 
 qtile_module_template = Template('''
@@ -236,7 +236,7 @@ class QtileModule(SimpleDirectiveMixin, Directive):
                 ) or (
                     exclude_base and obj == BaseClass
                 ) or (
-                    item in qtile_widgets
+                    item not in widgets
                 )
             ):
                 continue
@@ -278,7 +278,7 @@ class ListObjects(SimpleDirectiveMixin, Directive):
                 ) or (
                     obj == BaseClass
                 ) or (
-                    item in qtile_widgets
+                    item not in widgets
                 )
             ):
                 continue

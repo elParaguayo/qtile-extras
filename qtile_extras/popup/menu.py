@@ -155,6 +155,42 @@ class PopupMenu(PopupGridLayout):
         self._hide_timer = self.qtile.call_later(0.5, self.kill)
 
     @classmethod
+    def from_dbus_menu(cls, qtile, dbusmenuitems, **config):
+        menuitems = []
+        prev_sep = False
+
+        for i, dbmitem in enumerate(dbusmenuitems):
+            sep = dbmitem.item_type == "separator"
+            if not dbmitem.visible:
+                continue
+
+            if prev_sep and sep:
+                continue
+
+            if sep:
+                menuitems.append(
+                    PopupMenuSeparator(
+                        bar_size=1,
+                        **config
+                    )
+                )
+            else:
+                menuitems.append(
+                    PopupMenuItem(
+                        text=dbmitem.label.replace("_", ""),
+                        menu_icon=dbmitem.icon_data,
+                        hover=True,
+                        mouse_callbacks={"Button1": lambda dbmitem=dbmitem: dbmitem.click()},
+                        toggle_box=True if dbmitem.toggle_type else False,
+                        toggled=True if dbmitem.toggle_state else False,
+                        **config
+                    )
+                )
+            prev_sep = sep
+
+        return cls.generate(qtile, menuitems, **config)
+
+    @classmethod
     def generate(cls, qtile, menuitems, **config):
         row_count = 0
         for item in menuitems:
@@ -162,7 +198,7 @@ class PopupMenu(PopupGridLayout):
             row_count += item.row_span
 
         row_height = config.get("row_height", None)
-        fontsize = config.get("menu_fontsize", 12)
+        fontsize = config.get("fontsize", 12)
         menu_width = config.get("menu_width", 200)
 
         if row_height is None:
