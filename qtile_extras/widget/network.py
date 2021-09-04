@@ -34,6 +34,9 @@ def to_rads(degrees):
 
 
 class WiFiIcon(base._Widget, base.PaddingMixin):
+    """
+    An simple graphical widget that shows WiFi status.
+    """
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
         ("font", "sans", "Default font"),

@@ -86,6 +86,10 @@ class TVHWidget(base._Widget, base.MarginMixin):
 
     The widget will also show a popup displaying upcoming recordings.
 
+    When the server is recording a red line will be shown under the icon.
+    If there's an error, a yellow line will show above the icon (and
+    check the logs).
+
     This widget requires a third-party library, 'requests', in order to work.
     If this is not already installed in your system, you will need to install
     it before running the widget.
@@ -169,6 +173,10 @@ class TVHWidget(base._Widget, base.MarginMixin):
             "/dvr/entry/grid_upcoming",
             "API point for retrieving data on upcoming recordings."
         )
+    ]
+
+    _screenshots = [
+        ("tvh_widget.gif", "")
     ]
 
     def __init__(self, **config):

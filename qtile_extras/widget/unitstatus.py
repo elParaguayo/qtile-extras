@@ -31,7 +31,19 @@ from libqtile.widget import base
 
 
 class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
+    """
+    UnitStatus is a basic widget for Qtile which shows the current
+    status of systemd units.
 
+    It may not be particular useful for you and was primarily written
+    as an exercise to familiarise myself with writing Qtile widgets and
+    interacting with d-bus.
+
+    The widget is incredibly basic. It subscribes to the systemd d-bus
+    interface, finds the relevant service and displays an icon based
+    on the current status. The widget listens for announced changes to
+    the service and updates the icon accordingly.
+    """
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
         ("bus_name", "system",
@@ -56,6 +68,10 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
           "dead": ("colour_dead", "colour_dead"),
           },
          "Map of indicator colours (border, fill)")
+    ]
+
+    _screenshots = [
+        ("widget-unitstatus-screenshot.png", "")
     ]
 
     def __init__(self, **config):

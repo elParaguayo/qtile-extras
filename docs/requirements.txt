@@ -1,0 +1,6 @@
+setuptools_scm
+sphinx
+sphinx_rtd_theme
+sphinxcontrib-seqdiag
+xcffib>=0.10.1
+dbus-next

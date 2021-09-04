@@ -469,7 +469,7 @@ class PopupAbsoluteLayout(_PopupLayout):
 
     No further adjustments are made to the controls.
 
-    Note: the layout currently ignores the `margin` attribute i.e. a control
+    Note: the layout currently ignores the ``margin`` attribute i.e. a control
     placed at (0,0) will display there even if a margin is defined.
     """
     def _place_control(self, control):

@@ -1,0 +1,2 @@
+cairocffi
+git+git://github.com/qtile/qtile@master#egg=qtile

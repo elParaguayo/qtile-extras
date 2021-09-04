@@ -33,8 +33,24 @@ class MatchFlags(object):
 
 
 class LiveFootballScores(base._Widget, base.MarginMixin):
+    """
+    The module uses a module I wrote a number of years ago that parses
+    data from the BBC Sport website.
+
+    The underlying module needs work so it will probably only work if
+    you pick a "big" team.
+
+    You can select more than one team and league. Scores can be scrolled
+    by using the mousewheel over the widget.
+
+    Goals and red cards are indicated by a coloured bar next to the
+    relevant team name. The match status is indicated by a coloured bar
+    underneath the match summary. All colours are customisable.
+    """
 
     orientations = base.ORIENTATION_HORIZONTAL
+    _experimental = True
+
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
@@ -100,6 +116,19 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             "popup_display_timeout",
             10,
             "Seconds to show recordings."
+        ),
+    ]
+
+    _screenshots = [
+        (
+            "livefootballscores.gif",
+            "The different screens show: live score, elapsed time, "
+            "home and away goalscorers and competition name. In "
+            "addition, the amount of text shown can be customised by "
+            "using python's string formatting techniques e.g. the "
+            "default line '{H:.3} {h}-{a} {A:.3}' shows the first 3 "
+            "letters of team names rather than the full name as "
+            "shown above."
         ),
     ]
 

@@ -1,0 +1,49 @@
+qtile-extras documentation
+==========================
+
+``qtile-extras`` is a collection of mods made by elParaguayo for qtile.
+
+These are mods that I've made but which, for various reasons, may not end
+up in the main qtile codebase.
+
+They're designed for me but I've shared them in case they're of interest to
+anyone else.
+
+Currently, this repo houses some :ref:`widgets <ref-widgets>` that I made as well as my
+":ref:`popup toolkit <extended-popups>`" which can be used to extend
+widgets or make standalone menus/launchers.
+
+.. list_widgets:: qtile_extras.widget
+
+
+.. note::
+
+    These items are made primarily for my use and are not officially supported by
+    Qtile. You are most welcome to install it and I hope that you find some parts
+    of is useful. However, please note, I cannot guarantee that I will continue to
+    maintain certain aspects of this repo if I am no longer using them so, be warned,
+    things may break!
+
+
+.. toctree::
+    :caption: Getting Started
+    :maxdepth: 1
+    :hidden:
+
+    manual/install
+    manual/how_to/popup
+
+.. toctree::
+    :caption: Reference
+    :maxdepth: 1
+    :hidden:
+
+    manual/ref/widgets
+    manual/ref/popup
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

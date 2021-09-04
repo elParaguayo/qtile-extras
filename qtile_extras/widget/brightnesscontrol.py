@@ -9,6 +9,35 @@ ERROR_VALUE = -1
 
 
 class BrightnessControl(base._Widget):
+    """
+    This module provides basic screen brightness controls and a simple
+    widget showing the brightness level for Qtile.
+
+    Brightness control is handled by writing to the appropriate
+    /sys/class/backlight device. The widget is updated instantly when
+    the brightness is changed via this code and will autohide after a
+    user-defined timeout.
+
+    .. note::
+
+        This script will not work unless the user has write access to
+        the relevant backlight device.
+
+        This can be achieved via a udev rule which modifies the group
+        and write permissions. The rule should be saved at
+        /etc/udev/rules.d
+
+        An example rule is as follows:
+
+        .. code::
+
+            # Udev rule to change group and write permissions for screen backlight
+            ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="intel_backlight", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness"
+            ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="intel_backlight", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
+
+        You should then ensure that your user is a member of the "video"
+        group.
+    """  # noqa: E501
 
     orientations = base.ORIENTATION_HORIZONTAL
 
@@ -76,6 +105,10 @@ class BrightnessControl(base._Widget):
             "Set value or leave as None to allow device maximum"
         )
 
+    ]
+
+    _screenshots = [
+        ("brightnesscontrol-demo.gif", ""),
     ]
 
     def __init__(self, **config):

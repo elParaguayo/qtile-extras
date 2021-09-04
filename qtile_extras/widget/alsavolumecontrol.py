@@ -10,6 +10,19 @@ RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\]\s\[(on|off)\]")
 
 
 class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
+    """
+    The widget is very simple and, so far, just allows controls for
+    volume up, down and mute.
+
+    Volume control is handled by running the appropriate amixer command.
+    The widget is updated instantly when volume is changed via this
+    code, but will also update on an interval (i.e. it will reflect
+    changes to volume made by other programs).
+
+    The widget displays volume level via an icon, bar or both. The icon
+    is permanently visible while the bar only displays when the volume
+    is changed and will hide after a user-defined period.
+    """
 
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
@@ -31,6 +44,12 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         ("theme_path", None, "Path to theme icons."),
         ("step", 5, "Amount to increase volume by"),
         ("device", "Master", "Name of ALSA device")
+    ]
+
+    _screenshots = [
+        ("volumecontrol-icon.gif", "'icon' mode"),
+        ("volumecontrol-bar.gif", "'bar' mode"),
+        ("volumecontrol-both.gif", "'both' mode")
     ]
 
     icon_map = []

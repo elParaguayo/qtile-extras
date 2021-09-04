@@ -147,6 +147,15 @@ class UPowerWidget(base._Widget):
         ),
     ]
 
+    _screenshots = [
+        ("battery_normal.png", "Normal"),
+        ("battery_low.png", "Low"),
+        ("battery_critical.png", "Critical"),
+        ("battery_charging.png", "Charging"),
+        ("battery_multiple.png", "Multiple batteries"),
+        ("battery_textdisplay.gif", "Showing text")
+    ]
+
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(UPowerWidget.defaults)
