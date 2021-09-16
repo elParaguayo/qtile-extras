@@ -22,8 +22,11 @@ import math
 import os
 
 import cairocffi
-from libqtile import configurable, pangocffi
+from libqtile import configurable, hook, pangocffi
+from libqtile.backend.x11.xkeysyms import keysyms
+from libqtile.command import interface
 from libqtile.images import Img
+from libqtile.lazy import LazyCall
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 
@@ -47,13 +50,29 @@ class _PopupLayout(configurable.Configurable):
         ("margin", 5, "Margin around edge of tooltip"),
         ("background", "000000", "Popup background colour"),
         ("opacity", 1, "Popup window opacity. 'None' inherits bar opacity"),
-        ("close_on_click", True, "Hide the popup when control is clicked")
+        ("close_on_click", True, "Hide the popup when control is clicked"),
+        (
+            "keymap",
+            {
+                "left": ["Left", "h"],
+                "right": ["Right", "l"],
+                "up": ["Up", "j"],
+                "down": ["Down", "k"],
+                "select": ["Return", "space"],
+                "step": ["Tab"],
+                "close": ["Escape"]
+            },
+            "Keyboard controls. NB Navigation logic is very rudimentary. The popup will try "
+            "to select the nearest control in the direction pressed but some controls may be "
+            "inaccessible. In that scenario, use the mouse or `Tab` to cycle through controls."
+        ),
+        ("keyboard_navigation", True, "Whether popup controls can be navigated by keys")
     ]
 
     def __init__(self, qtile, **config):
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_PopupLayout.defaults)
-
+        self.configured = False
         self.qtile = qtile
 
         # Define drawable area
@@ -63,7 +82,16 @@ class _PopupLayout(configurable.Configurable):
         # Keep track of which control the mouse is over
         self.cursor_in = None
 
-        self.configured = False
+        # Identify focused control (via mouse of keypress)
+        self.focusable_controls = [c for c in self.controls if c.can_focus]
+        if self.focusable_controls:
+            self._focused = self.focusable_controls[0]
+        else:
+            self._focused = None
+            self.keyboard_navigation = False
+
+        # Identify keysyms for keybaord navigation
+        self.keys = {k: [keysyms[key] for key in v] for k, v in self.keymap.items()}
 
     def _configure(self):
         """
@@ -86,12 +114,19 @@ class _PopupLayout(configurable.Configurable):
         self.popup.win.process_pointer_enter = self.process_pointer_enter
         self.popup.win.process_pointer_leave = self.process_pointer_leave
         self.popup.win.process_pointer_motion = self.process_pointer_motion
+        self.popup.win.process_key_press = self.process_key_press
 
+        self.place_controls()
+
+        if self._focused:
+            self._focused.focus()
+
+        self.configured = True
+
+    def place_controls(self):
         for c in self.controls:
             self._place_control(c)
             c._configure(self.qtile, self)
-
-        self.configured = True
 
     def _place_control(self, control):
         """
@@ -134,11 +169,29 @@ class _PopupLayout(configurable.Configurable):
                 self.popup.y + self.popup.height // 2
             )
 
+        if self.keyboard_navigation:
+            self.set_hooks()
+            self.popup.win.focus(False)
+
+    def set_hooks(self):
+        hook.subscribe.client_focus(self.focus_change)
+        hook.subscribe.focus_change(self.focus_change)
+
+    def unset_hooks(self):
+        hook.unsubscribe.client_focus(self.focus_change)
+        hook.unsubscribe.focus_change(self.focus_change)
+
+    def focus_change(self, window=None):
+        if window is None or not window == self.popup.win:
+            self.kill()
+
     def hide(self):
         """Hide the popup."""
         self.popup.hide()
 
     def kill(self):
+        if self.keyboard_navigation:
+            self.unset_hooks()
         self.popup.kill()
 
     # The below methods are lifted from `bar`
@@ -199,6 +252,76 @@ class _PopupLayout(configurable.Configurable):
             )
 
         self.cursor_in = control
+
+    def process_key_press(self, keycode):
+        if keycode in self.keys["close"]:
+            self.kill()
+            return
+
+        if not self.keyboard_navigation:
+            return
+
+        self.unfocus()
+
+        # Variable to track next control for navigation
+        control = None
+
+        # Default behaviour is to move to the next control in the list
+        # Direction can be reversed by setting this to -1
+        step = 1
+        if keycode in self.keys["left"]:
+            control = self.find_nearest_control("left")
+            step = -1
+        elif keycode in self.keys["up"]:
+            control = self.find_nearest_control("up")
+            step = 0
+        elif keycode in self.keys["right"]:
+            control = self.find_nearest_control("right")
+        elif keycode in self.keys["down"]:
+            control = self.find_nearest_control("down")
+            step = 0
+        elif keycode in self.keys["select"]:
+            if self._focused:
+                self._focused.button_press(0, 0, 1)
+                if self.close_on_click:
+                    self.kill()
+            return
+        elif keycode in self.keys["step"]:
+            pass
+        else:
+            return
+
+        if not control and self.focusable_controls:
+            try:
+                idx = self.focusable_controls.index(self._focused)
+            except IndexError:
+                idx = 0
+            idx = (idx + step) % len(self.focusable_controls)
+            control = self.focusable_controls[idx]
+
+        if control:
+            control.focus()
+
+            self.draw()
+
+    def find_nearest_control(self, direction):
+        controls = []
+        if direction == "left":
+            controls = [c for c in self.controls if self._focused.is_left(c) and c.can_focus]
+        elif direction == "right":
+            controls = [c for c in self.controls if self._focused.is_right(c) and c.can_focus]
+        elif direction == "up":
+            controls = [c for c in self.controls if self._focused.is_above(c) and c.can_focus]
+        elif direction == "down":
+            controls = [c for c in self.controls if self._focused.is_below(c) and c.can_focus]
+
+        if controls:
+            controls.sort(key=lambda x: self._focused.distance_to(x))
+            return controls[0]
+
+    def unfocus(self):
+        for c in self.controls:
+            c.unfocus()
 
     def info(self):
         return {
@@ -375,8 +498,14 @@ class _PopupWidget(configurable.Configurable):
         ("col_span", 1, "Number of columns covered by control"),
         ("background", None, "Background colour for control"),
         ("highlight", "#006666", "Highlight colour"),
-        ("hover", False, "Highlight if mouse over control"),
-        ("mouse_callbacks", {}, "Dict of mouse button press callback functions.")
+        (
+            "can_focus",
+            "auto",
+            "Whether or not control can be focussed. Focussed control will be "
+            "highlighted if `highlight` attribute is set. Possible value are: "
+            "True, False or 'auto' (which sets to True if a 'Button1' mouse_callback is set)."
+        ),
+        ("mouse_callbacks", {}, "Dict of mouse button press callback functions. Accepts lazy objects.")
     ]
 
     offsetx = None
@@ -385,8 +514,11 @@ class _PopupWidget(configurable.Configurable):
     def __init__(self, **config):
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_PopupWidget.defaults)
+        if self.can_focus == "auto":
+            self.can_focus = bool(self.mouse_callbacks.get("Button1", False))
         self._highlight = False
         self.placed = False
+        self.focused = False
 
     def _configure(self, qtile, container):
         self.qtile = qtile
@@ -444,19 +576,27 @@ class _PopupWidget(configurable.Configurable):
     def button_press(self, x, y, button):
         name = 'Button{0}'.format(button)
         if name in self.mouse_callbacks:
-            self.mouse_callbacks[name]()
+            cmd = self.mouse_callbacks[name]
+            if isinstance(cmd, LazyCall):
+                status, val = self.qtile.server.call(
+                    (cmd.selectors, cmd.name, cmd.args, cmd.kwargs)
+                )
+                if status in (interface.ERROR, interface.EXCEPTION):
+                    logger.error("KB command error %s: %s" % (cmd.name, val))
+            else:
+                cmd()
 
     def button_release(self, x, y, button):
         pass
 
     def mouse_enter(self, x, y):
-        if self.hover and self.highlight and not self._highlight:
-            self._highlight = True
+        if self.can_focus and self.highlight and not self._highlight:
+            self.focus()
             self.container.draw()
 
     def mouse_leave(self, x, y):
-        if self._highlight:
-            self._highlight = False
+        if self.can_focus and self._highlight:
+            self.unfocus()
             self.container.draw()
 
     def info(self):
@@ -467,6 +607,52 @@ class _PopupWidget(configurable.Configurable):
             "width": self.width,
             "height": self.height,
         }
+
+    def focus(self):
+        self.container.unfocus()
+        self._highlight = True
+        self.container._focused = self
+
+    def unfocus(self):
+        self._highlight = False
+
+    def is_left(self, target):
+        """Returns True if `target` midpoint is to left of current control."""
+        if not isinstance(target, _PopupWidget):
+            return False
+
+        return (target.offsetx + target.width / 2) <= self.offsetx
+
+    def is_right(self, target):
+        """Returns True if `target` midpoint is to right of current control."""
+        if not isinstance(target, _PopupWidget):
+            return False
+
+        return (target.offsetx + target.width / 2) > (self.offsetx + self.width)
+
+    def is_above(self, target):
+        """Returns True if `target` midpoint is above current control."""
+        if not isinstance(target, _PopupWidget):
+            return False
+
+        return (target.offsety + target.height / 2) <= self.offsety
+
+    def is_below(self, target):
+        """Returns True if `target` midpoint is below current control."""
+        if not isinstance(target, _PopupWidget):
+            return False
+
+        return (target.offsety + target.height / 2) >= self.offsety + self.height
+
+    def distance_to(self, target):
+        """Return distance between midpoints."""
+        if not isinstance(target, _PopupWidget):
+            return 100000
+
+        dx = (target.offsetx + target.width / 2) - (self.offsetx + self.width / 2)
+        dy = (target.offsety + target.height / 2) - (self.offsety + self.height / 2)
+
+        return math.sqrt(dx ** 2 + dy ** 2)
 
 
 class PopupText(_PopupWidget):
