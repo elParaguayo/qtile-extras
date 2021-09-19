@@ -583,7 +583,7 @@ class _PopupWidget(configurable.Configurable):
         This property changes based on whether the `_highlight` variable has been
         set.
         """
-        if self._highlight and self.highlight and self.highlight_method == "block":
+        if self._highlight and self.highlight and self.highlight_method != "border":
             return self.highlight
         else:
             return self.background
@@ -853,7 +853,14 @@ class PopupImage(_PopupWidget):
     """
 
     defaults = [
-        ("filename", None, "path to image file.")
+        ("filename", None, "path to image file."),
+        (
+            "highlight_method",
+            "border",
+            "How to highlight focused control. Options are 'border', 'block' and 'mask'. "
+            "'mask' is experimental and will replace the image with the 'highlight' colour "
+            "masked by the image. Works best with solid icons on a transparent background."
+        ),
     ]
 
     def __init__(self, **config):
@@ -882,6 +889,8 @@ class PopupImage(_PopupWidget):
 
     def paint(self):
         self.clear(self._background)
+        if self.highlight_method == "mask" and self._highlight:
+            return
         self.drawer.ctx.save()
         self.drawer.ctx.translate(int((self.width-self.img.width) / 2),
                                   int((self.height - self.img.height) / 2))
@@ -893,3 +902,15 @@ class PopupImage(_PopupWidget):
         info = _PopupWidget.info(self)
         info["image"] = self.filename
         return info
+
+    def clear(self, colour):
+        if not (colour and self.highlight_method == "mask" and self._highlight):
+            _PopupWidget.clear(self, colour)
+            return
+
+        self.drawer.set_source_rgb(colour)
+        self.drawer.ctx.save()
+        self.drawer.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+        self.drawer.ctx.mask_surface(self.img.surface, 0, 0)
+        self.drawer.ctx.fill()
+        self.drawer.ctx.restore()
