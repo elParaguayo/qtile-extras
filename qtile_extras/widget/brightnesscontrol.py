@@ -414,18 +414,18 @@ class BrightnessControl(base._Widget):
         return success
 
     def cmd_brightness_up(self):
-        "Increase the brightness level"
+        """Increase the brightness level"""
         self.change_brightness(self.step)
 
     def cmd_brightness_down(self):
-        "Decrease the brightness level"
+        """Decrease the brightness level"""
         self.change_brightness(self.step * -1)
 
     def set_brightness_value(self, value):
-        "Set brightess to set value"
+        """Set brightess to set value"""
         self._set_brightness(value)
 
     def set_brightness_percent(self, percent):
-        "Set brightness to percentage (0.0-1.0) of max value"
+        """Set brightness to percentage (0.0-1.0) of max value"""
         value = int(self.max * percent)
         self._set_brightness(value)

@@ -304,13 +304,16 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         self._run(cmd)
 
     def cmd_volume_up(self, *args, **kwargs):
+        """Increase volume"""
         cmd = "amixer set {} {}%+".format(self.device, self.step)
         self._run(cmd)
 
     def cmd_volume_down(self, *args, **kwargs):
+        """Decrease volume"""
         cmd = "amixer set {} {}%-".format(self.device, self.step)
         self._run(cmd)
 
     def cmd_toggle_mute(self, *args, **kwargs):
+        """Mute audio output"""
         cmd = "amixer set {} toggle".format(self.device)
         self._run(cmd)

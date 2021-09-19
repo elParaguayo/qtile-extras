@@ -189,7 +189,8 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         return True
 
     def cmd_reboot(self):
-        return self.reboot()
+        """Restart the widget. Useful if updates seem to stop."""
+        self.reboot()
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -505,6 +506,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.bar.draw()
 
     def cmd_info(self):
+        """Show information about all matches"""
         str_team = self.team
         str_teams = ",".join(self.teams)
         str_leagues = ",".join(self.leagues)
@@ -539,6 +541,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
                 }
 
     def cmd_refresh(self):
+        """Force a poll of match data"""
         return self.refresh()
 
     def _format_matches(self):
@@ -587,6 +590,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             self.show_matches()
 
     def cmd_popup(self):
+        """Display popup window"""
         self.toggle_info()
 
     def show_matches(self):
