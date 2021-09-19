@@ -120,7 +120,7 @@ Below is an example of creating a power menu in your ``config.py``.
             ),        
         ]
 
-        layout = tk.PopupRelativeLayout(
+        layout = PopupRelativeLayout(
             qtile,
             width=1000,
             height=200,
