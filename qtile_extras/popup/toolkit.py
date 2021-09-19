@@ -66,7 +66,8 @@ class _PopupLayout(configurable.Configurable):
             "to select the nearest control in the direction pressed but some controls may be "
             "inaccessible. In that scenario, use the mouse or `Tab` to cycle through controls."
         ),
-        ("keyboard_navigation", True, "Whether popup controls can be navigated by keys")
+        ("keyboard_navigation", True, "Whether popup controls can be navigated by keys"),
+        ("initial_focus", 0, "Index of control to be focused at startup.")
     ]
 
     def __init__(self, qtile, **config):
@@ -84,8 +85,10 @@ class _PopupLayout(configurable.Configurable):
 
         # Identify focused control (via mouse of keypress)
         self.focusable_controls = [c for c in self.controls if c.can_focus]
-        if self.focusable_controls:
-            self._focused = self.focusable_controls[0]
+        if self.initial_focus is None:
+            self._focused = None
+        elif self.focusable_controls:
+            self._focused = self.focusable_controls[self.initial_focus]
         else:
             self._focused = None
             self.keyboard_navigation = False
@@ -263,6 +266,9 @@ class _PopupLayout(configurable.Configurable):
             return
 
         self.unfocus()
+
+        if self._focused is None and self.initial_focus is None:
+            self._focused = self.focusable_controls[0]
 
         # Variable to track next control for navigation
         control = None
@@ -680,7 +686,7 @@ class PopupText(_PopupWidget):
         ("font", "sans", "Font name"),
         ("fontsize", 12, "Font size"),
         ("foreground", "#ffffff", "Font colour"),
-        ('text_alignment', 'left', 'Text alignment: left, center or right.'),
+        ('h_align', 'left', 'Text alignment: left, center or right.'),
         ('v_align', 'middle', 'Vertical alignment: top, middle or bottom.'),
         ("wrap", False, "Wrap text in layout")
     ]
@@ -701,7 +707,7 @@ class PopupText(_PopupWidget):
             markup=False,
             wrap=self.wrap
         )
-        self.layout.layout.set_alignment(pangocffi.ALIGNMENTS[self.text_alignment])
+        self.layout.layout.set_alignment(pangocffi.ALIGNMENTS[self.h_align])
         self.layout.width = self.width
 
     def paint(self):
@@ -875,7 +881,7 @@ class PopupImage(_PopupWidget):
             self.img.scale(height_factor=(self.height / img.height), lock_aspect_ratio=True)
 
     def paint(self):
-        self.drawer.clear(self._background or self.container.background)
+        self.clear(self._background)
         self.drawer.ctx.save()
         self.drawer.ctx.translate(int((self.width-self.img.width) / 2),
                                   int((self.height - self.img.height) / 2))
