@@ -27,6 +27,10 @@ class Mock(MagicMock):
 
 MOCK_MODULES = [
     'libqtile.widget.wlan',
+    'stravalib',
+    'stravalib.model',
+    'units',
+    'qtile_extras.resources.stravadata.locations'
 ]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES if mod_name not in sys.modules)
 sys.path.insert(0, os.path.abspath('.'))
