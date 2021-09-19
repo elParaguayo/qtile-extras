@@ -23,12 +23,11 @@ import os
 import shlex
 import subprocess
 
-from libqtile import bar
 from libqtile.log_utils import logger
-from libqtile.widget import base
+from libqtile.widget.quick_exit import QuickExit
 
 
-class ScriptExit(base._TextBox):
+class ScriptExit(QuickExit):
     """
     An updated version of Qtile's QuickExit widget.
 
@@ -37,63 +36,23 @@ class ScriptExit(base._TextBox):
     """
 
     defaults = [
-        ('default_text', '[ shutdown ]', 'A text displayed as a button'),
-        (
-            'countdown_format',
-            '[ {} seconds ]',
-            'This text is showed when counting down.'
-        ),
-        ('timer_interval', 1, 'A countdown interval.'),
-        ('countdown_start', 5, 'Time to accept the second pushing.'),
         ('exit_script', '', 'Script to run on exit.'),
     ]
 
-    def __init__(self, widget=bar.CALCULATED, **config):
-        base._TextBox.__init__(self, '', widget, **config)
+    def __init__(self, **config):
+        QuickExit.__init__(self, **config)
         self.add_defaults(ScriptExit.defaults)
-
-        self.is_counting = False
-        self.text = self.default_text
-        self.countdown = self.countdown_start
-        self.__call_later_funcs = []
-
         self.exit_script = os.path.expanduser(self.exit_script)
         self.exit_script = shlex.split(self.exit_script)
 
-    def __reset(self):
-        self.is_counting = False
-        self.countdown = self.countdown_start
-        self.text = self.default_text
-        for f in self.__call_later_funcs:
-            f.cancel()
-
     def update(self):
-        if not self.is_counting:
-            return
+        # The actual countdown is decremented in QuickExit.update
+        # so we just check if it's going to be 0 here.
+        if self.countdown - 1 == 0 and self.exit_script:
+            try:
+                subprocess.run(self.exit_script, check=True)
+            except subprocess.CalledProcessError:
+                raw = " ".join(self.exit_script)
+                logger.error("Exit script ({}) failed to run.".format(raw))
 
-        self.countdown -= 1
-        self.text = self.countdown_format.format(self.countdown)
-        func = self.timeout_add(self.timer_interval, self.update)
-        self.__call_later_funcs.append(func)
-        self.draw()
-
-        if self.countdown == 0:
-            if self.exit_script:
-                try:
-                    subprocess.run(self.exit_script, check=True)
-                except subprocess.CalledProcessError:
-                    raw = " ".join(self.exit_script)
-                    logger.error("Exit script ({}) failed to run.".format(raw))
-
-            self.qtile.stop()
-            return
-
-    def button_press(self, x, y, button):
-
-        if not self.is_counting:
-            self.is_counting = True
-            self.update()
-            return
-        else:
-            self.__reset()
-            self.draw()
+        QuickExit.update(self)
