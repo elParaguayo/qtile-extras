@@ -147,6 +147,7 @@ class _PopupLayout(configurable.Configurable):
             c.drawer.ctx.save()
             c.drawer.ctx.translate(c.offsetx, c.offsety)
             c.paint()
+            c.paint_border()
             c.drawer.ctx.restore()
         self.popup.draw()
 
@@ -498,6 +499,8 @@ class _PopupWidget(configurable.Configurable):
         ("col_span", 1, "Number of columns covered by control"),
         ("background", None, "Background colour for control"),
         ("highlight", "#006666", "Highlight colour"),
+        ("highlight_method", "border", "How to highlight focused control. Options are 'border' and 'block'."),
+        ("highlight_border", 2, "Border width for focused controls"),
         (
             "can_focus",
             "auto",
@@ -536,6 +539,21 @@ class _PopupWidget(configurable.Configurable):
     def paint(self):
         raise NotImplementedError
 
+    def paint_border(self):
+        if not (self._highlight and self.highlight_method == "border"):
+            return
+        offset = self.highlight_border // 2
+        self.drawer.set_source_rgb(self.highlight)
+        self.drawer.ctx.save()
+        self.drawer.rectangle(
+            offset,
+            offset,
+            self.width - offset,
+            self.height - offset,
+            linewidth=self.highlight_border
+        )
+        self.drawer.ctx.restore()
+
     def clear(self, colour):
         if not colour:
             return
@@ -559,7 +577,7 @@ class _PopupWidget(configurable.Configurable):
         This property changes based on whether the `_highlight` variable has been
         set.
         """
-        if self._highlight and self.highlight:
+        if self._highlight and self.highlight and self.highlight_method == "block":
             return self.highlight
         else:
             return self.background
@@ -663,6 +681,7 @@ class PopupText(_PopupWidget):
         ("fontsize", 12, "Font size"),
         ("foreground", "#ffffff", "Font colour"),
         ('text_alignment', 'left', 'Text alignment: left, center or right.'),
+        ('v_align', 'middle', 'Vertical alignment: top, middle or bottom.'),
         ("wrap", False, "Wrap text in layout")
     ]
 
@@ -686,9 +705,15 @@ class PopupText(_PopupWidget):
         self.layout.width = self.width
 
     def paint(self):
-        # TODO: Vertical offset
+        if self.v_align == "top":
+            y = 0
+        elif self.v_align == "bottom":
+            y = self.height - self.layout.height
+        else:
+            y = (self.height - self.layout.height) // 2
+
         self.clear(self._background)
-        self.layout.draw(0, 0)
+        self.layout.draw(0, y)
 
     @property
     def text(self):
