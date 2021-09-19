@@ -44,8 +44,14 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         ("active_colour", "ffffff", "Colour for wifi strength."),
         ("inactive_colour", "666666", "Colour for wifi background."),
         ("update_interval", 1, "Polling interval in secs."),
-        ("wifi_arc", 75, "Width of arc in degrees"),
-        ("interface", "wlan0", "")
+        ("wifi_arc", 75, "Width of arc in degrees."),
+        ("interface", "wlan0", "Name of wifi interface."),
+        ("expanded_timeout", 5, "Time in secs for expanded information to display when clicking on icon.")
+    ]
+
+    _screenshots = [
+        ("wifi_simple.png", ""),
+        ("wifi_expanded.png", "Additional detail is visible when clicking on icon")
     ]
 
     def __init__(self, **config):
@@ -195,7 +201,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         if self.hide_timer:
             self.hide_timer.cancel()
 
-        self.hide_timer = self.timeout_add(5, self.hide)
+        self.hide_timer = self.timeout_add(self.expanded_timeout, self.hide)
 
     def hide(self):
         self.show_text = False
