@@ -1,7 +1,7 @@
 qtile-extras documentation
 ==========================
 
-``qtile-extras`` is a collection of mods made by elParaguayo for qtile.
+``qtile-extras`` is a collection of mods made by elParaguayo for Qtile.
 
 These are mods that I've made but which, for various reasons, may not end
 up in the main qtile codebase.
@@ -24,6 +24,13 @@ widgets or make standalone menus/launchers.
     maintain certain aspects of this repo if I am no longer using them so, be warned,
     things may break!
 
+.. important::
+
+    This repo is designed to be installed alongside the git version of Qtile. It is
+    highly recommended that you run the latest version to ensure compatibility.
+
+    I will not maintain a version of this repo that is linked to tagged releases of
+    Qtile.
 
 .. toctree::
     :caption: Getting Started
