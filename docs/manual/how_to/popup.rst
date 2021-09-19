@@ -44,49 +44,104 @@ Callbacks
 
 To add functionality to your popup, you need to bind callbacks to the individual controls. 
 This is achieved in the same way as widgets i.e. a dictionary of ``mouse_callbacks`` is passed
-as a configuration option for the control.
+as a configuration option for the control. The control accepts ``lazy`` objects like those used
+for key bindings.
 
-Building a popup
-================
+Building a popup menu
+=====================
+
+Below is an example of creating a power menu in your ``config.py``.
 
 .. code:: python
 
-    from libqtile import qtile
-    from libqtile.lazy import lazy
-    
-    from qtile_extras.popup.toolkit import PopupGridLayout, PopupImage 
-
-    controls = [
-        PopupImage(
-            filename='/path/to/power_icon.png',
-            col=0,
-            hover=True,
-            mouse_callbacks = {
-                'Button1': lazy.spawn('shutdown-command')
-            }),
-        PopupImage(
-            filename='/path/to/lock_icon.png',
-            col=1,
-            hover=True,
-            mouse_callbacks = {
-                'Button1': lazy.spawn('lock-command')
-            }),
-        PopupImage(
-            filename='/path/to/sleep_icon.png',
-            col=2,
-            hover=True,
-            mouse_callbacks = {
-                'Button1': lazy.spawn('sleep-command')
-            }),
-    ]
-
-    layout = PopupGridLayout(
-        width=400,
-        height=75,
-        rows=1,
-        cols=3,
-        controls=controls
+    from qtile_extras.popup.toolkit import (
+        PopupRelativeLayout,
+        PopupImage,
+        PopupText 
     )
 
-    # Place layout in center of screen and warp cursor.
-    layout.show(centered=True, warp_cursor=True)
+    def show_power_menu(qtile):
+
+        controls = [
+            PopupImage(
+                filename="~/Pictures/icons/lock.svg",
+                pos_x=0.15,
+                pos_y=0.1,
+                width=0.1,
+                height=0.5,
+                mouse_callbacks={
+                    "Button1": lazy.spawn("/path/to/lock_cmd")
+                }
+            ),
+            PopupImage(
+                filename="~/Pictures/icons/sleep.svg",
+                pos_x=0.45,
+                pos_y=0.1,
+                width=0.1,
+                height=0.5,
+                mouse_callbacks={
+                    "Button1": lazy.spawn("/path/to/sleep_cmd")
+                }
+            ),
+            PopupImage(
+                filename="~/Pictures/icons/shutdown.svg",
+                pos_x=0.75,
+                pos_y=0.1,
+                width=0.1,
+                height=0.5,
+                highlight="A00000",
+                mouse_callbacks={
+                    "Button1": lazy.shutdown()
+                }
+            ),
+            PopupText(
+                text="Lock",
+                pos_x=0.1,
+                pos_y=0.7,
+                width=0.2,
+                height=0.2,
+                h_align="center"
+            ),
+            PopupText(
+                text="Sleep",
+                pos_x=0.4,
+                pos_y=0.7,
+                width=0.2,
+                height=0.2,
+                h_align="center"
+            ),
+            PopupText(
+                text="Shutdown",
+                pos_x=0.7,
+                pos_y=0.7,
+                width=0.2,
+                height=0.2,
+                h_align="center"
+            ),        
+        ]
+
+        layout = tk.PopupRelativeLayout(
+            qtile,
+            width=1000,
+            height=200,
+            controls=controls,
+            background="00000060",
+            initial_focus=None,
+        )
+
+        layout.show(centered=True)
+
+    keys = [
+        ...
+        Key([mod, "shift"], "q", lazy.function(show_power_menu))
+        ...
+    ]
+
+Now, when you press ``Mod+shift+q`` you should see a menu looking like this:
+
+.. image:: /_static/images/powermenu.png
+
+Extending widgets
+=================
+
+[To be drafted]
