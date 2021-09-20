@@ -1,0 +1,11 @@
+/* Custom admonition formatting */
+.rst-content .admonition-required-dependencies .admonition-title {
+    /* Heading background colour */
+    background: #b96eff;
+}
+
+.rst-content .admonition-required-dependencies {
+    /* Body background colour */
+    background: #e0c1fd;
+}
+

@@ -74,7 +74,7 @@ qtile_class_template = Template('''
     {{ arg }}{% endfor %}
 
     {% if dependencies %}
-    .. tip::
+    .. admonition:: Required Dependencies
 
         This module requires the following third-party libraries:
         {{ dependencies }}

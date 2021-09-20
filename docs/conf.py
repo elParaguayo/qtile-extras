@@ -80,3 +80,4 @@ html_static_path = ['_static']
 # A workaround for the responsive tables always having annoying scrollbars.
 def setup(app):
     app.add_css_file("noscroll.css")
+    app.add_css_file("admonitions.css")
