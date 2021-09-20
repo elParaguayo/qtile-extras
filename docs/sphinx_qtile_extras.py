@@ -73,6 +73,13 @@ qtile_class_template = Template('''
 .. autoclass:: {{ module }}.{{ class_name }}{% for arg in extra_arguments %}
     {{ arg }}{% endfor %}
 
+    {% if dependencies %}
+    .. tip::
+
+        This module requires the following third-party libraries:
+        {{ dependencies }}
+
+    {% endif %}
     {% if is_widget %}
     .. compound::
 
@@ -169,6 +176,9 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         if len(defaults) == 0:
             is_configurable = False
 
+        deps = [f"``{d}``" for d in getattr(obj, "_dependencies", list())]
+        dependencies = ", ".join(deps)
+
         context = {
             'module': module,
             'class_name': class_name,
@@ -180,7 +190,8 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             'is_widget': issubclass(obj, widget.base._Widget),
             'experimental': getattr(obj, "_experimental", False),
             'inactive': getattr(obj, "_inactive", False),
-            'screenshots': getattr(obj, "_screenshots", list())
+            'screenshots': getattr(obj, "_screenshots", list()),
+            'dependencies': dependencies
         }
         if context['commandable']:
             context['commands'] = [

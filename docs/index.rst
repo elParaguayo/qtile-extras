@@ -4,7 +4,7 @@ qtile-extras documentation
 ``qtile-extras`` is a collection of mods made by elParaguayo for Qtile.
 
 These are mods that I've made but which, for various reasons, may not end
-up in the main qtile codebase.
+up in the main Qtile codebase.
 
 They're designed for me but I've shared them in case they're of interest to
 anyone else.

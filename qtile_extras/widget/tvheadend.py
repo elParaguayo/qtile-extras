@@ -90,10 +90,6 @@ class TVHWidget(base._Widget, base.MarginMixin):
     If there's an error, a yellow line will show above the icon (and
     check the logs).
 
-    This widget requires a third-party library, 'requests', in order to work.
-    If this is not already installed in your system, you will need to install
-    it before running the widget.
-
     NB if you use a username and password, these are stored in plain text. You
     may therefore wish to create an unprivileged user account in TVHeadend that
     only has access to scheduled recordings data.
@@ -178,6 +174,8 @@ class TVHWidget(base._Widget, base.MarginMixin):
     _screenshots = [
         ("tvh_widget.gif", "")
     ]
+
+    _dependencies = ["requests"]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)

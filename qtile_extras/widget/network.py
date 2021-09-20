@@ -54,6 +54,8 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         ("wifi_expanded.png", "Additional detail is visible when clicking on icon")
     ]
 
+    _dependencies = ["iwlib"]
+
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(WiFiIcon.defaults)

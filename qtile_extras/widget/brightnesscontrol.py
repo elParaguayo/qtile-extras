@@ -14,7 +14,7 @@ class BrightnessControl(base._Widget):
     widget showing the brightness level for Qtile.
 
     Brightness control is handled by writing to the appropriate
-    /sys/class/backlight device. The widget is updated instantly when
+    ``/sys/class/backlight`` device. The widget is updated instantly when
     the brightness is changed via this code and will autohide after a
     user-defined timeout.
 
@@ -35,7 +35,7 @@ class BrightnessControl(base._Widget):
             ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="intel_backlight", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness"
             ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="intel_backlight", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
 
-        You should then ensure that your user is a member of the "video"
+        You should then ensure that your user is a member of the ``video``
         group.
     """  # noqa: E501
 

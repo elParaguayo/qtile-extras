@@ -156,6 +156,8 @@ class UPowerWidget(base._Widget):
         ("battery_textdisplay.gif", "Showing text")
     ]
 
+    _dependencies = ["dbus-next"]
+
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(UPowerWidget.defaults)

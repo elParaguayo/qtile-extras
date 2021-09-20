@@ -31,7 +31,7 @@ class ScriptExit(QuickExit):
     """
     An updated version of Qtile's QuickExit widget.
 
-    Takes an additional argument 'exit_script' which will
+    Takes an additional argument ``exit_script`` which will
     be run before qtile exits.
     """
 

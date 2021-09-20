@@ -44,8 +44,8 @@ Callbacks
 
 To add functionality to your popup, you need to bind callbacks to the individual controls. 
 This is achieved in the same way as widgets i.e. a dictionary of ``mouse_callbacks`` is passed
-as a configuration option for the control. The control accepts ``lazy`` objects like those used
-for key bindings.
+as a configuration option for the control. The control accepts any callable function but also
+accepts ``lazy`` objects like those used for key bindings.
 
 Building a popup menu
 =====================

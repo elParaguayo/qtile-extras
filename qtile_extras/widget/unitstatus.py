@@ -74,6 +74,8 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         ("widget-unitstatus-screenshot.png", "")
     ]
 
+    _dependencies = ["dbus-next"]
+
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(UnitStatus.defaults)
