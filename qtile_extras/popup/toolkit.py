@@ -583,7 +583,7 @@ class _PopupWidget(configurable.Configurable):
         This property changes based on whether the `_highlight` variable has been
         set.
         """
-        if self._highlight and self.highlight and self.highlight_method != "border":
+        if self._highlight and self.highlight and self.highlight_method not in ["border", "text"]:
             return self.highlight
         else:
             return self.background
@@ -686,6 +686,7 @@ class PopupText(_PopupWidget):
         ("font", "sans", "Font name"),
         ("fontsize", 12, "Font size"),
         ("foreground", "#ffffff", "Font colour"),
+        ("highlight_method", "border", "Available options: 'border', 'block' or 'text'."),
         ('h_align', 'left', 'Text alignment: left, center or right.'),
         ('v_align', 'middle', 'Vertical alignment: top, middle or bottom.'),
         ("wrap", False, "Wrap text in layout")
@@ -711,6 +712,11 @@ class PopupText(_PopupWidget):
         self.layout.width = self.width
 
     def paint(self):
+        if self.highlight_method == "text" and self._highlight:
+            self.layout.colour = self.highlight
+        else:
+            self.layout.colour = self.foreground
+
         if self.v_align == "top":
             y = 0
         elif self.v_align == "bottom":
