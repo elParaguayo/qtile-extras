@@ -26,6 +26,7 @@ from libqtile.utils import rgb
 from libqtile.widget import base
 
 from qtile_extras.popup.toolkit import PopupGridLayout, PopupText
+from qtile_extras.resources.wordclock import LANGUAGES
 
 
 def round_down(num, divisor):
@@ -43,7 +44,12 @@ class WordClock(base._Widget):
     '''
     orientations = base.ORIENTATION_BOTH
     defaults = [
-        ("language", "english", "Display language."),
+        (
+            "language",
+            "english",
+            "Display language. "
+            "Choose from {}.".format(", ".join(f"'{x}'" for x in LANGUAGES))
+        ),
         ("background", "000000", "Background colour."),
         ("inactive", "202020", "Colour for inactive characters"),
         ("active", "00AAAA", "Colour for active characters"),
@@ -52,6 +58,13 @@ class WordClock(base._Widget):
         ("fontsize", 70, "Font size for letters"),
         ("font", "sans", "Font for text")
     ]
+
+    # Dynamically update docstring for supported languages
+    __doc__ += '''
+    .. admonition:: Supported languages
+
+        Available languages: {}
+    '''.format(", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES]))
 
     _screenshots = [
         ("wordclock.png", "")
