@@ -37,9 +37,15 @@ class WordClock(base._Widget):
     '''
     A widget to draw a word clock to the screen.
 
-    The clock will update every 5 minutes.
+    This is not a traditional widget in that you will not see anything
+    displayed in your bar. The widget works in the background and updates
+    the screen wallpaper when required. However, having this as a widget
+    provides an easy way for users to install and configure the clock.
 
-    Custom layouts can be added by referring to
+    The clocks are currently designed to update on 5 minute intervals
+    "five past" -> "ten past" etc. This may be changed in the future.
+
+    Custom layouts can be added by referring to the instructions in
     ``qtile_extras/resources/wordclock/english.py``.
     '''
     orientations = base.ORIENTATION_BOTH

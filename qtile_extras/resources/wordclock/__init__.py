@@ -1,3 +1,3 @@
 LANGUAGES = sorted(
-    ["english", "french", "spanish", "portuguese", "dutch", "swedish", "portuguese"]
+    ["english", "french", "spanish", "portuguese", "dutch", "swedish", "finnish"]
 )
