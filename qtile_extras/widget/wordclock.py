@@ -22,6 +22,7 @@ import os
 from datetime import datetime, time
 
 import cairocffi
+from libqtile import hook
 from libqtile.utils import rgb
 from libqtile.widget import base
 
@@ -81,6 +82,7 @@ class WordClock(base._Widget):
         self.add_defaults(WordClock.defaults)
         self.oldtime = None
         self.needs_draw = False
+        self.clockfile = None
 
         # TO DO: Work out why the fontsize set by defaults is ignored
         # unless we try to access it before `setup`
@@ -92,6 +94,7 @@ class WordClock(base._Widget):
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
+        hook.subscribe.screens_reconfigured(self.paint_screen)
         self.setup()
         self.clockfile = os.path.join(self.cache, "wordclock.png")
 
@@ -230,5 +233,11 @@ class WordClock(base._Widget):
             return
 
         self.grid.draw()
-        self.bar.screen.paint(self.clockfile)
+        self.paint_screen()
         self.needs_draw = False
+
+    def paint_screen(self):
+        if not self.clockfile:
+            return
+
+        self.bar.screen.paint(self.clockfile)
