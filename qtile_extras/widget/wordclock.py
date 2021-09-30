@@ -49,6 +49,14 @@ class WordClock(base._Widget):
     Custom layouts can be added by referring to the instructions in
     ``qtile_extras/resources/wordclock/english.py``.
     '''
+
+    # Dynamically update docstring for supported languages
+    __doc__ += '''
+    .. admonition:: Supported languages
+
+        Available languages: {}
+    '''.format(", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES]))
+
     orientations = base.ORIENTATION_BOTH
     defaults = [
         (
@@ -65,13 +73,6 @@ class WordClock(base._Widget):
         ("fontsize", 70, "Font size for letters"),
         ("font", "sans", "Font for text")
     ]
-
-    # Dynamically update docstring for supported languages
-    __doc__ += '''
-    .. admonition:: Supported languages
-
-        Available languages: {}
-    '''.format(", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES]))
 
     _screenshots = [
         ("wordclock.png", "")
@@ -150,11 +151,10 @@ class WordClock(base._Widget):
         Simple method to import the layout. If the module can't be found
         then it defaults to loading the English layout.
         """
-        try:
-            config = importlib.import_module(f"qtile_extras.resources.wordclock.{self.language}")
+        if self.language not in LANGUAGES:
+            self.language = "english"
 
-        except ImportError:
-            config = importlib.import_module("qtile_extras.resources.wordclock.english")
+        config = importlib.import_module(f"qtile_extras.resources.wordclock.{self.language}")
 
         return config
 
