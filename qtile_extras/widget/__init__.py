@@ -24,6 +24,7 @@ from libqtile.log_utils import logger
 from libqtile.widget import widgets as qtile_widgets
 from libqtile.widget.import_error import make_error
 
+from qtile_extras.bar import inject_bar_border
 from qtile_extras.widget.decorations import inject_decorations
 
 widgets = {
@@ -54,6 +55,9 @@ def import_class(module_path, class_name, fallback=None):
 
         # Inject the decorations code into the widget
         inject_decorations(classdef)
+
+        # Inject code to position widgets when there are borders
+        inject_bar_border(classdef)
 
         return classdef
 

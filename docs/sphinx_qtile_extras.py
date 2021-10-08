@@ -90,6 +90,7 @@ qtile_class_template = Template('''
     {% if screenshots %}
     {% for path, caption in screenshots %}
     .. figure:: /_static/images/{{ path }}
+        :target: ../../_static/images/{{ path }}
 
         {{ caption }}
 

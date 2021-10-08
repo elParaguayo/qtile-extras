@@ -17,10 +17,10 @@ The new widgets are:
 
 .. list_objects:: qtile_extras.widget
 
-I've also added some "eye candy" in the form of :ref:`widget decorations
-<widget-decorations>`. These decorations are available to all widgets i.e.
-they can be applied to the standard Qtile widgets as well as the new widgets
-here.
+I've also added some "eye candy" in the form of:
+
+  - :ref:`Widget Decorations <widget-decorations>`
+  - :ref:`Bar Borders <bar-borders>`
 
 .. note::
 
@@ -46,6 +46,7 @@ here.
     manual/install
     manual/how_to/popup
     manual/how_to/decorations
+    manual/how_to/bar
 
 .. toctree::
     :caption: Reference
@@ -55,6 +56,7 @@ here.
     manual/ref/widgets
     manual/ref/popup
     manual/ref/decorations
+    manual/ref/bar
 
 Indices and tables
 ==================
