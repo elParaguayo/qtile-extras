@@ -13,8 +13,14 @@ Currently, this repo houses some :ref:`widgets <ref-widgets>` that I made as wel
 ":ref:`popup toolkit <extended-popups>`" which can be used to extend
 widgets or make standalone menus/launchers.
 
-.. list_widgets:: qtile_extras.widget
+The new widgets are:
 
+.. list_objects:: qtile_extras.widget
+
+I've also added some "eye candy" in the form of :ref:`widget decorations
+<widget-decorations>`. These decorations are available to all widgets i.e.
+they can be applied to the standard Qtile widgets as well as the new widgets
+here.
 
 .. note::
 
@@ -39,6 +45,7 @@ widgets or make standalone menus/launchers.
 
     manual/install
     manual/how_to/popup
+    manual/how_to/decorations
 
 .. toctree::
     :caption: Reference
@@ -47,6 +54,7 @@ widgets or make standalone menus/launchers.
 
     manual/ref/widgets
     manual/ref/popup
+    manual/ref/decorations
 
 Indices and tables
 ==================

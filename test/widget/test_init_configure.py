@@ -28,6 +28,7 @@ import libqtile.confreader
 import libqtile.layout
 
 import qtile_extras.widget as extrawidgets
+from qtile_extras.widget import qtile_widgets
 
 
 # This file runs a very simple test to check that widgets can be initialised
@@ -69,7 +70,7 @@ exclusive_backend = {
 
 # Build default list of all widgets and assign simple keyword argument
 parameters = [
-    (getattr(extrawidgets, w), {"dummy_parameter": 1}) for w in extrawidgets.__all__
+    (getattr(extrawidgets, w), {"dummy_parameter": 1}) for w in extrawidgets.__all__ if w not in qtile_widgets
 ]
 
 # Replace items in default list with overrides

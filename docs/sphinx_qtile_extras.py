@@ -30,6 +30,9 @@ from libqtile import command, configurable, widget
 from libqtile.utils import import_class
 from sphinx.util.nodes import nested_parse_with_titles
 
+from qtile_extras.widget import qtile_widgets
+
+
 qtile_module_template = Template('''
 .. qtile_class:: {{ module }}.{{ class_name }}
     {% if no_config %}:no-config:{% endif %}
@@ -37,10 +40,9 @@ qtile_module_template = Template('''
     {% if show_config %}:show-config:{% endif %}
 ''')
 
-list_widgets_template = Template('''
-The following widgets are currently available:
-{% for widget in widgets %}
-  - :ref:`{{ widget }} <{{ widget.lower() }}>`
+list_objects_template = Template('''
+{% for obj in objects %}
+  - :ref:`{{ obj }} <{{ obj.lower() }}>`
 {% endfor %}
 ''')
 
@@ -232,6 +234,8 @@ class QtileModule(SimpleDirectiveMixin, Directive):
                     BaseClass and not issubclass(obj, BaseClass)
                 ) or (
                     exclude_base and obj == BaseClass
+                ) or (
+                    item in qtile_widgets
                 )
             ):
                 continue
@@ -250,7 +254,7 @@ class QtileModule(SimpleDirectiveMixin, Directive):
                 yield line
 
 
-class ListWidgets(SimpleDirectiveMixin, Directive):
+class ListObjects(SimpleDirectiveMixin, Directive):
     optional_arguments = 1
     option_spec = {
         "baseclass": directives.unchanged,
@@ -262,7 +266,7 @@ class ListWidgets(SimpleDirectiveMixin, Directive):
         BaseClass = None
         if 'baseclass' in self.options:
             BaseClass = import_class(*self.options["baseclass"].rsplit('.', 1))
-        widgets = []
+        objects = []
         for item in dir(module):
             obj = import_class(self.arguments[0], item)
             if (
@@ -272,15 +276,17 @@ class ListWidgets(SimpleDirectiveMixin, Directive):
                     BaseClass and not issubclass(obj, BaseClass)
                 ) or (
                     obj == BaseClass
+                ) or (
+                    item in qtile_widgets
                 )
             ):
                 continue
 
-            widgets.append(item)
+            objects.append(item)
 
-        context = {"widgets": widgets}
+        context = {"objects": objects}
 
-        rst = list_widgets_template.render(**context)
+        rst = list_objects_template.render(**context)
         for line in rst.splitlines():
             if not line.strip():
                 continue
@@ -290,4 +296,4 @@ class ListWidgets(SimpleDirectiveMixin, Directive):
 def setup(app):
     app.add_directive('qtile_class', QtileClass)
     app.add_directive('qtile_module', QtileModule)
-    app.add_directive('list_widgets', ListWidgets)
+    app.add_directive('list_objects', ListObjects)
