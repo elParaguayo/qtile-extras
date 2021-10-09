@@ -41,6 +41,30 @@ widgets = {
 }
 
 
+def modify(classdef, *args, initialise=True, **config):
+    """
+    Function to add additional code needed by widgets to use mods
+    provided by qtile-extras.
+
+    The function can also be used to inject code into user-defined
+    widgets e.g.
+
+        modify(CustomWidget, **config)
+
+    """
+
+    # Inject the decorations code into the widget
+    inject_decorations(classdef)
+
+    # Inject code to position widgets when there are borders
+    inject_bar_border(classdef)
+
+    if initialise:
+        return classdef(*args, **config)
+
+    return classdef
+
+
 # import_class and lazify_imports adapted from qtile/qtile
 
 def import_class(module_path, class_name, fallback=None):
@@ -53,11 +77,7 @@ def import_class(module_path, class_name, fallback=None):
         module = importlib.import_module(module_path)
         classdef = getattr(module, class_name)
 
-        # Inject the decorations code into the widget
-        inject_decorations(classdef)
-
-        # Inject code to position widgets when there are borders
-        inject_bar_border(classdef)
+        classdef = modify(classdef, initialise=False)
 
         return classdef
 

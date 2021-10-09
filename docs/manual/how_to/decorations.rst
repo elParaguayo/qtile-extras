@@ -67,3 +67,45 @@ A fuller example would look like this:
             )
         )
     ]
+
+.. _wrapping_widgets:
+
+Adding decorations to user-defined widgets
+==========================================
+
+You can also add the ability to draw decorations to your own widgets.
+
+First, you need to import ``modify`` from ``qtile_extras.widget`` and use this to
+wrap your widget class and its configuration parameters. i.e. calling ``modify(WidgetClass,
+*args, **kwargs)`` will return ``WidgetClass(*args, **kwargs)``.
+
+.. code:: python
+
+    from libqtile.config import Screen
+    from libqtile.widget.base import _TextBox
+
+    from qtile_extras.bar import Bar
+    from qtile.extras.widget import modify
+
+
+    class MyTextWidget(_TextBox):
+        pass
+
+    
+    screens = [
+        Screen(
+            bottom=Bar(
+                [
+                    ...
+                    modify(
+                        MyTextWidget,
+                        text="Modded widget",
+                        decorations=[
+                            ...
+                        ]
+                    ),
+                    ...
+                ]
+            )
+        )
+    ]

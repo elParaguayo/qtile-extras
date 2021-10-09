@@ -34,8 +34,8 @@ Configuring the bar
     If you use this mod, you must import all widgets from ``qtile_extras.widget`` as the
     mod injects code into the widgets to adjust their position.
 
-    If you are creating your own widget then you should take a look at the source code for
-    the code injection to see what changes need to be made in the widget.
+    If you are creating your own widget then you should take a look at :ref:`the decorations
+    page <wrapping_widgets>` for details on how to inject the relevant code into your widgets.
 
 The mod adds two new options to ``Bar``: ``border_color`` and ``border_width``. Both
 options take a single value or a list of four values representing `top`, `right`, `bottom`
