@@ -1,10 +1,11 @@
-pkgname=qtile-elparaguayo-extras-git
+# Maintainer: elParaguayo <elparaguayocode@gmail.com>
+pkgname=qtile-extras-git
 _pkgname=qtile-extras
 pkgver=0.0.1
 pkgrel=1
 provides=("$_pkgname")
 conflicts=("$_pkgname")
-pkgdesc="Extra items for qtile that are unlikely to be maintained in the main repo."
+pkgdesc="Unofficial mods for qtile that are unlikely to be maintained in the main repo."
 url="https://github.com/elparaguayo/qtile-extras.git"
 arch=("any")
 license=("MIT")

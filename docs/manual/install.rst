@@ -12,9 +12,10 @@ Installation
 Arch users
 ==========
 
-This is the easiest option.
+This is the easiest option as the package is in the AUR. Using your favourite
+helper, you just need to download and install the ``qtile-extras-git`` package.
 
-Download the `PKGBUILD`_ file from the repo and run ``makepkg -sci``.
+Alternatively, you can download the `PKGBUILD`_ file from the repo and run ``makepkg -sci``.
 
 .. _PKGBUILD: https://raw.githubusercontent.com/elParaguayo/qtile-extras/main/PKGBUILD
 
