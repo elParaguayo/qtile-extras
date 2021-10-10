@@ -28,6 +28,7 @@ from docutils.statemachine import ViewList
 from jinja2 import Template
 from libqtile import command, configurable, widget
 from libqtile.utils import import_class
+from libqtile.widget.base import _Widget
 from sphinx.util.nodes import nested_parse_with_titles
 
 from qtile_extras.widget import widgets
@@ -124,6 +125,10 @@ qtile_class_template = Template('''
 qtile_hooks_template = Template('''
 .. automethod:: libqtile.hook.subscribe.{{ method }}
 ''')
+
+
+def is_widget(obj):
+    return issubclass(obj, _Widget)
 
 
 class SimpleDirectiveMixin:
@@ -236,7 +241,7 @@ class QtileModule(SimpleDirectiveMixin, Directive):
                 ) or (
                     exclude_base and obj == BaseClass
                 ) or (
-                    item not in widgets
+                    is_widget(obj) and item not in widgets
                 )
             ):
                 continue
@@ -278,7 +283,7 @@ class ListObjects(SimpleDirectiveMixin, Directive):
                 ) or (
                     obj == BaseClass
                 ) or (
-                    item not in widgets
+                    is_widget(obj) and item not in widgets
                 )
             ):
                 continue
