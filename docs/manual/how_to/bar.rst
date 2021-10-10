@@ -7,8 +7,8 @@ Bar Borders
 .. note::
 
     There is an open `PR`_ in the qtile repository to add bar borders
-    to the official repo. If that request is merged then the
-    decorations may be removed from this repository.
+    to the official repo. This is likely to be merged in the near future
+    but, if you really can't wait to try it, go ahead!
 
 .. _PR: https://github.com/qtile/qtile/pull/2675
 
