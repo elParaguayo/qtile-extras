@@ -304,6 +304,8 @@ class StatusNotifier(QtileStatusNotifier):
         ('opacity', 1, 'Menu opactity')
     ]
 
+    _dependencies = ["dbus-next", "xdg"]
+
     _screenshots = [
         ("statusnotifier.png", "Widget showing Remmina icon and context menu.")
     ]
