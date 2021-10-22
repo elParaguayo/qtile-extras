@@ -97,7 +97,7 @@ qtile_class_template = Template('''
 
     {% endfor %}
     {% endif %}
-    {% if configurable %}
+    {% if defaults %}
     .. raw:: html
 
         <table class="colwidths-auto docutils align-default">
@@ -169,8 +169,8 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         # build up a dict of defaults using reverse MRO
         defaults = {}
         for klass in reversed(obj.mro()):
-            if not issubclass(klass, configurable.Configurable):
-                continue
+            # if not issubclass(klass, configurable.Configurable):
+            #     continue
             if not hasattr(klass, "defaults"):
                 continue
             klass_defaults = getattr(klass, "defaults")

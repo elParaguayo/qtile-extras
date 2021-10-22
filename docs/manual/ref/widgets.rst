@@ -9,3 +9,12 @@ Widgets
     :exclude-base:
     :no-commands:
     :show-config:
+
+Mixins
+======
+
+.. qtile_module:: qtile_extras.widget.mixins
+    :baseclass: qtile_extras.widget.mixins._BaseMixin
+    :exclude-base:
+    :no-commands:
+    :show-config:
