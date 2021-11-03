@@ -26,6 +26,7 @@ import libqtile.bar
 import libqtile.config
 import libqtile.confreader
 import libqtile.layout
+from libqtile.widget.import_error import ImportErrorWidget
 
 import qtile_extras.widget as extrawidgets
 from qtile_extras.widget import qtile_widgets
@@ -39,7 +40,8 @@ from qtile_extras.widget import qtile_widgets
 #
 # By default, the test runs on every widget that is listed in __init__.py
 # This is done by building a list called `parameters` which contains a tuple of
-# (widget class, kwargs).
+# (widget class, kwargs). kwargs should include the "widgetname" key and appropriate
+# value as this value will be used when widgets result in ImportErrors.
 #
 # Adjustments to the tests can be made below.
 
@@ -53,6 +55,7 @@ overrides = [
 # Some widgets are not included in __init__.py
 # They can be included in the tests by adding their details here
 extras = [
+    (extrawidgets.StatusNotifier, {"widgetname": "StatusNotifier"})
 ]
 
 # To skip a test entirely, list the widget class here
@@ -70,7 +73,7 @@ exclusive_backend = {
 
 # Build default list of all widgets and assign simple keyword argument
 parameters = [
-    (getattr(extrawidgets, w), {"dummy_parameter": 1}) for w in extrawidgets.__all__ if w not in qtile_widgets
+    (getattr(extrawidgets, w), {"widgetname": w}) for w in extrawidgets.__all__ if w not in qtile_widgets
 ]
 
 # Replace items in default list with overrides
@@ -97,6 +100,9 @@ def test_widget_init_config(manager_nospawn, minimal_conf_noscreen, widget_class
 
     widget = widget_class(**kwargs)
     widget.draw = no_op
+
+    if isinstance(widget, ImportErrorWidget):
+        pytest.skip(f"{kwargs['widgetname']} skipped: ImportError")
 
     # If widget inits ok then kwargs will now be attributes
     for k, v in kwargs.items():
