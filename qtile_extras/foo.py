@@ -23,7 +23,7 @@ from libqtile.bar import STRETCH
 from libqtile.utils import has_transparency
 
 
-class Foo(libqtile.bar.Bar):
+class Bar(libqtile.bar.Bar):
     """
     A modded version of the bar, which can display a border around it.
     """
