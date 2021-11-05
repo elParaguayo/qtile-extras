@@ -88,9 +88,9 @@ jobs:
                 # [ "$(grep -c -P '\t' CHANGELOG)" = "0" ]
                 tox -e py39,pep8,docs
 
-            - name: Upload coverage data to coveralls.io
+            - name: Upload coverage data to codecov
               run: |
-                pip -q install coveralls
-                coveralls --service=github
+                pip -q install codecov
+                codecov
               env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.CODECOV_TOKEN }}
