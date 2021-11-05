@@ -89,8 +89,5 @@ jobs:
                 tox -e py39,pep8,docs
 
             - name: Upload coverage data to codecov
-              run: |
-                pip -q install codecov
-                codecov
-              env:
-                GITHUB_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              uses: codecov/codecov-action@v2
+ 
