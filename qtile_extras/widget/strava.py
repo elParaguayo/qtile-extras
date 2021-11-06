@@ -129,16 +129,19 @@ class StravaWidget(base._Widget, base.MarginMixin):
         if results:
             success, data = results
 
-            self.data = data
-            self.formatted_data = {}
-            for k, v in self.format_map.items():
-                obj = self.data
-                for attr in v:
-                    obj = getattr(obj, attr)
+            if not success:
+                logger.warning(f"Error retrieving data: {data}.")
+            else:
+                self.data = data
+                self.formatted_data = {}
+                for k, v in self.format_map.items():
+                    obj = self.data
+                    for attr in v:
+                        obj = getattr(obj, attr)
 
-                self.formatted_data[k] = obj
+                    self.formatted_data[k] = obj
 
-            self.timeout_add(1, self.bar.draw)
+                self.timeout_add(1, self.bar.draw)
         self.timeout_add(self.refresh_interval, self.refresh)
 
     def refresh(self):
