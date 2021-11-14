@@ -6,11 +6,10 @@ Bar Borders
 
 .. note::
 
-    There is an open `PR`_ in the qtile repository to add bar borders
-    to the official repo. This is likely to be merged in the near future
-    but, if you really can't wait to try it, go ahead!
-
-.. _PR: https://github.com/qtile/qtile/pull/2675
+    As of 14 November 2021, this functionality has been merged into the main Qtile repo.
+    The code will remain here until the next version release of Qtile so that people can
+    continue to use this repo with package releases of Qtile. After that, the code will be
+    removed from this repo.
 
 This mod allows you to draw borders around your bar.
 
