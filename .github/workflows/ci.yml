@@ -89,6 +89,6 @@ jobs:
                 # [ "$(grep -c -P '\t' CHANGELOG)" = "0" ]
                 tox -e py39,pep8,docs
 
-            - name: Upload coverage data to codecov
-              uses: codecov/codecov-action@v2
+            # - name: Upload coverage data to codecov
+            #   uses: codecov/codecov-action@v2
  
