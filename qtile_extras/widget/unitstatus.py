@@ -125,7 +125,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         self.layout.width = self.text_width()
 
-    def _eventloop_started(self):
+    def _config_async(self):
         asyncio.create_task(self._connect_dbus())
 
     async def _connect_dbus(self):
