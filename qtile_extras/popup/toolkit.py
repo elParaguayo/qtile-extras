@@ -311,6 +311,9 @@ class _PopupLayout(configurable.Configurable):
 
             self.draw()
 
+    def fake_key_press(self, keycode):
+        self.process_key_press(self.qtile.core.keysym_from_name(keycode))
+
     def find_nearest_control(self, direction):
         controls = []
         if direction == "left":
