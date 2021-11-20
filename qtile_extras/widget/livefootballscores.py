@@ -1,3 +1,22 @@
+# Copyright (c) 2015-2021 elParaguayo
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 from libqtile import bar, pangocffi
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
@@ -133,6 +152,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
     ]
 
     _dependencies = ["requests"]
+    _queue_time = 1
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
@@ -230,7 +250,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             self.queue_update()
 
         except FSConnectionError:
-
             logger.info("Unable to get football scores data.")
 
             # Check if we managed to create all teams and leagues objects
@@ -342,7 +361,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         if self.queue_timer:
             self.queue_timer.cancel()
 
-        self.queue_timer = self.timeout_add(1, self.bar.draw)
+        self.queue_timer = self.timeout_add(self._queue_time, self.bar.draw)
 
     def get_match(self):
 
@@ -380,12 +399,12 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         if m:
             screen = self.screens[self.screen_index]
-            text = m.format_text(screen)
+            self.text = m.format_text(screen)
         else:
-            text = ""
+            self.text = ""
 
         # Create a text box
-        layout = self.drawer.textlayout(text,
+        layout = self.drawer.textlayout(self.text,
                                         self.font_colour,
                                         self.font,
                                         self.fontsize,
@@ -581,7 +600,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.popup = None
 
     def toggle_info(self):
-        if self.popup and not self.popup.win.hidden:
+        if self.popup is not None:
             try:
                 self.hide_timer.cancel()
             except AttributeError:
@@ -594,6 +613,10 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
     def cmd_popup(self):
         """Display popup window"""
         self.toggle_info()
+
+    def cmd_get(self):
+        """Get displayed text. Removes padding."""
+        return self.text.strip()
 
     def show_matches(self):
         lines = []

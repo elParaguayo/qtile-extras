@@ -93,14 +93,17 @@ def test_menu_navigation(manager):
 
     manager.c.simulate_keypress(["mod4"], "m")
 
+    # Use tab to loop over all 9 controls
     for i in range(9):
         press_key("space")
         assert manager.c.widget["textbox"].get() == f"{i + 1}"
         press_key("Tab")
 
+    # We're back at square 1
     press_key("space")
     assert manager.c.widget["textbox"].get() == "1"
 
+    # Try arrow keys
     press_key("Right")
     press_key("Down")
     press_key("space")

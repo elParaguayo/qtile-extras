@@ -1,10 +1,27 @@
-import json
+# Copyright (c) 2015-2021 elParaguayo
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 from datetime import datetime
 from itertools import groupby
 
 import requests
 
-from qtile_extras.resources.footballscores.base import FSBase
 from qtile_extras.resources.footballscores.exceptions import FSConnectionError
 from qtile_extras.resources.footballscores.matchdict import MatchDict
 from qtile_extras.resources.footballscores.matchdict import \
@@ -30,7 +47,7 @@ TZ_UTZ = UTC()
 API_BASE = "http://push.api.bbci.co.uk"
 
 
-class FootballMatch(FSBase):
+class FootballMatch:
     '''Class for getting details of individual football matches.
     Data is pulled from BBC live scores page.
     '''
@@ -115,10 +132,12 @@ class FootballMatch(FSBase):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            try:
-                return self.match.eventKey == other.match.eventKey
-            except AttributeError:
-                return self.myteam == other.myteam
+            if any([self.match.eventKey, other.match.eventKey]):
+                try:
+                    return self.match.eventKey == other.match.eventKey
+                except AttributeError:
+                    pass
+            return self.myteam == other.myteam
         else:
             return False
 
@@ -178,13 +197,6 @@ class FootballMatch(FSBase):
 
         return wrapper
 
-    def _dump(self, filename):
-
-        c = {k: v for k, v in self.match.iteritems() if k != "_callbacks"}
-
-        with open(filename, "w") as f:
-            json.dump(c, f, indent=4)
-
     def _request(self, url):
         url = API_BASE + url
         try:
@@ -197,6 +209,15 @@ class FootballMatch(FSBase):
             return r.json()
         else:
             return dict()
+
+    def check_page(self, page):
+
+        try:
+            rq = requests.head(page)
+            return rq.status_code == 200
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout):
+            return False
 
     def _check_match_date(self, matchdate):
 

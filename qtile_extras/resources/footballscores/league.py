@@ -1,14 +1,32 @@
+# Copyright (c) 2015-2021 elParaguayo
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 from datetime import datetime
 
 import requests
 
-from qtile_extras.resources.footballscores.base import FSBase
 from qtile_extras.resources.footballscores.footballmatch import FootballMatch
 
 API_BASE = "http://push.api.bbci.co.uk"
 
 
-class League(FSBase):
+class League:
 
     leaguelink = ("/proxy/data/bbc-morph-football-scores-match-list-data/"
                   "endDate/{end_date}/startDate/{start_date}/"
@@ -67,15 +85,6 @@ class League(FSBase):
             return r.json()
         else:
             return dict()
-
-    def findleague(self, league):
-        leagues = self.get_tournaments()
-        if leagues:
-            for lg in leagues:
-                if lg["name"].lower() == league.lower():
-                    return lg["url"].split("/")[3]
-
-        return None
 
     def _get_scores_fixtures(self, start_date=None, end_date=None,
                              source=None, detailed=None):
