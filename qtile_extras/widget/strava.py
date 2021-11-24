@@ -1,3 +1,22 @@
+# Copyright (c) 2020-21 elParaguayo
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
@@ -115,6 +134,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
         self.add_defaults(StravaWidget.defaults)
         self.add_defaults(base.MarginMixin.defaults)
         self.data = None
+        self.display_text = ""
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -147,9 +167,6 @@ class StravaWidget(base._Widget, base.MarginMixin):
     def refresh(self):
         future = self.qtile.run_in_executor(self._get_data)
         future.add_done_callback(self._read_data)
-
-    def set_refresh_timer(self):
-        pass
 
     def calculate_length(self):
 
@@ -211,10 +228,10 @@ class StravaWidget(base._Widget, base.MarginMixin):
             self.draw_highlight(top=True, colour=self.warning_colour)
 
         else:
-            text = self.format_text(self.text)
+            self.display_text = self.format_text(self.text)
 
             # Create a text box
-            layout = self.drawer.textlayout(text,
+            layout = self.drawer.textlayout(self.display_text,
                                             self.font_colour,
                                             self.font,
                                             self.fontsize,
@@ -303,3 +320,8 @@ class StravaWidget(base._Widget, base.MarginMixin):
         self.popup.unhide()
         self.popup.draw()
         self.timeout_add(self.popup_display_timeout, self.popup.kill)
+
+    def info(self):
+        info = base._Widget.info(self)
+        info["display_text"] = self.display_text
+        return info

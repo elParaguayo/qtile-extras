@@ -1,3 +1,22 @@
+# Copyright (c) 2016-21 elParaguayo
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 import datetime
 import json
 import os
@@ -9,7 +28,7 @@ from stravalib.model import Activity
 from units import unit
 
 from qtile_extras.resources.stravadata.locations import (AUTH, CACHE, CREDS,
-                                                         RECORDS, TIMESTAMP)
+                                                         TIMESTAMP)
 
 NUM_EVENTS = 5
 
@@ -172,16 +191,6 @@ def load_token():
     return token
 
 
-def load_records():
-    if not os.path.isfile(RECORDS):
-        return {"activities": [], "records": {}}
-
-    with open(RECORDS, "r") as f:
-        records = json.load(f)
-
-    return records
-
-
 def current_month():
     return datetime.datetime.now()
 
@@ -243,38 +252,6 @@ def get_activities(activities):
     return data
 
 
-def update_records(acs, recs, client):
-    for act in acs:
-        if act.type != "Run":
-            continue
-        if act.id not in recs["activities"]:
-            activity = client.get_activity(act.id)
-            recs = add_record(activity, recs)
-    return recs
-
-
-def add_record(activity, recs):
-    recs["activities"].append(activity.id)
-    records = recs["records"]
-    if activity.best_efforts is None:
-        return recs
-
-    for effort in activity.best_efforts:
-        entry = {"time": effort.elapsed_time.total_seconds(),
-                 "id": activity.id}
-        if effort.name in records:
-            records[effort.name].append(entry)
-        else:
-            records[effort.name] = [entry]
-
-    return recs
-
-
-def save_records(recs):
-    with open(RECORDS, "w") as out:
-        json.dump(recs, out)
-
-
 def get_client():
     client = Client()
     token = load_token()
@@ -327,10 +304,6 @@ def fetch_data():
 
     acs = list(client.get_activities())
     data = get_activities(acs)
-
-    recs = load_records()
-    recs = update_records(acs, recs, client)
-    save_records(recs)
 
     cache_data(data)
 
