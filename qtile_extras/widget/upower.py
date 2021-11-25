@@ -27,9 +27,11 @@ from libqtile.log_utils import logger
 from libqtile.widget import base
 
 PROPS_IFACE = "org.freedesktop.DBus.Properties"
+UPOWER_SERVICE = "org.freedesktop.UPower"
 UPOWER_INTERFACE = "org.freedesktop.UPower"
 UPOWER_PATH = "/org/freedesktop/UPower"
 UPOWER_DEVICE = UPOWER_INTERFACE + ".Device"
+UPOWER_BUS = BusType.SESSION
 
 
 class UPowerWidget(base._Widget):
@@ -163,6 +165,7 @@ class UPowerWidget(base._Widget):
         self.add_defaults(UPowerWidget.defaults)
 
         self.batteries = []
+        self.charging = False
 
         # Initial variables to hide text
         self.show_text = False
@@ -181,6 +184,11 @@ class UPowerWidget(base._Widget):
           (self.percentage_low, self.fill_low),
           (100, self.fill_normal)
         ]
+        self.status = [
+          (self.percentage_critical, "Critical"),
+          (self.percentage_low, "Low"),
+          (100, "Normal")
+        ]
         self.borders = {True: self.border_charge_colour,
                         False: self.border_colour}
 
@@ -189,10 +197,10 @@ class UPowerWidget(base._Widget):
 
     async def _setup_dbus(self):
         # Set up connection to DBus
-        self.bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
-        introspection = await self.bus.introspect(UPOWER_INTERFACE,
+        self.bus = await MessageBus(bus_type=UPOWER_BUS).connect()
+        introspection = await self.bus.introspect(UPOWER_SERVICE,
                                                   UPOWER_PATH)
-        object = self.bus.get_proxy_object(UPOWER_INTERFACE,
+        object = self.bus.get_proxy_object(UPOWER_SERVICE,
                                            UPOWER_PATH,
                                            introspection)
 
@@ -266,9 +274,9 @@ class UPowerWidget(base._Widget):
         for battery in batteries:
             bat = {}
 
-            introspection = await self.bus.introspect(UPOWER_INTERFACE,
+            introspection = await self.bus.introspect(UPOWER_SERVICE,
                                                       battery)
-            battery_obj = self.bus.get_proxy_object(UPOWER_INTERFACE,
+            battery_obj = self.bus.get_proxy_object(UPOWER_SERVICE,
                                                     battery,
                                                     introspection)
             battery_dev = battery_obj.get_interface(UPOWER_DEVICE)
@@ -276,6 +284,7 @@ class UPowerWidget(base._Widget):
 
             bat["device"] = battery_dev
             bat["props"] = props
+            bat["name"] = await battery_dev.get_native_name()
 
             battery_devices.append(bat)
 
@@ -283,7 +292,7 @@ class UPowerWidget(base._Widget):
         if self.battery_name:
             battery_devices = [
                 b for b in battery_devices
-                if await b.get_native_path() == self.battery_name
+                if b["name"] == self.battery_name
             ]
 
             if not battery_devices:
@@ -294,6 +303,8 @@ class UPowerWidget(base._Widget):
         # Listen for change signals on DBus
         for battery in battery_devices:
             battery["props"].on_properties_changed(self.battery_change)
+
+        await self._update_battery_info(False)
 
         return battery_devices
 
@@ -310,7 +321,7 @@ class UPowerWidget(base._Widget):
         # when we get any signal
         asyncio.create_task(self._update_battery_info())
 
-    async def _update_battery_info(self):
+    async def _update_battery_info(self, draw=True):
         for battery in self.batteries:
             dev = battery["device"]
             percentage = await dev.get_percentage()
@@ -319,11 +330,15 @@ class UPowerWidget(base._Widget):
             if self.charging:
                 ttf = await dev.get_time_to_full()
                 battery["ttf"] = self.secs_to_hm(ttf)
+                battery["tte"] = ""
             else:
                 tte = await dev.get_time_to_empty()
                 battery["tte"] = self.secs_to_hm(tte)
+                battery["ttf"] = ""
+            battery["status"] = next(x[1] for x in self.status if battery["fraction"] <= x[0])
 
-        self.qtile.call_soon(self.bar.draw)
+        if draw:
+            self.qtile.call_soon(self.bar.draw)
 
         return True
 
@@ -449,3 +464,10 @@ class UPowerWidget(base._Widget):
         # Self-explanatory!
         self.show_text = False
         self.bar.draw()
+
+    def info(self):
+        info = base._Widget.info(self)
+        info["batteries"] = [{k: v for k, v in x.items() if k not in ["device", "props"]} for x in self.batteries]
+        info["charging"] = self.charging
+        info["levels"] = self.status
+        return info
