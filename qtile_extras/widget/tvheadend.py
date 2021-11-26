@@ -279,7 +279,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         return False
 
     def toggle_info(self):
-        if self.popup and not self.popup.win.hidden:
+        if self.popup:
             try:
                 self.hide_timer.cancel()
             except AttributeError:
@@ -340,3 +340,9 @@ class TVHWidget(base._Widget, base.MarginMixin):
 
         self.hide_timer = self.timeout_add(self.popup_display_timeout,
                                            self.kill_popup)
+
+    def info(self):
+        info = base._Widget.info(self)
+        info["recording"] = self.is_recording
+        info["scheduled_recordings"] = len(self.data)
+        return info
