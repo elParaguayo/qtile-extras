@@ -1,3 +1,22 @@
+# Copyright (c) 2020-21 elParaguayo
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 import os
 
 from libqtile import bar
@@ -133,9 +152,6 @@ class BrightnessControl(base._Widget):
         # Hide the widget by default
         self.hidden = True
 
-        if self.enable_power_saving:
-            self.setup_power_saving()
-
         self.bright_path = os.path.join(self.device, self.brightness_path)
         self.min = self.min_brightness
 
@@ -177,6 +193,9 @@ class BrightnessControl(base._Widget):
         self.text_width = self.max_text_width()
 
     async def _config_async(self):
+        if not self.enable_power_saving:
+            return
+
         subscribe = await add_signal_receiver(
                         self.message,
                         session_bus=False,
@@ -205,11 +224,11 @@ class BrightnessControl(base._Widget):
                 value = self.brightness_on_mains
 
             if type(value) == int:
-                self.set_brightness_value(value)
+                self.cmd_set_brightness_value(value)
             elif type(value) == str and value.endswith("%"):
                 try:
                     percent = int(value[:-1])
-                    self.set_brightness_percent(percent / 100)
+                    self.cmd_set_brightness_percent(percent / 100)
                 except ValueError:
                     err = "Incorrectly formatted brightness: {}".format(value)
                     logger.error(err)
@@ -355,6 +374,8 @@ class BrightnessControl(base._Widget):
 
                 # Set the previous value
                 self.old = newval
+
+                self.current = newval
         # We should send callbacks if we couldn't read current or max value
         # e.g. to alert user to failure
         else:
@@ -407,7 +428,7 @@ class BrightnessControl(base._Widget):
             logger.error("No write access to {}.".format(self.bright_path))
             success = False
         except Exception as e:
-            logger.error("Unexpected error when writing"
+            logger.error("Unexpected error when writing "
                          "brightness value: {}.".format(e))
             success = False
 
@@ -421,11 +442,18 @@ class BrightnessControl(base._Widget):
         """Decrease the brightness level"""
         self.change_brightness(self.step * -1)
 
-    def set_brightness_value(self, value):
+    def cmd_set_brightness_value(self, value):
         """Set brightess to set value"""
         self._set_brightness(value)
 
-    def set_brightness_percent(self, percent):
+    def cmd_set_brightness_percent(self, percent):
         """Set brightness to percentage (0.0-1.0) of max value"""
         value = int(self.max * percent)
         self._set_brightness(value)
+
+    def info(self):
+        info = base._Widget.info(self)
+        info["brightness"] = self.current
+        info["max_brightness"] = self.max
+        info["min_brightness"] = self.min
+        return info
