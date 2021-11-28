@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import asyncio
+import os
 import time
 from functools import partial
 from typing import Callable, List, Optional
@@ -131,7 +132,7 @@ class DBusMenu:  # noqa: E303
 
         # Catch errors which indicate a failure to connect to the menu interface.
         except InterfaceNotFoundError:
-            logger.warning(f"Cannot find {self.iface} interface")
+            logger.warning(f"Cannot find {MENU_INTERFACE} interface at {self.service}")
             return False
         except (DBusError, InvalidIntrospectionError):
             logger.warning(f"Path {self.path} does not present a valid dbusmenu object")
@@ -329,6 +330,9 @@ class StatusNotifier(QtileStatusNotifier):
             'menu_width': self.menu_width
         }
 
+        self.session = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
+        self.host = host
+
     def _configure(self, qtile, bar):
         host.display_menu_callback = self.display_menu
         QtileStatusNotifier._configure(self, qtile, bar)
@@ -349,31 +353,47 @@ class StatusNotifier(QtileStatusNotifier):
             on_icon_changed=draw
         )
 
+    # TO BE REMOVED ONCE qtile/qtile/pr3060 is merged
+    def find_icon_at_pos(self, x, y):
+        """returns StatusNotifierItem object for icon in given position"""
+        offset = self.padding
+        val = x if self.bar.horizontal else y
+
+        if val < offset:
+            return None
+
+        for icon in self.available_icons:
+            offset += self.icon_size
+            if val < offset:
+                return icon
+            offset += self.padding
+
+        return None
+
     def show_menu(self):
         if not self.selected_item:
             return
-
         self.selected_item.get_menu()
 
     def display_menu(self, menu_items):
-        menu = PopupMenu.from_dbus_menu(self.qtile, menu_items, **self.menu_config)
+        self.menu = PopupMenu.from_dbus_menu(self.qtile, menu_items, **self.menu_config)
 
         screen = self.bar.screen
 
         if screen.top == self.bar:
-            x = min(self.offsetx, self.bar.width - menu.width)
+            x = min(self.offsetx, self.bar.width - self.menu.width)
             y = self.bar.height
 
         elif screen.bottom == self.bar:
-            x = min(self.offsetx, self.bar.width - menu.width)
-            y = screen.height - self.bar.height - menu.height
+            x = min(self.offsetx, self.bar.width - self.menu.width)
+            y = screen.height - self.bar.height - self.menu.height
 
         elif screen.left == self.bar:
             x = self.bar.width
-            y = min(self.offsety, screen.height - menu.height)
+            y = min(self.offsety, screen.height - self.menu.height)
 
         else:
-            x = screen.width - self.bar.width - menu.width
-            y = min(self.offsety, screen.height - menu.height)
+            x = screen.width - self.bar.width - self.menu.width
+            y = min(self.offsety, screen.height - self.menu.height)
 
-        menu.show(x, y)
+        self.menu.show(x, y)
