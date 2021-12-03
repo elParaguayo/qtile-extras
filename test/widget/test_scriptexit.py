@@ -38,7 +38,6 @@ WINDOW = Path(__file__).parent.parent / "scripts" / "exit.py"
 def read_file(fname):
     with open(fname, "r") as f:
         text = f.read()
-        print(f"{text=}")
         assert text == "CLOSED"
 
 

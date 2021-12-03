@@ -167,7 +167,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             "audio-volume-medium",
             "audio-volume-high"
         )
-        print(f"{self.theme_path=}")
+
         d_images = images.Loader(self.theme_path)(*names)
 
         for name, img in d_images.items():
