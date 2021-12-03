@@ -247,3 +247,11 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         self.drawer.set_source_rgb(statecols[0])
         self.circle(x, y, width, height, linewidth)
         self.drawer.ctx.stroke()
+
+    def info(self):
+        info = base._Widget.info(self)
+        info["unit"] = self.unitname
+        info["text"] = self.label
+        info["state"] = self.state
+        info["bus"] = self.bus_name
+        return info
