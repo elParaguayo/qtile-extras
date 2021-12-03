@@ -167,6 +167,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             "audio-volume-medium",
             "audio-volume-high"
         )
+        print(f"{self.theme_path=}")
         d_images = images.Loader(self.theme_path)(*names)
 
         for name, img in d_images.items():
@@ -317,3 +318,9 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         """Mute audio output"""
         cmd = "amixer set {} toggle".format(self.device)
         self._run(cmd)
+
+    def info(self):
+        info = base._Widget.info(self)
+        info["volume"] = self.volume
+        info["muted"] = self.muted
+        return info
