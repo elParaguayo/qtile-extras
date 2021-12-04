@@ -27,6 +27,7 @@ else:
 os.environ["NO_AT_BRIDGE"] = "1"
 
 import sys
+from pathlib import Path
 
 import gi
 
@@ -38,6 +39,9 @@ from dbus_next import Message, Variant
 from dbus_next.glib import MessageBus
 from dbus_next.constants import MessageType, PropertyAccess
 from dbus_next.service import ServiceInterface, dbus_property, method, signal
+
+
+icon_path = Path(__file__).parent / ".." / "resources" / "icons" / "menuitem.png"
 
 
 class SNIMenu(ServiceInterface):
@@ -62,6 +66,9 @@ class SNIMenu(ServiceInterface):
 
     @method()
     def GetLayout(self, parent_id: 'i', recursion_depth: 'i', properties: 'as') -> 'u(ia{sv}av)':
+        with open(icon_path.as_posix(), "rb") as icon:
+            raw = icon.read()
+
         return [
             1,
             [
@@ -76,7 +83,8 @@ class SNIMenu(ServiceInterface):
                                 "enabled": Variant("b", True),
                                 "visible": Variant("b", True),
                                 "label": Variant("s", "Test Menu"),
-                                "children-display": Variant("s", "submenu")
+                                "children-display": Variant("s", "submenu"),
+                                "icon-data": Variant("ay", bytes(raw))
                             },
                             []
                         ]
