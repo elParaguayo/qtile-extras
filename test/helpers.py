@@ -218,14 +218,14 @@ class TestManager:
 
     def terminate(self):
         if self.proc is None:
-            print("qtile is not alive", file=sys.stderr)
+            print("qtile is not alive", file=sys.stderr)  # type: ignore
         else:
             # try to send SIGTERM and wait up to 10 sec to quit
             self.proc.terminate()
             self.proc.join(10)
 
             if self.proc.is_alive():
-                print("Killing qtile forcefully", file=sys.stderr)
+                print("Killing qtile forcefully", file=sys.stderr)  # type: ignore
                 # desperate times... this probably messes with multiprocessing...
                 try:
                     os.kill(self.proc.pid, 9)
@@ -235,7 +235,7 @@ class TestManager:
                     pass
 
             if self.proc.exitcode:
-                print("qtile exited with exitcode: %d" % self.proc.exitcode, file=sys.stderr)
+                print("qtile exited with exitcode: %d" % self.proc.exitcode, file=sys.stderr)  # type: ignore
 
             self.proc = None
 
