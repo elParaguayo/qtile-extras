@@ -93,7 +93,6 @@ def alsa_manager(manager_nospawn, monkeypatch, request):
     FakeProcess.vol = 50
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.subprocess", FakeProcess)
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.shutil.which", which_amixer)
-    print(ICON_FOLDER)
 
     class ALSAConfig(libqtile.confreader.Config):
         """Config for the test."""
