@@ -19,7 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import libqtile.bar
-from libqtile.bar import STRETCH
 from libqtile.utils import has_transparency
 
 
@@ -205,52 +204,6 @@ class Bar(libqtile.bar.Bar):
                 self.drawer.draw(offsetx=end, width=self.length - end)
             else:
                 self.drawer.draw(offsety=end, height=self.length - end)
-
-    def _resize(self, length, widgets):
-        stretches = [i for i in widgets if i.length_type == STRETCH]
-        if stretches:
-            stretchspace = length - sum(
-                [i.length for i in widgets if i.length_type != STRETCH]
-            )
-            stretchspace = max(stretchspace, 0)
-            num_stretches = len(stretches)
-            if num_stretches == 1:
-                stretches[0].length = stretchspace
-            else:
-                block = 0
-                blocks = []
-                for i in widgets:
-                    if i.length_type != STRETCH:
-                        block += i.length
-                    else:
-                        blocks.append(block)
-                        block = 0
-                if block:
-                    blocks.append(block)
-                interval = length // num_stretches
-                for idx, i in enumerate(stretches):
-                    if idx == 0:
-                        i.length = interval - blocks[0] - blocks[1] // 2
-                    elif idx == num_stretches - 1:
-                        i.length = interval - blocks[-1] - blocks[-2] // 2
-                    else:
-                        i.length = int(interval - blocks[idx] / 2 - blocks[idx + 1] / 2)
-                    stretchspace -= i.length
-                stretches[0].length += stretchspace // 2
-                stretches[-1].length += stretchspace - stretchspace // 2
-
-        if self.horizontal:
-            offset = self.border_width[3]
-            for i in widgets:
-                i.offsetx = offset
-                i.offsety = self.border_width[0]
-                offset += i.length
-        else:
-            offset = self.border_width[0]
-            for i in widgets:
-                i.offsety = offset
-                i.offsetx = self.border_width[3]
-                offset += i.length
 
 
 def inject_bar_border(classdef):
