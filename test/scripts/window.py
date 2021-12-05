@@ -96,7 +96,8 @@ class SNIMenu(ServiceInterface):
                             {
                                 "enabled": Variant("b", True),
                                 "visible": Variant("b", True),
-                                "label": Variant("s","Quit")
+                                "label": Variant("s","Quit"),
+                                "icon-data": Variant("s", icon_path.as_posix())
                             },
                             []
                         ]

@@ -70,7 +70,7 @@ class PopupMenuItem(PopupText):
                 logger.warning("Icon image does not exist: {}".format(filename))
                 return
 
-            img = Img.from_path(self.filename)
+            img = Img.from_path(filename)
 
         else:
             self.icon = None
