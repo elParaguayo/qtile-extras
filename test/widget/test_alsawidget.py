@@ -24,9 +24,9 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
+from libqtile import confreader, images
 from libqtile.log_utils import init_log
 
-import qtile_extras.widget
 import qtile_extras.widget.alsavolumecontrol
 from test.helpers import Retry  # noqa: I001
 
@@ -109,7 +109,7 @@ def alsa_manager(manager_nospawn, monkeypatch, request):
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
                     [
-                        qtile_extras.widget.ALSAWidget(
+                        qtile_extras.widget.alsavolumecontrol.ALSAWidget(
                             hide_interval=0.5,
                             **getattr(request, "param", dict())
                         )
@@ -216,6 +216,34 @@ def test_no_amixer(monkeypatch, caplog):
 
     init_log(logging.INFO, log_path=None, log_color=False)
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.shutil.which", which)
-    widget = qtile_extras.widget.ALSAWidget()
+    widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget()
     widget.get_volume()
     assert "'amixer' is not installed." in caplog.text
+
+
+def test_no_theme_path(monkeypatch):
+    """Widget should raise config error if no theme_path for icons."""
+    def no_op(*args, **kwargs):
+        pass
+    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.base._Widget._configure", no_op)
+    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.ALSAWidget.get_volume", no_op)
+    widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget(mode="icon")
+
+    # No idea why decorations code is being injected in the tests.
+    widget._configure = widget.old_configure
+    with pytest.raises(confreader.ConfigError):
+        widget._configure(None, None)
+
+
+def test_no_icons(monkeypatch):
+    """Widget should raise a config error if there are no icons in the path."""
+    def no_op(*args, **kwargs):
+        pass
+    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.base._Widget._configure", no_op)
+    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.ALSAWidget.get_volume", no_op)
+    widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget(mode="icon", theme_path="/no/path")
+
+    # No idea why decorations code is being injected in the tests.
+    widget._configure = widget.old_configure
+    with pytest.raises(confreader.ConfigError):
+        widget._configure(None, None)

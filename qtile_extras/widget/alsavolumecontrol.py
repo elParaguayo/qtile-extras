@@ -2,7 +2,7 @@ import re
 import shutil
 import subprocess
 
-from libqtile import bar, images
+from libqtile import bar, confreader, images
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
@@ -104,8 +104,16 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         self.get_volume()
 
+        if self.mode in ["icon", "both"] and not self.theme_path:
+            logger.error("You must set the `theme_path` when using icons")
+            raise confreader.ConfigError("No theme_path provided.")
+
         if self.show_icon:
-            self.setup_images()
+            try:
+                self.setup_images()
+            except images.LoadingError:
+                logger.error(f"Could not find volume icons at {self.theme_path}.")
+                raise confreader.ConfigError("Volume icons not found.")
 
         # Minimum size needed to display text
         self.text_width = self.max_text_width()
