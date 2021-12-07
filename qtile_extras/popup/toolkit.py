@@ -83,6 +83,8 @@ class _PopupLayout(configurable.Configurable):
         # Keep track of which control the mouse is over
         self.cursor_in = None
 
+        self._hooked = False
+
         # Identify focused control (via mouse of keypress)
         self.focusable_controls = [c for c in self.controls if c.can_focus]
         if self.initial_focus is None:
@@ -180,10 +182,13 @@ class _PopupLayout(configurable.Configurable):
     def set_hooks(self):
         hook.subscribe.client_focus(self.focus_change)
         hook.subscribe.focus_change(self.focus_change)
+        self._hooked = True
 
     def unset_hooks(self):
-        hook.unsubscribe.client_focus(self.focus_change)
-        hook.unsubscribe.focus_change(self.focus_change)
+        if self._hooked:
+            hook.unsubscribe.client_focus(self.focus_change)
+            hook.unsubscribe.focus_change(self.focus_change)
+            self._hooked = False
 
     def focus_change(self, window=None):
         if window is None or not window == self.popup.win:
@@ -508,7 +513,7 @@ class _PopupWidget(configurable.Configurable):
         ("col_span", 1, "Number of columns covered by control"),
         ("background", None, "Background colour for control"),
         ("highlight", "#006666", "Highlight colour"),
-        ("highlight_method", "border", "How to highlight focused control. Options are 'border' and 'block'."),
+        ("highlight_method", "block", "How to highlight focused control. Options are 'border' and 'block'."),
         ("highlight_border", 2, "Border width for focused controls"),
         (
             "can_focus",
@@ -689,7 +694,7 @@ class PopupText(_PopupWidget):
         ("font", "sans", "Font name"),
         ("fontsize", 12, "Font size"),
         ("foreground", "#ffffff", "Font colour"),
-        ("highlight_method", "border", "Available options: 'border', 'block' or 'text'."),
+        ("highlight_method", "block", "Available options: 'border', 'block' or 'text'."),
         ('h_align', 'left', 'Text alignment: left, center or right.'),
         ('v_align', 'middle', 'Vertical alignment: top, middle or bottom.'),
         ("wrap", False, "Wrap text in layout")
@@ -865,7 +870,7 @@ class PopupImage(_PopupWidget):
         ("filename", None, "path to image file."),
         (
             "highlight_method",
-            "border",
+            "block",
             "How to highlight focused control. Options are 'border', 'block' and 'mask'. "
             "'mask' is experimental and will replace the image with the 'highlight' colour "
             "masked by the image. Works best with solid icons on a transparent background."
