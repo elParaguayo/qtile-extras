@@ -152,10 +152,10 @@ class Power(ServiceInterface):
 
 
 class Battery(ServiceInterface):
-    def __init__(self, native_name, server, *args, **kwargs):
+    def __init__(self, native_path, server, *args, **kwargs):
         ServiceInterface.__init__(self, *args, **kwargs)
         self._level = 50.0
-        self._native_name = native_name
+        self._native_path = native_path
         self._server = server
 
     @dbus_property(access=PropertyAccess.READ)
@@ -175,8 +175,8 @@ class Battery(ServiceInterface):
         return 0
 
     @dbus_property(access=PropertyAccess.READ)
-    def NativeName(self) -> 's':  # noqa: F821, N802
-        return self._native_name
+    def NativePath(self) -> 's':  # noqa: F821, N802
+        return self._native_path
 
 
 class FakeUpower(Thread):

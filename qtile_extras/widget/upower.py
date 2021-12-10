@@ -31,7 +31,7 @@ UPOWER_SERVICE = "org.freedesktop.UPower"
 UPOWER_INTERFACE = "org.freedesktop.UPower"
 UPOWER_PATH = "/org/freedesktop/UPower"
 UPOWER_DEVICE = UPOWER_INTERFACE + ".Device"
-UPOWER_BUS = BusType.SESSION
+UPOWER_BUS = BusType.SYSTEM
 
 
 class UPowerWidget(base._Widget):
@@ -284,7 +284,7 @@ class UPowerWidget(base._Widget):
 
             bat["device"] = battery_dev
             bat["props"] = props
-            bat["name"] = await battery_dev.get_native_name()
+            bat["name"] = await battery_dev.get_native_path()
 
             battery_devices.append(bat)
 
