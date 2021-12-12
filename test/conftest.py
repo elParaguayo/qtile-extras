@@ -22,11 +22,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from test.helpers import BareConfig, TestManager  # noqa: I001
 
+import libqtile.bar  # noqa: I003
+import libqtile.config
 import pytest
-
 from libqtile.backend import base
-from test.helpers import BareConfig, TestManager
 
 
 def pytest_addoption(parser):
@@ -132,3 +133,21 @@ def fake_window():
             return base.Drawer(None, self, width, height)
 
     return FakeWindow()
+
+
+# Fixture that defines a minimal configurations for testing widgets.
+# When used in a test, the function needs to receive a list of screens
+# (including bar and widgets) as an argument. This config can then be
+# passed to the manager to start.
+@pytest.fixture(scope='function')
+def minimal_conf_noscreen():
+    class MinimalConf(libqtile.confreader.Config):
+        auto_fullscreen = False
+        keys = []
+        mouse = []
+        groups = [libqtile.config.Group("a"), libqtile.config.Group("b")]
+        layouts = [libqtile.layout.stack.Stack(num_stacks=1)]
+        floating_layout = libqtile.resources.default_config.floating_layout
+        screens = []
+
+    return MinimalConf
