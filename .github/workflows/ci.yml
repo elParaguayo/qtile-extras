@@ -19,7 +19,7 @@ jobs:
                 # if you change one of these, be sure to update
                 # /tox.ini:[gh-actions] as well
                 # python-version: [pypy-3.7, 3.7, 3.8, 3.9]
-                python-version: [3.9]
+                python-version: [3.8, 3.9, '3.10']
         steps:
             - uses: actions/checkout@v2
             - name: Set up python ${{ matrix.python-version }}
@@ -87,7 +87,7 @@ jobs:
             - name: run tests
               run: |
                 # [ "$(grep -c -P '\t' CHANGELOG)" = "0" ]
-                tox -e py39,pep8,docs,print
+                tox
 
             # - name: Upload coverage data to codecov
             #   uses: codecov/codecov-action@v2
