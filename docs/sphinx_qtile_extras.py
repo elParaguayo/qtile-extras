@@ -31,6 +31,7 @@ from libqtile.utils import import_class
 from libqtile.widget.base import _Widget
 from sphinx.util.nodes import nested_parse_with_titles
 
+from qtile_extras.resources import wallpapers
 from qtile_extras.widget import widgets
 
 
@@ -44,6 +45,16 @@ qtile_module_template = Template('''
 list_objects_template = Template('''
 {% for obj in objects %}
   - :ref:`{{ obj }} <{{ obj.lower() }}>`
+{% endfor %}
+''')
+
+list_wallpapers_template = Template('''
+{% for name, path in wallpapers %}
+{{ name }}
+
+    .. image:: /{{ path }}
+        :alt: {{ name }}
+
 {% endfor %}
 ''')
 
@@ -298,8 +309,26 @@ class ListObjects(SimpleDirectiveMixin, Directive):
                 continue
             yield line        
 
+
+class ListWallpapers(SimpleDirectiveMixin, Directive):
+    required_arguments = 0
+    optional_arguments = 0
+
+    def make_rst(self):
+        wps = []
+        for wpname in dir(wallpapers):
+            wpaper = getattr(wallpapers, wpname)
+            wps.append((wpname, wpaper))
+
+        rst = list_wallpapers_template.render(wallpapers=wps)
+        for line in rst.splitlines():
+            if not line.strip():
+                continue
+            yield line      
+
     
 def setup(app):
     app.add_directive('qtile_class', QtileClass)
     app.add_directive('qtile_module', QtileModule)
     app.add_directive('list_objects', ListObjects)
+    app.add_directive('qte_wallpapers', ListWallpapers)

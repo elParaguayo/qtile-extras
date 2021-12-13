@@ -21,6 +21,7 @@ I've also added some "eye candy" in the form of:
 
   - :ref:`Widget Decorations <widget-decorations>`
   - :ref:`Bar Borders <bar-borders>`
+  - :ref:`Wallpapers <wallpapers>`
 
 .. note::
 
@@ -57,6 +58,13 @@ I've also added some "eye candy" in the form of:
     manual/ref/popup
     manual/ref/decorations
     manual/ref/bar
+
+.. toctree::
+    :caption: Extras
+    :maxdepth: 1
+    :hidden:
+
+    extra/wallpapers
 
 Indices and tables
 ==================
