@@ -45,7 +45,7 @@ The example below shows a simple widget using this class to display three icons.
                 ["ff00ff", "0000ff", "00ff00", "ff0000", "ffff00"]
             ]:
                 self.img.draw(colour=col, x=offset)
-                offset +x self.img.width
+                offset += self.img.width
 
             self.drawer.draw(
                 offsetx=self.offset,
