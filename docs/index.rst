@@ -23,6 +23,10 @@ I've also added some "eye candy" in the form of:
   - :ref:`Bar Borders <bar-borders>`
   - :ref:`Wallpapers <wallpapers>`
 
+Lastly, I've created a new ``ImgMask`` class which, rather than drawing the source image,
+uses the source as a mask for the drawing. This can be used to change the colour of icons
+without needing to recrate the icons themselves. You can see the class :ref:`here <img-mask>`.
+
 .. note::
 
     These items are made primarily for my use and are not officially supported by
@@ -48,6 +52,7 @@ I've also added some "eye candy" in the form of:
     manual/how_to/popup
     manual/how_to/decorations
     manual/how_to/bar
+    manual/how_to/img-mask
 
 .. toctree::
     :caption: Reference
@@ -58,6 +63,7 @@ I've also added some "eye candy" in the form of:
     manual/ref/popup
     manual/ref/decorations
     manual/ref/bar
+    manual/ref/imgmask
 
 .. toctree::
     :caption: Extras

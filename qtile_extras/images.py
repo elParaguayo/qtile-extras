@@ -59,7 +59,7 @@ class ImgMask(Img):
 class Loader(QtileLoader):
     """
     Same as libqtile.images.Loader but takes an optional parameter,
-    `masked`, to determine whether to use `ImgMask` class.
+    ``masked``, to determine whether to use ``ImgMask`` class.
     """
     def __init__(self, *directories, masked=True, **kwargs):
         self.img_class = ImgMask if masked else Img
