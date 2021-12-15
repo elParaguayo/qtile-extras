@@ -17,6 +17,8 @@ The new widgets are:
 
 .. list_objects:: qtile_extras.widget
 
+There's a :ref:`mixin <tooltip-mixin>` if you want to add tooltips to widgets.
+
 I've also added some "eye candy" in the form of:
 
   - :ref:`Widget Decorations <widget-decorations>`
@@ -53,6 +55,7 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     manual/how_to/decorations
     manual/how_to/bar
     manual/how_to/img-mask
+    manual/how_to/tooltips
 
 .. toctree::
     :caption: Reference
