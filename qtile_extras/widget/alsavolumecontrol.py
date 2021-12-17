@@ -28,6 +28,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
+        ("foreground", "ffffff", "Font colour"),
         ("mode", "bar", "Display mode: 'icon', 'bar', 'both'."),
         ("hide_interval", 5, "Timeout before bar is hidden after update"),
         ("text_format", "{volume}%", "String format"),
@@ -232,7 +233,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
 
             # Create a text box
             layout = self.drawer.textlayout(text,
-                                            "ffffff",
+                                            self.foreground,
                                             self.font,
                                             self.fontsize,
                                             None,
