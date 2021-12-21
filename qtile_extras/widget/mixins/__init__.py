@@ -36,7 +36,7 @@ class TooltipMixin(_BaseMixin):
 
     .. code:: python
 
-        TooltipMixin.__init__(self)
+        TooltipMixin.__init__(self, **kwargs)
         self.add_defaults(TooltipMixin.defaults)
 
     Widgets should set ``self.tooltip_text`` to change display text.
