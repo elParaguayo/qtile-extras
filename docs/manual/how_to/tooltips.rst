@@ -18,7 +18,7 @@ best illustrated with a simple example:
 
         def __init__(self, *args, **kwargs):
             TextBox.__init__(self, *args, **kwargs)
-            TooltipMixin.__init__(self)
+            TooltipMixin.__init__(self, **kwargs)
             self.add_defaults(TooltipMixin.defaults)
 
             # The tooltip text is set in the following variable
