@@ -23,13 +23,11 @@ import time
 from functools import partial
 from typing import Callable, List, Optional
 
-from dbus_next import (InterfaceNotFoundError, InvalidIntrospectionError,
-                       Variant)
+from dbus_next import InterfaceNotFoundError, InvalidIntrospectionError, Variant
 from dbus_next.aio import MessageBus
 from dbus_next.errors import DBusError
 from libqtile.log_utils import logger
-from libqtile.widget.statusnotifier import \
-    StatusNotifier as QtileStatusNotifier
+from libqtile.widget.statusnotifier import StatusNotifier as QtileStatusNotifier
 from libqtile.widget.statusnotifier import StatusNotifierItem, host
 
 from qtile_extras.popup.menu import PopupMenu
@@ -40,12 +38,22 @@ NO_MENU = "/NO_DBUSMENU"
 
 class DBusMenuItem:  # noqa: E303
     """Simple class definition to represent a DBus Menu item."""
-    def __init__(self, menu, id: int, item_type: Optional[str] = "",
-                 enabled: Optional[bool] = True, visible: Optional[bool] = True,
-                 icon_name: Optional[str] = "", icon_data: Optional[List[bytes]] = list(),
-                 shortcut: Optional[List[List[str]]] = list(), label: Optional[str] = "",
-                 toggle_type: Optional[str] = "", toggle_state: Optional[int] = 0,
-                 children_display: Optional[str] = ""):
+
+    def __init__(
+        self,
+        menu,
+        id: int,
+        item_type: Optional[str] = "",
+        enabled: Optional[bool] = True,
+        visible: Optional[bool] = True,
+        icon_name: Optional[str] = "",
+        icon_data: Optional[List[bytes]] = list(),
+        shortcut: Optional[List[List[str]]] = list(),
+        label: Optional[str] = "",
+        toggle_type: Optional[str] = "",
+        toggle_state: Optional[int] = 0,
+        children_display: Optional[str] = "",
+    ):
         self.menu = menu
         self.id = id
         self.item_type = item_type
@@ -79,6 +87,7 @@ class DBusMenu:  # noqa: E303
     """
     Class object to connect DBusMenu interface and and interact with applications.
     """
+
     MENU_UPDATED = 0
     MENU_USE_STORED = 1
     MENU_NOT_FOUND = 2
@@ -89,7 +98,7 @@ class DBusMenu:  # noqa: E303
         ("icon-data", "icon_data"),
         ("toggle-state", "toggle_state"),
         ("children-display", "children_display"),
-        ("toggle-type", "toggle_type")
+        ("toggle-type", "toggle_type"),
     ]
 
     def __init__(self, parent, service: str, path: str, bus: Optional[MessageBus] = None):
@@ -107,20 +116,11 @@ class DBusMenu:  # noqa: E303
             self.bus = await MessageBus().connect()
 
         try:
-            introspection = await self.bus.introspect(
-                self.service,
-                self.path
-            )
+            introspection = await self.bus.introspect(self.service, self.path)
 
-            self._bus_object = self.bus.get_proxy_object(
-                self.service,
-                self.path,
-                introspection
-            )
+            self._bus_object = self.bus.get_proxy_object(self.service, self.path, introspection)
 
-            self._interface = self._bus_object.get_interface(
-                MENU_INTERFACE
-            )
+            self._interface = self._bus_object.get_interface(MENU_INTERFACE)
 
             # Menus work by giving each menu item an ID and actions are
             # toggled by sending this ID back to the application. These
@@ -165,9 +165,9 @@ class DBusMenu:  # noqa: E303
         if needs_update or root not in self._menus:
 
             menu = await self._interface.call_get_layout(
-                root,       # ParentID
-                1,          # Recursion depth
-                [],         # Property names (empty = all)
+                root,  # ParentID
+                1,  # Recursion depth
+                [],  # Property names (empty = all)
             )
 
             return self.MENU_UPDATED, menu
@@ -191,9 +191,7 @@ class DBusMenu:  # noqa: E303
         Callback needs to accept a list of DBusMenuItems.
         """
         task = asyncio.create_task(self._get_menu(root))
-        task.add_done_callback(
-            partial(self.parse_menu, root, callback)
-        )
+        task.add_done_callback(partial(self.parse_menu, root, callback))
         return
 
     def parse_menu(self, root, callback, task):
@@ -215,18 +213,11 @@ class DBusMenu:  # noqa: E303
                 # and a list for submenus
                 id, menudict, _ = item.value
 
-                menu_item = DBusMenuItem(
-                    self,
-                    id,
-                    **self._fix_menu_keys(menudict)
-                )
+                menu_item = DBusMenuItem(self, id, **self._fix_menu_keys(menudict))
                 menu.append(menu_item)
 
             # Store this menu in case we need to draw it again
-            self._menus[root] = {
-                "revision": revision,
-                "menu": menu
-            }
+            self._menus[root] = {"revision": revision, "menu": menu}
         elif update_needed == self.MENU_USE_STORED:
             menu = self._menus[root]["menu"]
 
@@ -239,7 +230,7 @@ class DBusMenu:  # noqa: E303
             id,  # ID of clicked menu item
             "clicked",  # Event type
             Variant("s", ""),  # "Data"
-            int(time.time())  # Timestamp
+            int(time.time()),  # Timestamp
         )
 
         # Ugly hack: delete all stored menus if the menu has been clicked
@@ -282,34 +273,37 @@ class StatusNotifier(QtileStatusNotifier):
     Added the ability to render context menus by right-clicking on the
     icon.
     """
+
     _experimental = True
 
     defaults = [
-        ('menu_font', 'sans', 'Font for menu text'),
-        ('menu_fontsize', 12, 'Font size for menu text'),
-        ('menu_foreground', 'ffffff', 'Font colour for menu text'),
-        ('menu_background', '333333', 'Background colour for menu'),
-        ('separator_colour', '555555', 'Colour of menu separator'),
-        ('highlight_colour', '0060A0', 'Colour of highlight for menu items (None for no highlight)'),
+        ("menu_font", "sans", "Font for menu text"),
+        ("menu_fontsize", 12, "Font size for menu text"),
+        ("menu_foreground", "ffffff", "Font colour for menu text"),
+        ("menu_background", "333333", "Background colour for menu"),
+        ("separator_colour", "555555", "Colour of menu separator"),
         (
-            'menu_row_height',
+            "highlight_colour",
+            "0060A0",
+            "Colour of highlight for menu items (None for no highlight)",
+        ),
+        (
+            "menu_row_height",
             None,
             (
-                'Height of menu row (NB text entries are 2 rows tall, separators are 1 row tall.) '
+                "Height of menu row (NB text entries are 2 rows tall, separators are 1 row tall.) "
                 '"None" will attempt to calculate height based on font size.'
-            )
+            ),
         ),
-        ('menu_width', 200, 'Context menu width'),
-        ('show_menu_icons', True, 'Show icons in context menu'),
-        ('hide_after', 0.5, 'Time in seconds before hiding menu atfer mouse leave'),
-        ('opacity', 1, 'Menu opactity')
+        ("menu_width", 200, "Context menu width"),
+        ("show_menu_icons", True, "Show icons in context menu"),
+        ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
+        ("opacity", 1, "Menu opactity"),
     ]
 
     _dependencies = ["dbus-next", "xdg"]
 
-    _screenshots = [
-        ("statusnotifier.png", "Widget showing Remmina icon and context menu.")
-    ]
+    _screenshots = [("statusnotifier.png", "Widget showing Remmina icon and context menu.")]
 
     def __init__(self, **config):
         QtileStatusNotifier.__init__(self, **config)
@@ -317,20 +311,20 @@ class StatusNotifier(QtileStatusNotifier):
         self.add_callbacks({"Button3": self.show_menu})
 
         self.menu_config = {
-            'background': self.menu_background,
-            'font': self.menu_font,
-            'fontsize': self.menu_fontsize,
-            'foreground': self.menu_foreground,
-            'highlight': self.highlight_colour,
-            'show_menu_icons': self.show_menu_icons,
-            'hide_after': self.hide_after,
-            'colour_above': self.separator_colour,
-            'opacity': self.opacity,
-            'row_height': self.menu_row_height,
-            'menu_width': self.menu_width
+            "background": self.menu_background,
+            "font": self.menu_font,
+            "fontsize": self.menu_fontsize,
+            "foreground": self.menu_foreground,
+            "highlight": self.highlight_colour,
+            "show_menu_icons": self.show_menu_icons,
+            "hide_after": self.hide_after,
+            "colour_above": self.separator_colour,
+            "opacity": self.opacity,
+            "row_height": self.menu_row_height,
+            "menu_width": self.menu_width,
         }
 
-        self.session = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
+        self.session = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
         self.host = host
 
     def _configure(self, qtile, bar):
@@ -342,16 +336,10 @@ class StatusNotifier(QtileStatusNotifier):
             self.bar.draw()
 
         def attach_menu(item):
-            task = asyncio.create_task(
-                item.attach_menu(display_menu_callback=self.display_menu)
-            )
+            task = asyncio.create_task(item.attach_menu(display_menu_callback=self.display_menu))
             task.add_done_callback(draw)
 
-        await host.start(
-            on_item_added=attach_menu,
-            on_item_removed=draw,
-            on_icon_changed=draw
-        )
+        await host.start(on_item_added=attach_menu, on_item_removed=draw, on_icon_changed=draw)
 
     # TO BE REMOVED ONCE qtile/qtile/pr3060 is merged
     def find_icon_at_pos(self, x, y):

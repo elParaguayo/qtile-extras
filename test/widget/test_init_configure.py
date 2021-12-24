@@ -17,20 +17,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-# Widget specific tests
-
-import pytest
-
 import libqtile.bar
 import libqtile.config
 import libqtile.confreader
 import libqtile.layout
+import pytest
 from libqtile.widget.import_error import ImportErrorWidget
 
 import qtile_extras.widget as extrawidgets
 from qtile_extras.widget import qtile_widgets
-
 
 # This file runs a very simple test to check that widgets can be initialised
 # and that keyword arguments are added to default values.
@@ -49,18 +44,14 @@ from qtile_extras.widget import qtile_widgets
 # Widgets listed here will replace the default values.
 # This should be used as a last resort - any failure may indicate an
 # underlying issue in the widget that should be resolved.
-overrides = [
-]
+overrides = []
 
 # Some widgets are not included in __init__.py
 # They can be included in the tests by adding their details here
-extras = [
-    (extrawidgets.StatusNotifier, {"widgetname": "StatusNotifier"})
-]
+extras = [(extrawidgets.StatusNotifier, {"widgetname": "StatusNotifier"})]
 
 # To skip a test entirely, list the widget class here
-no_test = [
-]
+no_test = []
 
 # To test a widget only under one backend, list the widget class here
 exclusive_backend = {
@@ -73,7 +64,9 @@ exclusive_backend = {
 
 # Build default list of all widgets and assign simple keyword argument
 parameters = [
-    (getattr(extrawidgets, w), {"widgetname": w}) for w in extrawidgets.__all__ if w not in qtile_widgets
+    (getattr(extrawidgets, w), {"widgetname": w})
+    for w in extrawidgets.__all__
+    if w not in qtile_widgets
 ]
 
 # Replace items in default list with overrides
@@ -110,11 +103,7 @@ def test_widget_init_config(manager_nospawn, minimal_conf_noscreen, widget_class
 
     # Test configuration
     config = minimal_conf_noscreen
-    config.screens = [
-        libqtile.config.Screen(
-            top=libqtile.bar.Bar([widget], 10)
-        )
-    ]
+    config.screens = [libqtile.config.Screen(top=libqtile.bar.Bar([widget], 10))]
 
     manager_nospawn.start(config)
 
@@ -123,6 +112,6 @@ def test_widget_init_config(manager_nospawn, minimal_conf_noscreen, widget_class
     # Check widget is registered by checking names of widgets in bar
     allowed_names = [
         widget.name,
-        "<no name>"  # systray is called "<no name>" as it subclasses _Window
+        "<no name>",  # systray is called "<no name>" as it subclasses _Window
     ]
     assert i["widgets"][0]["name"] in allowed_names

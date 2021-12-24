@@ -27,7 +27,6 @@ def test_tooltip_init():
     """Very basic test to check tooltip initialises ok."""
 
     class ModdedWidget(widget.TextBox, TooltipMixin):
-
         def __init__(self, text, **config):
             widget.TextBox.__init__(self, text, **config)
             TooltipMixin.__init__(self)

@@ -27,8 +27,7 @@ from stravalib import Client
 from stravalib.model import Activity
 from units import unit
 
-from qtile_extras.resources.stravadata.locations import (AUTH, CACHE, CREDS,
-                                                         TIMESTAMP)
+from qtile_extras.resources.stravadata.locations import AUTH, CACHE, CREDS, TIMESTAMP
 
 NUM_EVENTS = 5
 
@@ -41,7 +40,6 @@ KM = unit("km")
 
 
 class ActivityHistory(object):
-
     def __init__(self):
         self.current = None
         self.previous = []
@@ -53,7 +51,7 @@ class ActivityHistory(object):
 
 
 class ActivitySummary(object):
-    def __init__(self,  distance_unit=unit("km"), groupdate=None, child=False):
+    def __init__(self, distance_unit=unit("km"), groupdate=None, child=False):
         self.activities = []
         self.distance_unit = distance_unit
         self.dist = distance_unit(0)
@@ -79,12 +77,11 @@ class ActivitySummary(object):
         return act
 
     def _is_activity(self, activity):
-        return (type(activity) == Activity and activity.type == "Run")
+        return type(activity) == Activity and activity.type == "Run"
 
     def create_child(self, activity):
         if not self.child:
-            self.children.append(ActivitySummary.from_activity(activity,
-                                                               child=True))
+            self.children.append(ActivitySummary.from_activity(activity, child=True))
 
     def add_activity(self, activity):
         if self._is_activity(activity):
@@ -126,9 +123,7 @@ class ActivitySummary(object):
 
     @property
     def format_time(self):
-        return self.timeformat.format(hr=self.hours,
-                                      min=self.mins,
-                                      sec=self.secs)
+        return self.timeformat.format(hr=self.hours, min=self.mins, sec=self.secs)
 
     @property
     def elapsed_time_hms(self):
@@ -176,9 +171,9 @@ class ActivitySummary(object):
 
 
 def refresh_token(client):
-    token = client.refresh_access_token(client_id=APP_ID,
-                                        client_secret=SECRET,
-                                        refresh_token=client.refresh_token)
+    token = client.refresh_access_token(
+        client_id=APP_ID, client_secret=SECRET, refresh_token=client.refresh_token
+    )
     with open(CREDS, "w") as out:
         json.dump(token, out)
 
@@ -231,8 +226,7 @@ def get_activities(activities):
     month = cmonth
     for _ in range(SHOW_EXTRA_MONTHS):
         month = previous_month(month)
-        previous = [a for a in activities
-                    if same_month(a.start_date_local, month)]
+        previous = [a for a in activities if same_month(a.start_date_local, month)]
         summary = act_sum()
         summary.add_activities(previous)
         summary.groupdate = month

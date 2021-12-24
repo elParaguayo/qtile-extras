@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from datetime import datetime
-from test.helpers import Retry
 
 import libqtile.bar
 import libqtile.config
@@ -28,6 +27,7 @@ import pytest
 from stravalib.model import Activity
 
 from qtile_extras.widget.strava import StravaWidget
+from test.helpers import Retry
 
 ACTIVITIES = [
     Activity(
@@ -36,7 +36,7 @@ ACTIVITIES = [
         distance=10000,
         elapsed_time=45 * 60,
         moving_time=45 * 60,
-        type=Activity.RUN
+        type=Activity.RUN,
     ),
     Activity(
         name="Test Activity 2",
@@ -44,13 +44,12 @@ ACTIVITIES = [
         distance=21100,
         elapsed_time=105 * 60,
         moving_time=105 * 60,
-        type=Activity.RUN
-    )
+        type=Activity.RUN,
+    ),
 ]
 
 
 class MockDatetime(datetime):
-
     @classmethod
     def now(cls, *args, **kwargs):
         return cls(2021, 11, 25, 0, 0)
@@ -69,7 +68,9 @@ def stravawidget(monkeypatch):
     monkeypatch.setattr("qtile_extras.resources.stravadata.sync.get_client", fake_client)
     monkeypatch.setattr("qtile_extras.resources.stravadata.sync.APP_ID", True)
     monkeypatch.setattr("qtile_extras.resources.stravadata.sync.SECRET", True)
-    monkeypatch.setattr("qtile_extras.resources.stravadata.sync.check_last_update", lambda _: True)
+    monkeypatch.setattr(
+        "qtile_extras.resources.stravadata.sync.check_last_update", lambda _: True
+    )
     monkeypatch.setattr("qtile_extras.resources.stravadata.sync.datetime.datetime", MockDatetime)
     monkeypatch.setattr("qtile_extras.resources.stravadata.sync.cache_data", lambda _: None)
     yield StravaWidget
@@ -79,8 +80,7 @@ def stravawidget(monkeypatch):
 def strava(stravawidget):
     class StravaConfig(libqtile.confreader.Config):
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -90,9 +90,7 @@ def strava(stravawidget):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [
-                        stravawidget(startup_delay=0)
-                    ],
+                    [stravawidget(startup_delay=0)],
                     50,
                 ),
             )
@@ -101,7 +99,7 @@ def strava(stravawidget):
     yield StravaConfig
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def data_parsed(manager):
     _, output = manager.c.widget["stravawidget"].eval("self.display_text")
     assert output != ""
@@ -121,18 +119,18 @@ def test_strava_widget_popup(manager_nospawn, strava):
 
     _, text = manager_nospawn.c.widget["stravawidget"].eval("self.popup.text")
     assert text == (
-        ' Date         Title            km       time     pace \n'
-        '20 Nov: Test Activity 1         10.0    0:45:00   4:30\n'
-        '21 Nov: Test Activity 2         21.1    1:45:00   4:58\n'
-        '\n'
-        'Nov 21: 2 runs                  31.1    2:30:00   4:49\n'
-        'Oct 21: 0 runs                   0.0    0:00:00   0:00\n'
-        'Sep 21: 0 runs                   0.0    0:00:00   0:00\n'
-        'Aug 21: 0 runs                   0.0    0:00:00   0:00\n'
-        'Jul 21: 0 runs                   0.0    0:00:00   0:00\n'
-        'Jun 21: 0 runs                   0.0    0:00:00   0:00\n'
-        '\n'
-        '2021  : 2 runs                  31.1    2:30:00   4:49\n'
-        '\n'
-        'TOTAL : 2 runs                  31.1    2:30:00   4:49'
+        " Date         Title            km       time     pace \n"
+        "20 Nov: Test Activity 1         10.0    0:45:00   4:30\n"
+        "21 Nov: Test Activity 2         21.1    1:45:00   4:58\n"
+        "\n"
+        "Nov 21: 2 runs                  31.1    2:30:00   4:49\n"
+        "Oct 21: 0 runs                   0.0    0:00:00   0:00\n"
+        "Sep 21: 0 runs                   0.0    0:00:00   0:00\n"
+        "Aug 21: 0 runs                   0.0    0:00:00   0:00\n"
+        "Jul 21: 0 runs                   0.0    0:00:00   0:00\n"
+        "Jun 21: 0 runs                   0.0    0:00:00   0:00\n"
+        "\n"
+        "2021  : 2 runs                  31.1    2:30:00   4:49\n"
+        "\n"
+        "TOTAL : 2 runs                  31.1    2:30:00   4:49"
     )

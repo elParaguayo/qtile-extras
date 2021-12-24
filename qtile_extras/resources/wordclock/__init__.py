@@ -1,3 +1,1 @@
-LANGUAGES = sorted(
-    ["english", "french", "spanish", "portuguese", "dutch", "swedish", "finnish"]
-)
+LANGUAGES = sorted(["english", "french", "spanish", "portuguese", "dutch", "swedish", "finnish"])

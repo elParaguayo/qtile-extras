@@ -22,13 +22,11 @@ from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.widget import base
 
-from qtile_extras.resources.footballscores import (FootballMatch,
-                                                   FSConnectionError, League)
+from qtile_extras.resources.footballscores import FootballMatch, FSConnectionError, League
 
 
 # Massively overkill to use a class here...
 class MatchFlags(object):
-
     def __init__(self):
         self._reset()
 
@@ -41,11 +39,7 @@ class MatchFlags(object):
 
     @property
     def changes(self):
-        return any([self.homegoal,
-                    self.awaygoal,
-                    self.statuschange,
-                    self.homered,
-                    self.awayred])
+        return any([self.homegoal, self.awaygoal, self.statuschange, self.homered, self.awayred])
 
     def reset(self):
         self._reset()
@@ -78,11 +72,9 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         ("teams", [], "List of other teams you want to display"),
         ("leagues", [], "List of leagues you want to display"),
         ("status_text", "{H:.3} {h}-{a} {A:.3}", "Default widget match text"),
-        ("info_text",
-            ["{T:^12}",
-             "{H:.3}: {G:10}",
-             "{A:.3}: {g:10}",
-             "{C}"],
+        (
+            "info_text",
+            ["{T:^12}", "{H:.3}: {G:10}", "{A:.3}: {g:10}", "{C}"],
             """
             Add extra text lines which can be displayed by clicking on widget.
             Available fields are:
@@ -98,19 +90,20 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
              {g}: Away goalscorers
              {R}: Home red cards
              {r}: Away red cards
-             """),
-        ("popup_text", "{H:>20.20} {h}-{a} {A:<20.20} {T:<5}",
-            "Format to use for popup window."),
+             """,
+        ),
+        ("popup_text", "{H:>20.20} {h}-{a} {A:<20.20} {T:<5}", "Format to use for popup window."),
         ("refresh_interval", 60, "Time to update data"),
         ("info_timeout", 5, "Time before reverting to default text"),
         ("startup_delay", 30, "Time before sending first web request"),
-        ("goal_indicator", "009999",
-            "Colour of line to show team that scores"),
-        ("red_card_indicator", "bb0000",
-            "Colour of line to show team has had a player sent off."),
+        ("goal_indicator", "009999", "Colour of line to show team that scores"),
+        (
+            "red_card_indicator",
+            "bb0000",
+            "Colour of line to show team has had a player sent off.",
+        ),
         ("always_show_red", True, "Continue to show red card indicator"),
-        ("underline_status", True,
-            "Bar at bottom of widget to indicate status."),
+        ("underline_status", True, "Bar at bottom of widget to indicate status."),
         ("status_fixture", "000000", "Colour when match has not started"),
         ("status_live", "008800", "Colour when match is live"),
         ("status_halftime", "aaaa00", "Colour when half time"),
@@ -118,24 +111,11 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         (
             "popup_font",
             "monospace",
-            "Font to use for displaying upcoming recordings. A monospace font "
-            "is recommended"
+            "Font to use for displaying upcoming recordings. A monospace font " "is recommended",
         ),
-        (
-            "popup_opacity",
-            0.8,
-            "Opacity for popup window."
-        ),
-        (
-            "popup_padding",
-            10,
-            "Padding for popup window."
-        ),
-        (
-            "popup_display_timeout",
-            10,
-            "Seconds to show recordings."
-        ),
+        ("popup_opacity", 0.8, "Opacity for popup window."),
+        ("popup_padding", 10, "Padding for popup window."),
+        ("popup_display_timeout", 10, "Seconds to show recordings."),
     ]
 
     _screenshots = [
@@ -147,7 +127,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             "using python's string formatting techniques e.g. the "
             "default line ``{H:.3} {h}-{a} {A:.3}`` shows the first 3 "
             "letters of team names rather than the full name as "
-            "shown above."
+            "shown above.",
         ),
     ]
 
@@ -182,7 +162,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
                 "Button1": self.loop_match_info,
                 "Button3": self.toggle_info,
                 "Button4": self.scroll_up,
-                "Button5": self.scroll_down
+                "Button5": self.scroll_down,
             }
         )
 
@@ -223,11 +203,13 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.qtile.run_in_executor(self._setup)
 
     def _setup(self):
-        kwargs = {"detailed": True,
-                  "on_goal": self.match_event,
-                  "on_red": self.match_event,
-                  "on_status_change": self.match_event,
-                  "on_new_match": self.match_event}
+        kwargs = {
+            "detailed": True,
+            "on_goal": self.match_event,
+            "on_red": self.match_event,
+            "on_status_change": self.match_event,
+            "on_new_match": self.match_event,
+        }
 
         try:
             # Create foorball match object
@@ -291,8 +273,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             del self.flags[old]
 
     def set_refresh_timer(self):
-        self.refresh_timer = self.timeout_add(self.refresh_interval,
-                                              self.refresh)
+        self.refresh_timer = self.timeout_add(self.refresh_interval, self.refresh)
 
     def refresh(self):
         self.qtile.run_in_executor(self._refresh)
@@ -383,11 +364,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         else:
             text = ""
 
-        width, _ = self.drawer.max_layout_size(
-            [text],
-            self.font,
-            self.fontsize
-        )
+        width, _ = self.drawer.max_layout_size([text], self.font, self.fontsize)
 
         return width + 2 * self.margin
 
@@ -404,12 +381,9 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             self.text = ""
 
         # Create a text box
-        layout = self.drawer.textlayout(self.text,
-                                        self.font_colour,
-                                        self.font,
-                                        self.fontsize,
-                                        None,
-                                        wrap=False)
+        layout = self.drawer.textlayout(
+            self.text, self.font_colour, self.font, self.fontsize, None, wrap=False
+        )
 
         # We want to centre this vertically
         y_offset = (self.bar.height - layout.height) / 2
@@ -428,23 +402,17 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
                 if flags.awaygoal:
                     self.draw_goal(False)
 
-                if flags.homered or (self.always_show_red and
-                                     m.home_red_cards):
+                if flags.homered or (self.always_show_red and m.home_red_cards):
                     self.draw_red(True)
 
-                if flags.awayred or (self.always_show_red and
-                                     m.away_red_cards):
+                if flags.awayred or (self.always_show_red and m.away_red_cards):
                     self.draw_red(False)
 
                 if self.underline_status:
                     self.draw_underline(m)
 
         # # Redraw the bar
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def draw_goal(self, home):
         offset = 0 if home else (self.width - 2)
@@ -452,11 +420,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.drawer.set_source_rgb(self.goal_indicator)
 
         # Draw the bar
-        self.drawer.fillrect(offset,
-                             0,
-                             2,
-                             self.height,
-                             2)
+        self.drawer.fillrect(offset, 0, 2, self.height, 2)
 
     def draw_red(self, home):
         offset = 0 if home else (self.width - 2)
@@ -464,11 +428,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.drawer.set_source_rgb(self.red_card_indicator)
 
         # Draw the bar
-        self.drawer.fillrect(offset,
-                             self.height/2,
-                             2,
-                             self.height/2,
-                             2)
+        self.drawer.fillrect(offset, self.height / 2, 2, self.height / 2, 2)
 
     def draw_underline(self, m):
         offset = 2
@@ -489,13 +449,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             self.drawer.set_source_rgb(fill)
 
             # Draw the bar
-            self.drawer.fillrect(
-                offset,
-                self.height - 2,
-                width,
-                2,
-                2
-            )
+            self.drawer.fillrect(offset, self.height - 2, width, 2, 2)
 
     def loop_match_info(self):
         self.set_default_timer()
@@ -518,8 +472,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         if self.default_timer:
             self.default_timer.cancel()
 
-        self.default_timer = self.timeout_add(self.info_timeout,
-                                              self.show_default)
+        self.default_timer = self.timeout_add(self.info_timeout, self.show_default)
 
     def show_default(self):
         # Show first screen
@@ -547,19 +500,12 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         for i, m in enumerate(self.matches):
             matches[i] = str(m)
 
-        return {"name": self.name,
-                "sources": {
-                    "team": str_team,
-                    "teams": str_teams,
-                    "leagues": str_leagues
-                },
-                "objects": {
-                    "team": obj_team,
-                    "teams": obj_teams,
-                    "leagues": obj_leagues
-                },
-                "matches": matches
-                }
+        return {
+            "name": self.name,
+            "sources": {"team": str_team, "teams": str_teams, "leagues": str_leagues},
+            "objects": {"team": obj_team, "teams": obj_teams, "leagues": obj_leagues},
+            "matches": matches,
+        }
 
     def cmd_refresh(self):
         """Force a poll of match data"""
@@ -627,35 +573,33 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         else:
             lines.extend(self._format_matches())
 
-        self.popup = Popup(self.qtile,
-                           width=self.bar.screen.width,
-                           height=self.bar.screen.height,
-                           font=self.popup_font,
-                           horizontal_padding=self.popup_padding,
-                           vertical_padding=self.popup_padding,
-                           opacity=self.popup_opacity)
+        self.popup = Popup(
+            self.qtile,
+            width=self.bar.screen.width,
+            height=self.bar.screen.height,
+            font=self.popup_font,
+            horizontal_padding=self.popup_padding,
+            vertical_padding=self.popup_padding,
+            opacity=self.popup_opacity,
+        )
 
         text = pangocffi.markup_escape_text("\n".join(lines))
 
         self.popup.text = text
 
-        self.popup.height = (self.popup.layout.height +
-                             (2 * self.popup.vertical_padding))
-        self.popup.width = (self.popup.layout.width +
-                            (2 * self.popup.horizontal_padding))
+        self.popup.height = self.popup.layout.height + (2 * self.popup.vertical_padding)
+        self.popup.width = self.popup.layout.width + (2 * self.popup.horizontal_padding)
 
         self.popup.x = min(self.offsetx, self.bar.width - self.popup.width)
 
         if self.bar_on_top:
             self.popup.y = self.bar.height
         else:
-            self.popup.y = (self.bar.screen.height - self.popup.height -
-                            self.bar.height)
+            self.popup.y = self.bar.screen.height - self.popup.height - self.bar.height
 
         self.popup.place()
         self.popup.draw_text()
         self.popup.unhide()
         self.popup.draw()
 
-        self.hide_timer = self.timeout_add(self.popup_display_timeout,
-                                           self.kill_popup)
+        self.hide_timer = self.timeout_add(self.popup_display_timeout, self.kill_popup)

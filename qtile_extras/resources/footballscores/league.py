@@ -28,14 +28,23 @@ API_BASE = "http://push.api.bbci.co.uk"
 
 class League:
 
-    leaguelink = ("/proxy/data/bbc-morph-football-scores-match-list-data/"
-                  "endDate/{end_date}/startDate/{start_date}/"
-                  "tournament/{tournament}/"
-                  "withPlayerActions/{detailed}/"
-                  "version/2.4.0")
+    leaguelink = (
+        "/proxy/data/bbc-morph-football-scores-match-list-data/"
+        "endDate/{end_date}/startDate/{start_date}/"
+        "tournament/{tournament}/"
+        "withPlayerActions/{detailed}/"
+        "version/2.4.0"
+    )
 
-    def __init__(self, league, detailed=False, on_goal=None,
-                 on_red=None, on_status_change=None, on_new_match=None):
+    def __init__(
+        self,
+        league,
+        detailed=False,
+        on_goal=None,
+        on_red=None,
+        on_status_change=None,
+        on_new_match=None,
+    ):
         super(League, self).__init__()
         self.league = league
         self.matches = []
@@ -86,8 +95,7 @@ class League:
         else:
             return dict()
 
-    def _get_scores_fixtures(self, start_date=None, end_date=None,
-                             source=None, detailed=None):
+    def _get_scores_fixtures(self, start_date=None, end_date=None, source=None, detailed=None):
         if start_date is None:
             start_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -100,10 +108,12 @@ class League:
         if detailed is None:
             detailed = self.detailed
 
-        pl = self.leaguelink.format(start_date=start_date,
-                                    end_date=end_date,
-                                    tournament=source,
-                                    detailed=str(detailed).lower())
+        pl = self.leaguelink.format(
+            start_date=start_date,
+            end_date=end_date,
+            tournament=source,
+            detailed=str(detailed).lower(),
+        )
 
         return self._request(pl)
 
@@ -131,13 +141,15 @@ class League:
 
         for m in data:
             home = m["homeTeam"]["name"]["abbreviation"]
-            fmatch = FootballMatch(home,
-                                   data=m,
-                                   detailed=self.detailed,
-                                   on_goal=self.on_goal,
-                                   on_red=self.on_red,
-                                   on_status_change=self.on_status_change,
-                                   on_new_match=self.on_new_match)
+            fmatch = FootballMatch(
+                home,
+                data=m,
+                detailed=self.detailed,
+                on_goal=self.on_goal,
+                on_red=self.on_red,
+                on_status_change=self.on_status_change,
+                on_new_match=self.on_new_match,
+            )
             matches.append(fmatch)
 
         return matches

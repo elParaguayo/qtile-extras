@@ -24,18 +24,17 @@ import libqtile.config
 from libqtile.log_utils import init_log
 
 from qtile_extras import widget
-from qtile_extras.widget.decorations import (BorderDecoration, RectDecoration,
-                                             _Decoration)
+from qtile_extras.widget.decorations import BorderDecoration, RectDecoration, _Decoration
 
 
 def test_single_or_four():
 
     for value, expected in [
         (1, [1, 1, 1, 1]),
-        ((1, ), [1, 1, 1, 1]),
+        ((1,), [1, 1, 1, 1]),
         ((1, 2, 3, 4), [1, 2, 3, 4]),
         ((1, 2, 3), [0, 0, 0, 0]),
-        ("Invalid", [0, 0, 0, 0])
+        ("Invalid", [0, 0, 0, 0]),
     ]:
 
         assert _Decoration().single_or_four(value, "test") == expected
@@ -50,9 +49,7 @@ def test_single_or_four_logging(caplog):
 
         _ = _Decoration().single_or_four(value, "TEST")
 
-        assert caplog.record_tuples == [
-            ("libqtile", logging.INFO, log_message)
-        ]
+        assert caplog.record_tuples == [("libqtile", logging.INFO, log_message)]
 
         caplog.clear()
 
@@ -60,17 +57,9 @@ def test_single_or_four_logging(caplog):
 def test_decorations(manager_nospawn, minimal_conf_noscreen):
     config = minimal_conf_noscreen
     decorated_widget = widget.ScriptExit(
-        decorations=[
-            RectDecoration(),
-            BorderDecoration(),
-            RectDecoration(radius=0, filled=True)
-        ]
+        decorations=[RectDecoration(), BorderDecoration(), RectDecoration(radius=0, filled=True)]
     )
-    config.screens = [
-        libqtile.config.Screen(
-            top=libqtile.bar.Bar([decorated_widget], 10)
-        )
-    ]
+    config.screens = [libqtile.config.Screen(top=libqtile.bar.Bar([decorated_widget], 10))]
 
     manager_nospawn.start(config)
 

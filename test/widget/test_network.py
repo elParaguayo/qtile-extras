@@ -43,8 +43,7 @@ def wifiicon(monkeypatch):
 def wifi_manager(wifiicon):
     class WifiConfig(libqtile.confreader.Config):
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -54,9 +53,7 @@ def wifi_manager(wifiicon):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [
-                        wifiicon()
-                    ],
+                    [wifiicon()],
                     30,
                 ),
             )

@@ -21,13 +21,10 @@ ACTION_GOAL = "goal"
 ACTION_RED_CARD = "red-card"
 ACTION_YELLOW_RED_CARD = "yellow-red-card"
 
-actions = {ACTION_GOAL: "GOAL",
-           ACTION_RED_CARD: "RED CARD",
-           ACTION_YELLOW_RED_CARD: "RED CARD"}
+actions = {ACTION_GOAL: "GOAL", ACTION_RED_CARD: "RED CARD", ACTION_YELLOW_RED_CARD: "RED CARD"}
 
 
 class PlayerAction(object):
-
     def __init__(self, player, action):
 
         if not type(player) == dict:
@@ -51,8 +48,9 @@ class PlayerAction(object):
 
     def __lt__(self, other):
         normal = self._actiontime < other._actiontime
-        added = ((self._actiontime == other._actiontime) and
-                 (self._actionaddedtime < other._actionaddedtime))
+        added = (self._actiontime == other._actiontime) and (
+            self._actionaddedtime < other._actionaddedtime
+        )
         return normal or added
 
     def __eq__(self, other):
@@ -61,10 +59,11 @@ class PlayerAction(object):
         return normal and added
 
     def __repr__(self):
-        return "<{}: {} ({})>".format(actions[self._actiontype],
-                                      self._abbreviatedname.encode("ascii",
-                                                                   "replace"),
-                                      self._actiondisplaytime)
+        return "<{}: {} ({})>".format(
+            actions[self._actiontype],
+            self._abbreviatedname.encode("ascii", "replace"),
+            self._actiondisplaytime,
+        )
 
     @property
     def full_name(self):
@@ -104,8 +103,7 @@ class PlayerAction(object):
 
     @property
     def is_red_card(self):
-        return (self._actiontype == ACTION_RED_CARD or
-                self._actiontype == ACTION_YELLOW_RED_CARD)
+        return self._actiontype == ACTION_RED_CARD or self._actiontype == ACTION_YELLOW_RED_CARD
 
     @property
     def is_straight_red(self):

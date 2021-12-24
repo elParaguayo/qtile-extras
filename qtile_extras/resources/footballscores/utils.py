@@ -23,7 +23,6 @@ ZERO = timedelta(0)
 
 
 class UTC(tzinfo):
-
     def utcoffset(self, dt):
         return ZERO
 

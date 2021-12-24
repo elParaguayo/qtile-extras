@@ -34,10 +34,7 @@ def test_wordclock_language(manager_nospawn, minimal_conf_noscreen, language):
         config = minimal_conf_noscreen
         config.screens = [
             libqtile.config.Screen(
-                top=libqtile.bar.Bar([widget.WordClock(
-                    language=language,
-                    cache=cache
-                )], 10)
+                top=libqtile.bar.Bar([widget.WordClock(language=language, cache=cache)], 10)
             )
         ]
 

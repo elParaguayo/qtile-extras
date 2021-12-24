@@ -44,10 +44,10 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
     on the current status. The widget listens for announced changes to
     the service and updates the icon accordingly.
     """
+
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
-        ("bus_name", "system",
-                     "Which bus to use. Accepts 'system' or 'session'."),
+        ("bus_name", "system", "Which bus to use. Accepts 'system' or 'session'."),
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
         ("foreground", "ffffff", "Font colour"),
@@ -58,21 +58,22 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         ("colour_failed", "ff0000", "Colour for active indicator"),
         ("colour_dead", "666666", "Colour for dead indicator"),
         ("indicator_size", 10, "Size of indicator (None = up to margin)"),
-        ("state_map",
-         {"active": ("colour_active", "colour_active"),
-          "inactive": ("colour_inactive", "colour_inactive"),
-          "deactivating": ("colour_inactive", "colour_active"),
-          "activating": ("colour_active", "colour_inactive"),
-          "failed": ("colour_failed", "colour_failed"),
-          "not-found": ("colour_inactive", "colour_failed"),
-          "dead": ("colour_dead", "colour_dead"),
-          },
-         "Map of indicator colours (border, fill)")
+        (
+            "state_map",
+            {
+                "active": ("colour_active", "colour_active"),
+                "inactive": ("colour_inactive", "colour_inactive"),
+                "deactivating": ("colour_inactive", "colour_active"),
+                "activating": ("colour_active", "colour_inactive"),
+                "failed": ("colour_failed", "colour_failed"),
+                "not-found": ("colour_inactive", "colour_failed"),
+                "dead": ("colour_dead", "colour_dead"),
+            },
+            "Map of indicator colours (border, fill)",
+        ),
     ]
 
-    _screenshots = [
-        ("widget-unitstatus-screenshot.png", "")
-    ]
+    _screenshots = [("widget-unitstatus-screenshot.png", "")]
 
     _dependencies = ["dbus-next"]
 
@@ -100,12 +101,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         base._Widget._configure(self, qtile, bar)
 
         self.layout = self.drawer.textlayout(
-            self.label,
-            self.foreground,
-            self.font,
-            self.fontsize,
-            None,
-            wrap=False
+            self.label, self.foreground, self.font, self.fontsize, None, wrap=False
         )
 
         if self.indicator_size is not None:
@@ -131,12 +127,13 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
     async def _connect_dbus(self):
         self.bus = await MessageBus(bus_type=self.bus_type).connect()
 
-        introspection = await self.bus.introspect("org.freedesktop.systemd1",
-                                                  "/org/freedesktop/systemd1")
+        introspection = await self.bus.introspect(
+            "org.freedesktop.systemd1", "/org/freedesktop/systemd1"
+        )
 
-        object = self.bus.get_proxy_object("org.freedesktop.systemd1",
-                                           "/org/freedesktop/systemd1",
-                                           introspection)
+        object = self.bus.get_proxy_object(
+            "org.freedesktop.systemd1", "/org/freedesktop/systemd1", introspection
+        )
 
         self.manager = object.get_interface("org.freedesktop.systemd1.Manager")
 
@@ -161,15 +158,12 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
             return path
 
     async def _subscribe_unit(self, path):
-        introspection = await self.bus.introspect("org.freedesktop.systemd1",
-                                                  path)
+        introspection = await self.bus.introspect("org.freedesktop.systemd1", path)
 
-        object = self.bus.get_proxy_object("org.freedesktop.systemd1",
-                                           path,
-                                           introspection)
+        object = self.bus.get_proxy_object("org.freedesktop.systemd1", path, introspection)
 
         self.unit = object.get_interface("org.freedesktop.systemd1.Unit")
-        props = object.get_interface('org.freedesktop.DBus.Properties')
+        props = object.get_interface("org.freedesktop.DBus.Properties")
 
         self.state = await self.unit.get_active_state()
 
@@ -185,11 +179,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
             self.draw()
 
     def text_width(self):
-        width, _ = self.drawer.max_layout_size(
-            [self.label],
-            self.font,
-            self.fontsize
-        )
+        width, _ = self.drawer.max_layout_size([self.label], self.font, self.fontsize)
         return width
 
     def calculate_length(self):
@@ -201,23 +191,22 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         self.drawer.clear(self.background or self.bar.background)
 
         self.layout.draw(
-          (self.margin * 2 + self.indicator_size),
-          int(self.bar.height / 2.0 - self.layout.height / 2.0) + 1)
-
-        i_margin = int((self.bar.height - self.indicator_size)/2)
-
-        self.draw_indicator(self.margin,
-                            i_margin,
-                            self.indicator_size,
-                            self.indicator_size,
-                            2,
-                            self.colours[self.state])
-
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.width
+            (self.margin * 2 + self.indicator_size),
+            int(self.bar.height / 2.0 - self.layout.height / 2.0) + 1,
         )
+
+        i_margin = int((self.bar.height - self.indicator_size) / 2)
+
+        self.draw_indicator(
+            self.margin,
+            i_margin,
+            self.indicator_size,
+            self.indicator_size,
+            2,
+            self.colours[self.state],
+        )
+
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
 
     # This is just Drawer's "_rounded_rect" but with a bigger corner radius
     def circle(self, x, y, width, height, linewidth):
@@ -229,14 +218,12 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         self.drawer.ctx.new_sub_path()
 
         delta = radius + linewidth / 2
-        self.drawer.ctx.arc(x + width - delta, y + delta, radius,
-                            -90 * degrees, 0 * degrees)
-        self.drawer.ctx.arc(x + width - delta, y + height - delta,
-                            radius, 0 * degrees, 90 * degrees)
-        self.drawer.ctx.arc(x + delta, y + height - delta, radius,
-                            90 * degrees, 180 * degrees)
-        self.drawer.ctx.arc(x + delta, y + delta, radius,
-                            180 * degrees, 270 * degrees)
+        self.drawer.ctx.arc(x + width - delta, y + delta, radius, -90 * degrees, 0 * degrees)
+        self.drawer.ctx.arc(
+            x + width - delta, y + height - delta, radius, 0 * degrees, 90 * degrees
+        )
+        self.drawer.ctx.arc(x + delta, y + height - delta, radius, 90 * degrees, 180 * degrees)
+        self.drawer.ctx.arc(x + delta, y + delta, radius, 180 * degrees, 270 * degrees)
 
         self.drawer.ctx.close_path()
 

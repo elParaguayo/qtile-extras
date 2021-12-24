@@ -19,8 +19,6 @@
 # SOFTWARE.
 import logging
 from datetime import datetime
-from test.helpers import Retry
-from test.widget.resources import lfs_data
 
 import libqtile.bar
 import libqtile.config
@@ -33,21 +31,23 @@ import qtile_extras.widget.livefootballscores
 from qtile_extras.resources.footballscores import footballmatch, league
 from qtile_extras.resources.footballscores.matchevent import MatchEvent
 from qtile_extras.resources.footballscores.utils import UTC
+from test.helpers import Retry
+from test.widget.resources import lfs_data
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def matches_loaded(manager):
     _, output = manager.c.widget["livefootballscores"].eval("self.matches")
     assert output != "[]"
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def restore_default_screen(manager):
     _, output = manager.c.widget["livefootballscores"].eval("self.screen_index")
     assert int(output) == 0
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def check_timer(manager):
     _, output = manager.c.widget["livefootballscores"].eval("self.refresh_timer")
     assert output == "True"
@@ -73,8 +73,12 @@ class MatchRequest:
 
 @pytest.fixture(scope="function")
 def lfs_match(monkeypatch):
-    monkeypatch.setattr("qtile_extras.resources.footballscores.footballmatch.requests.get", MatchRequest)
-    monkeypatch.setattr("qtile_extras.resources.footballscores.footballmatch.requests.head", MatchRequest)
+    monkeypatch.setattr(
+        "qtile_extras.resources.footballscores.footballmatch.requests.get", MatchRequest
+    )
+    monkeypatch.setattr(
+        "qtile_extras.resources.footballscores.footballmatch.requests.head", MatchRequest
+    )
     yield footballmatch.FootballMatch
 
 
@@ -87,7 +91,9 @@ def lfs_league(monkeypatch):
 @pytest.fixture(scope="function")
 def lfswidget(monkeypatch, lfs_match):
     monkeypatch.setattr("qtile_extras.widget.livefootballscores.FootballMatch", lfs_match)
-    monkeypatch.setattr("qtile_extras.widget.livefootballscores.LiveFootballScores._queue_time", 0)
+    monkeypatch.setattr(
+        "qtile_extras.widget.livefootballscores.LiveFootballScores._queue_time", 0
+    )
     yield qtile_extras.widget.livefootballscores
 
 
@@ -95,8 +101,7 @@ def lfswidget(monkeypatch, lfs_match):
 def lfs_manager(lfswidget):
     class FootieConfig(libqtile.confreader.Config):
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -112,7 +117,8 @@ def lfs_manager(lfswidget):
                             teams=["Liverpool"],
                             leagues=["premier-league"],
                             startup_delay=0,
-                            info_timeout=0.3)
+                            info_timeout=0.3,
+                        )
                     ],
                     50,
                 ),
@@ -188,40 +194,34 @@ def test_widget_info(lfs_manager, manager_nospawn):
     # info() gives us a lot of data!
     info = manager_nospawn.c.widget["livefootballscores"].info()
     assert info == {
-        'matches': {
-            0: 'Chelsea 1-1 Burnley (FT)',
-            1: 'West Ham United 3-2 Liverpool (FT)',
-            2: 'Aston Villa 0-0 Brighton & Hove Albion (15:00)',
-            3: 'Burnley 0-0 Crystal Palace (15:00)',
-            4: 'Newcastle United 0-0 Brentford (15:00)',
-            5: 'Norwich City 0-0 Southampton (15:00)',
-            6: 'Watford 0-0 Manchester United (15:00)',
-            7: 'Wolverhampton Wanderers 0-0 West Ham United (15:00)',
-            8: 'Liverpool 0-0 Arsenal (17:30)'
+        "matches": {
+            0: "Chelsea 1-1 Burnley (FT)",
+            1: "West Ham United 3-2 Liverpool (FT)",
+            2: "Aston Villa 0-0 Brighton & Hove Albion (15:00)",
+            3: "Burnley 0-0 Crystal Palace (15:00)",
+            4: "Newcastle United 0-0 Brentford (15:00)",
+            5: "Norwich City 0-0 Southampton (15:00)",
+            6: "Watford 0-0 Manchester United (15:00)",
+            7: "Wolverhampton Wanderers 0-0 West Ham United (15:00)",
+            8: "Liverpool 0-0 Arsenal (17:30)",
         },
-        'name': 'livefootballscores',
-        'objects': {
-            'leagues': {
-                'premier-league': {
-                    0: 'Aston Villa 0-0 Brighton & Hove Albion (15:00)',
-                    1: 'Burnley 0-0 Crystal Palace (15:00)',
-                    2: 'Newcastle United 0-0 Brentford (15:00)',
-                    3: 'Norwich City 0-0 Southampton (15:00)',
-                    4: 'Watford 0-0 Manchester United (15:00)',
-                    5: 'Wolverhampton Wanderers 0-0 West Ham United (15:00)',
-                    6: 'Liverpool 0-0 Arsenal (17:30)'
+        "name": "livefootballscores",
+        "objects": {
+            "leagues": {
+                "premier-league": {
+                    0: "Aston Villa 0-0 Brighton & Hove Albion (15:00)",
+                    1: "Burnley 0-0 Crystal Palace (15:00)",
+                    2: "Newcastle United 0-0 Brentford (15:00)",
+                    3: "Norwich City 0-0 Southampton (15:00)",
+                    4: "Watford 0-0 Manchester United (15:00)",
+                    5: "Wolverhampton Wanderers 0-0 West Ham United (15:00)",
+                    6: "Liverpool 0-0 Arsenal (17:30)",
                 }
             },
-            'team': 'Chelsea 1-1 Burnley (FT)',
-            'teams': {
-                'Liverpool': 'West Ham United 3-2 Liverpool (FT)'
-            }
+            "team": "Chelsea 1-1 Burnley (FT)",
+            "teams": {"Liverpool": "West Ham United 3-2 Liverpool (FT)"},
         },
-        'sources': {
-            'leagues': 'premier-league',
-            'team': 'Chelsea',
-            'teams': 'Liverpool'
-        }
+        "sources": {"leagues": "premier-league", "team": "Chelsea", "teams": "Liverpool"},
     }
 
 
@@ -240,20 +240,20 @@ def test_widget_popup(lfs_manager, manager_nospawn):
     _, text = manager_nospawn.c.widget["livefootballscores"].eval("self.popup.text")
 
     assert text == (
-        'Premier League\n'
-        '             Chelsea 1-1 Burnley              FT   \n'
-        '\n'
-        'Selected Teams:\n'
-        '     West Ham United 3-2 Liverpool            FT   \n'
-        '\n'
-        'Premier League:\n'
-        '         Aston Villa 0-0 Brighton & Hove Albi 15:00\n'
-        '             Burnley 0-0 Crystal Palace       15:00\n'
-        '    Newcastle United 0-0 Brentford            15:00\n'
-        '        Norwich City 0-0 Southampton          15:00\n'
-        '             Watford 0-0 Manchester United    15:00\n'
-        'Wolverhampton Wander 0-0 West Ham United      15:00\n'
-        '           Liverpool 0-0 Arsenal              17:30'
+        "Premier League\n"
+        "             Chelsea 1-1 Burnley              FT   \n"
+        "\n"
+        "Selected Teams:\n"
+        "     West Ham United 3-2 Liverpool            FT   \n"
+        "\n"
+        "Premier League:\n"
+        "         Aston Villa 0-0 Brighton & Hove Albi 15:00\n"
+        "             Burnley 0-0 Crystal Palace       15:00\n"
+        "    Newcastle United 0-0 Brentford            15:00\n"
+        "        Norwich City 0-0 Southampton          15:00\n"
+        "             Watford 0-0 Manchester United    15:00\n"
+        "Wolverhampton Wander 0-0 West Ham United      15:00\n"
+        "           Liverpool 0-0 Arsenal              17:30"
     )
 
     manager_nospawn.c.widget["livefootballscores"].popup()
@@ -293,8 +293,7 @@ def test_footballmatch_module_equality(lfs_match):
 def test_footballmatch_module_inequality(lfs_match, monkeypatch):
     """Inequality scenarios"""
     monkeypatch.setattr(
-        "qtile_extras.resources.footballscores.FootballMatch._find_team_page",
-        lambda _: False
+        "qtile_extras.resources.footballscores.FootballMatch._find_team_page", lambda _: False
     )
 
     # Scenario 1: inequality if there's no match ID and myteam is not the same
@@ -323,8 +322,7 @@ def test_footballmatch_module_scanleagues(lfs_match, monkeypatch):
 
     # Pretend we can't find a team page to force scanning
     monkeypatch.setattr(
-        "qtile_extras.resources.footballscores.FootballMatch._find_team_page",
-        lambda _: False
+        "qtile_extras.resources.footballscores.FootballMatch._find_team_page", lambda _: False
     )
     sth = lfs_match("Southampton")
 
@@ -334,17 +332,12 @@ def test_footballmatch_module_scanleagues(lfs_match, monkeypatch):
 
 def test_footballmatch_module_no_matchdata(lfs_match, monkeypatch):
     """Check output when no match."""
+
     def no_match(*args, **kwargs):
-        return {
-            "fixtureListMeta": {
-                "scorersButtonShouldBeEnabled": False
-            },
-            "matchData": []
-        }
+        return {"fixtureListMeta": {"scorersButtonShouldBeEnabled": False}, "matchData": []}
 
     monkeypatch.setattr(
-        "qtile_extras.resources.footballscores.FootballMatch._get_scores_fixtures",
-        no_match
+        "qtile_extras.resources.footballscores.FootballMatch._get_scores_fixtures", no_match
     )
     che = lfs_match("Chelsea")
     assert str(che) == "Chelsea are not playing today."
@@ -361,19 +354,16 @@ def test_footballmatch_module_kickoff_time(lfs_match, monkeypatch):
 
     # Mock datetime to show time being 13:45
     class MockDatetime(datetime):
-
         @classmethod
         def now(cls, *args, **kwargs):
             return cls(2021, 11, 6, 13, 45, 0, tzinfo=UTC())
 
     # Force match to show as a fixture
     monkeypatch.setattr(
-        "qtile_extras.resources.footballscores.FootballMatch.is_fixture",
-        lambda _: True
+        "qtile_extras.resources.footballscores.FootballMatch.is_fixture", lambda _: True
     )
     monkeypatch.setattr(
-        "qtile_extras.resources.footballscores.footballmatch.datetime",
-        MockDatetime
+        "qtile_extras.resources.footballscores.footballmatch.datetime", MockDatetime
     )
     che = lfs_match("Chelsea")
 

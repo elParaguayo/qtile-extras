@@ -17,10 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from qtile_extras.resources.footballscores.exceptions import \
-    FSConnectionError  # noqa: F401
-from qtile_extras.resources.footballscores.footballmatch import \
-    FootballMatch  # noqa: F401
+from qtile_extras.resources.footballscores.exceptions import FSConnectionError  # noqa: F401
+from qtile_extras.resources.footballscores.footballmatch import FootballMatch  # noqa: F401
 from qtile_extras.resources.footballscores.league import League  # noqa: F401
 
 VERSION = "0.4.0"

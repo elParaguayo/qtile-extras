@@ -36,7 +36,7 @@ class ScriptExit(QuickExit):
     """
 
     defaults = [
-        ('exit_script', '', 'Script to run on exit.'),
+        ("exit_script", "", "Script to run on exit."),
     ]
 
     def __init__(self, **config):

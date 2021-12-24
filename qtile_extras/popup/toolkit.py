@@ -60,14 +60,14 @@ class _PopupLayout(configurable.Configurable):
                 "down": ["Down", "k"],
                 "select": ["Return", "space"],
                 "step": ["Tab"],
-                "close": ["Escape"]
+                "close": ["Escape"],
             },
             "Keyboard controls. NB Navigation logic is very rudimentary. The popup will try "
             "to select the nearest control in the direction pressed but some controls may be "
-            "inaccessible. In that scenario, use the mouse or `Tab` to cycle through controls."
+            "inaccessible. In that scenario, use the mouse or `Tab` to cycle through controls.",
         ),
         ("keyboard_navigation", True, "Whether popup controls can be navigated by keys"),
-        ("initial_focus", 0, "Index of control to be focused at startup.")
+        ("initial_focus", 0, "Index of control to be focused at startup."),
     ]
 
     def __init__(self, qtile, **config):
@@ -106,11 +106,13 @@ class _PopupLayout(configurable.Configurable):
         We also attach handlers for mouse events so that these can be passed to
         the relevant controls.
         """
-        self.popup = Popup(self.qtile,
-                           width=self.width,
-                           height=self.height,
-                           background=self.background,
-                           opacity=self.opacity)
+        self.popup = Popup(
+            self.qtile,
+            width=self.width,
+            height=self.height,
+            background=self.background,
+            opacity=self.opacity,
+        )
 
         self.popup.win.info = self.info
 
@@ -171,8 +173,7 @@ class _PopupLayout(configurable.Configurable):
 
         if warp_pointer:
             self.qtile.core.warp_pointer(
-                self.popup.x + self.popup.width // 2,
-                self.popup.y + self.popup.height // 2
+                self.popup.x + self.popup.width // 2, self.popup.y + self.popup.height // 2
             )
 
         if self.keyboard_navigation:
@@ -213,22 +214,14 @@ class _PopupLayout(configurable.Configurable):
     def process_button_click(self, x, y, button):  # noqa: N802
         control = self.get_control_in_position(x, y)
         if control:
-            control.button_press(
-                x - control.offsetx,
-                y - control.offsety,
-                button
-            )
+            control.button_press(x - control.offsetx, y - control.offsety, button)
         if self.close_on_click:
             self.kill()
 
     def process_button_release(self, x, y, button):  # noqa: N802
         control = self.get_control_in_position(x, y)
         if control:
-            control.button_release(
-                x - control.offsetx,
-                y - control.offsety,
-                button
-            )
+            control.button_release(x - control.offsetx, y - control.offsety, button)
 
     def process_pointer_enter(self, x, y):  # noqa: N802
         control = self.get_control_in_position(x, y)
@@ -345,9 +338,7 @@ class _PopupLayout(configurable.Configurable):
             "y": self.popup.y,
             "width": self.popup.width,
             "height": self.popup.height,
-            "controls": [
-                control.info() for control in self.controls
-            ]
+            "controls": [control.info() for control in self.controls],
         }
 
 
@@ -393,10 +384,8 @@ class PopupGridLayout(_PopupLayout):
 
     row and col are both zero-indexed.
     """
-    defaults = [
-        ("rows", 2, "Number of rows in grid"),
-        ("cols", 2, "Number of columns in grid")
-    ]
+
+    defaults = [("rows", 2, "Number of rows in grid"), ("cols", 2, "Number of columns in grid")]
 
     def __init__(self, qtile, **config):
         _PopupLayout.__init__(self, qtile, **config)
@@ -448,7 +437,6 @@ class PopupRelativeLayout(_PopupLayout):
     """
 
     def _place_control(self, control):
-
         def is_relative(val):
             """
             Relative layout positions controls based on percentage of
@@ -457,13 +445,16 @@ class PopupRelativeLayout(_PopupLayout):
             return 0 <= val <= 1
 
         if not control.placed:
-            if not all([is_relative(x) for x in [control.pos_x,
-                                                 control.pos_y,
-                                                 control.width,
-                                                 control.height]
-                        ]):
-                logger.warning("Control {} using non relative dimensions "
-                               "in Relative layout".format(control))
+            if not all(
+                [
+                    is_relative(x)
+                    for x in [control.pos_x, control.pos_y, control.width, control.height]
+                ]
+            ):
+                logger.warning(
+                    "Control {} using non relative dimensions "
+                    "in Relative layout".format(control)
+                )
 
             control.offsetx = int(self._width * control.pos_x) + self.margin
             control.offsety = int(self._height * control.pos_y) + self.margin
@@ -487,6 +478,7 @@ class PopupAbsoluteLayout(_PopupLayout):
     Note: the layout currently ignores the ``margin`` attribute i.e. a control
     placed at (0,0) will display there even if a margin is defined.
     """
+
     def _place_control(self, control):
         if not control.placed:
             control.offsetx = control.pos_x
@@ -513,16 +505,24 @@ class _PopupWidget(configurable.Configurable):
         ("col_span", 1, "Number of columns covered by control"),
         ("background", None, "Background colour for control"),
         ("highlight", "#006666", "Highlight colour"),
-        ("highlight_method", "block", "How to highlight focused control. Options are 'border' and 'block'."),
+        (
+            "highlight_method",
+            "block",
+            "How to highlight focused control. Options are 'border' and 'block'.",
+        ),
         ("highlight_border", 2, "Border width for focused controls"),
         (
             "can_focus",
             "auto",
             "Whether or not control can be focussed. Focussed control will be "
             "highlighted if `highlight` attribute is set. Possible value are: "
-            "True, False or 'auto' (which sets to True if a 'Button1' mouse_callback is set)."
+            "True, False or 'auto' (which sets to True if a 'Button1' mouse_callback is set).",
         ),
-        ("mouse_callbacks", {}, "Dict of mouse button press callback functions. Accepts lazy objects.")
+        (
+            "mouse_callbacks",
+            {},
+            "Dict of mouse button press callback functions. Accepts lazy objects.",
+        ),
     ]
 
     offsetx = None
@@ -564,7 +564,7 @@ class _PopupWidget(configurable.Configurable):
             offset,
             self.width - offset,
             self.height - offset,
-            linewidth=self.highlight_border
+            linewidth=self.highlight_border,
         )
         self.drawer.ctx.restore()
 
@@ -598,15 +598,17 @@ class _PopupWidget(configurable.Configurable):
 
     def mouse_in_control(self, x, y):
         """Checks whether the point (x, y) is inside the control."""
-        return all([
-            x >= self.offsetx,
-            x < self.width + self.offsetx,
-            y >= self.offsety,
-            y < self.height + self.offsety
-        ])
+        return all(
+            [
+                x >= self.offsetx,
+                x < self.width + self.offsetx,
+                y >= self.offsety,
+                y < self.height + self.offsety,
+            ]
+        )
 
     def button_press(self, x, y, button):
-        name = 'Button{0}'.format(button)
+        name = "Button{0}".format(button)
         if name in self.mouse_callbacks:
             cmd = self.mouse_callbacks[name]
             if isinstance(cmd, LazyCall):
@@ -695,9 +697,9 @@ class PopupText(_PopupWidget):
         ("fontsize", 12, "Font size"),
         ("foreground", "#ffffff", "Font colour"),
         ("highlight_method", "block", "Available options: 'border', 'block' or 'text'."),
-        ('h_align', 'left', 'Text alignment: left, center or right.'),
-        ('v_align', 'middle', 'Vertical alignment: top, middle or bottom.'),
-        ("wrap", False, "Wrap text in layout")
+        ("h_align", "left", "Text alignment: left, center or right."),
+        ("v_align", "middle", "Vertical alignment: top, middle or bottom."),
+        ("wrap", False, "Wrap text in layout"),
     ]
 
     def __init__(self, text="", **config):
@@ -714,7 +716,7 @@ class PopupText(_PopupWidget):
             self.fontsize,
             None,
             markup=False,
-            wrap=self.wrap
+            wrap=self.wrap,
         )
         self.layout.layout.set_alignment(pangocffi.ALIGNMENTS[self.h_align])
         self.layout.width = self.width
@@ -768,7 +770,7 @@ class PopupSlider(_PopupWidget):
         ("bar_size", 2, "Thickness of bar"),
         ("marker_size", 10, "Size of marker"),
         ("marker_colour", "#bbbbbb", "Colour of marker"),
-        ("end_margin", 5, "Gap between edge of control and ends of bar")
+        ("end_margin", 5, "Gap between edge of control and ends of bar"),
     ]
 
     def __init__(self, value=None, **config):
@@ -796,7 +798,7 @@ class PopupSlider(_PopupWidget):
 
         if not self.horizontal:
             ctx.rotate(-90 * math.pi / 180.0)
-            ctx.translate(- self.length, 0)
+            ctx.translate(-self.length, 0)
 
         ctx.translate(self.end_margin, offset)
 
@@ -816,11 +818,7 @@ class PopupSlider(_PopupWidget):
 
         if self.marker_size:
             self.drawer.set_source_rgb(self.marker_colour)
-            ctx.arc(self.bar_length * self.percentage,
-                    0,
-                    self.marker_size / 2,
-                    0,
-                    math.pi * 2)
+            ctx.arc(self.bar_length * self.percentage, 0, self.marker_size / 2, 0, math.pi * 2)
             ctx.fill()
 
         ctx.restore()
@@ -873,7 +871,7 @@ class PopupImage(_PopupWidget):
             "block",
             "How to highlight focused control. Options are 'border', 'block' and 'mask'. "
             "'mask' is experimental and will replace the image with the 'highlight' colour "
-            "masked by the image. Works best with solid icons on a transparent background."
+            "masked by the image. Works best with solid icons on a transparent background.",
         ),
     ]
 
@@ -906,8 +904,9 @@ class PopupImage(_PopupWidget):
         if self.highlight_method == "mask" and self._highlight:
             return
         self.drawer.ctx.save()
-        self.drawer.ctx.translate(int((self.width-self.img.width) / 2),
-                                  int((self.height - self.img.height) / 2))
+        self.drawer.ctx.translate(
+            int((self.width - self.img.width) / 2), int((self.height - self.img.height) / 2)
+        )
         self.drawer.ctx.set_source(self.img.pattern)
         self.drawer.ctx.paint()
         self.drawer.ctx.restore()

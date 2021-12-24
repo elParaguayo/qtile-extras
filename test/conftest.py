@@ -22,18 +22,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from test.helpers import BareConfig, TestManager  # noqa: I001
-
 import libqtile.bar  # noqa: I003
 import libqtile.config
 import pytest
 from libqtile.backend import base
 
+from test.helpers import BareConfig, TestManager
+
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--debuglog", action="store_true", default=False, help="enable debug output"
-    )
+    parser.addoption("--debuglog", action="store_true", default=False, help="enable debug output")
     parser.addoption(
         "--backend",
         action="append",
@@ -99,9 +97,11 @@ def wayland_session(request, outputs):
 def backend(request, backend_name, xephyr, wayland_session):
     if backend_name == "x11":
         from test.backend.x11.conftest import XBackend
+
         yield XBackend({"DISPLAY": xephyr.display}, args=[xephyr.display])
     elif backend_name == "wayland":
         from test.backend.wayland.conftest import WaylandBackend
+
         yield WaylandBackend(wayland_session)
 
 
@@ -124,9 +124,11 @@ def fake_window():
     """
     A fake window that can provide a fake drawer to test widgets.
     """
+
     class FakeWindow:
         class _NestedWindow:
             wid = 10
+
         window = _NestedWindow()
 
         def create_drawer(self, width, height):
@@ -139,7 +141,7 @@ def fake_window():
 # When used in a test, the function needs to receive a list of screens
 # (including bar and widgets) as an argument. This config can then be
 # passed to the manager to start.
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def minimal_conf_noscreen():
     class MinimalConf(libqtile.confreader.Config):
         auto_fullscreen = False

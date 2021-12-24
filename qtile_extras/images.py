@@ -36,6 +36,7 @@ class ImgMask(Img):
     Colour can be set at the moment of drawing, rather than preparing images in
     advance.
     """
+
     def __init__(self, *args, drawer: Optional[Drawer] = None, **kwargs):
         self.drawer = drawer
         Img.__init__(self, *args, **kwargs)
@@ -61,6 +62,7 @@ class Loader(QtileLoader):
     Same as libqtile.images.Loader but takes an optional parameter,
     ``masked``, to determine whether to use ``ImgMask`` class.
     """
+
     def __init__(self, *directories, masked=True, **kwargs):
         self.img_class = ImgMask if masked else Img
         QtileLoader.__init__(self, *directories, **kwargs)
@@ -74,7 +76,7 @@ class Loader(QtileLoader):
             if ext:
                 set_names.add(n)
             else:
-                set_names.add(n + '.*')
+                set_names.add(n + ".*")
 
         for directory in self.directories:
             d_matches = scan_files(directory, *(set_names - seen))

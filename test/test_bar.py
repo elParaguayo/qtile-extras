@@ -37,7 +37,7 @@ class GeomConf(libqtile.confreader.Config):
         libqtile.config.Group("a"),
         libqtile.config.Group("b"),
         libqtile.config.Group("c"),
-        libqtile.config.Group("d")
+        libqtile.config.Group("d"),
     ]
     layouts = [libqtile.layout.stack.Stack(num_stacks=1)]
     floating_layout = libqtile.resources.default_config.floating_layout

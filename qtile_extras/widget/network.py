@@ -37,6 +37,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
     """
     An simple graphical widget that shows WiFi status.
     """
+
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
         ("font", "sans", "Default font"),
@@ -46,12 +47,16 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         ("update_interval", 1, "Polling interval in secs."),
         ("wifi_arc", 75, "Width of arc in degrees."),
         ("interface", "wlan0", "Name of wifi interface."),
-        ("expanded_timeout", 5, "Time in secs for expanded information to display when clicking on icon.")
+        (
+            "expanded_timeout",
+            5,
+            "Time in secs for expanded information to display when clicking on icon.",
+        ),
     ]
 
     _screenshots = [
         ("wifi_simple.png", ""),
-        ("wifi_expanded.png", "Additional detail is visible when clicking on icon")
+        ("wifi_expanded.png", "Additional detail is visible when clicking on icon"),
     ]
 
     _dependencies = ["iwlib"]
@@ -101,30 +106,26 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         self.drawer.ctx.new_sub_path()
 
-        self.drawer.ctx.move_to(
-            self.padding_x + x_offset,
-            self.padding_y + self.wifi_height
-        )
+        self.drawer.ctx.move_to(self.padding_x + x_offset, self.padding_y + self.wifi_height)
         self.drawer.ctx.arc(
             offset + x_offset,
             self.padding_y + self.wifi_height,
             self.wifi_height,
             to_rads(270 - half_arc),
-            to_rads(270 + half_arc)
+            to_rads(270 + half_arc),
         )
         self.drawer.set_source_rgb(self.inactive_colour)
         self.drawer.ctx.fill()
 
         self.drawer.ctx.new_sub_path()
-        self.drawer.ctx.move_to(
+        self.drawer.ctx.move_to(offset + x_offset, self.padding_y + self.wifi_height)
+        self.drawer.ctx.arc(
             offset + x_offset,
-            self.padding_y + self.wifi_height
+            self.padding_y + self.wifi_height,
+            self.wifi_height * percentage,
+            to_rads(270 - half_arc),
+            to_rads(270 + half_arc),
         )
-        self.drawer.ctx.arc(offset+x_offset,
-                            self.padding_y + self.wifi_height,
-                            self.wifi_height * percentage,
-                            to_rads(270 - half_arc),
-                            to_rads(270 + half_arc))
         self.drawer.set_source_rgb(self.active_colour)
         self.drawer.ctx.fill()
 
@@ -140,11 +141,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         self.drawer.clear(self.background or self.bar.background)
         self.draw_wifi(self.percent)
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def set_sizes(self):
         self.wifi_height = self.bar.height - (self.padding_y * 2)
@@ -158,21 +155,13 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         text = f"{self.essid} ({self.percent * 100:.0f}%)"
 
         if size_only:
-            width, _ = self.drawer.max_layout_size(
-                [text],
-                self.font,
-                self.fontsize
-            )
+            width, _ = self.drawer.max_layout_size([text], self.font, self.fontsize)
             return width
 
         else:
             layout = self.drawer.textlayout(
-                text,
-                "ffffff",
-                self.font,
-                self.fontsize,
-                None,
-                wrap=False)
+                text, "ffffff", self.font, self.fontsize, None, wrap=False
+            )
             return layout
 
     def calculate_length(self):
@@ -185,8 +174,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         width += self.wifi_width
         if self.show_text:
-            width += (self.padding_x +
-                      self.get_wifi_text(size_only=True))
+            width += self.padding_x + self.get_wifi_text(size_only=True)
 
         width += self.padding_x
 

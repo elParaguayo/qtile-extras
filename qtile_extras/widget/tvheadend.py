@@ -38,7 +38,6 @@ def icon_path():
 
 
 class TVHJobServer:
-
     def __init__(self, host=None, auth=None, timeout=5):
         self.host = host
         self.auth = auth
@@ -47,29 +46,28 @@ class TVHJobServer:
     def _send_api_request(self, path, args=None):
         url = self.host + path
 
-        r = requests.post(url,
-                          data=args,
-                          auth=self.auth,
-                          timeout=self.timeout)
+        r = requests.post(url, data=args, auth=self.auth, timeout=self.timeout)
         return r.json(strict=False)
 
     def _tidy_prog(self, prog, uuid=None):
 
         x = prog
 
-        return {"subtitle": x["disp_subtitle"],
-                "title": x["disp_title"],
-                "start_epoch": x["start"],
-                "stop_epoch": x["stop"],
-                "start": datetime.fromtimestamp(x["start"]),
-                "stop": datetime.fromtimestamp(x["stop"]),
-                "filename": x["filename"],
-                "basename": os.path.basename(x["filename"]),
-                "creator": x["creator"],
-                "channelname": x["channelname"],
-                "error": x["errorcode"],
-                "uuid": uuid if uuid else x["uuid"],
-                "duplicate": x.get("duplicate", 0) > 0}
+        return {
+            "subtitle": x["disp_subtitle"],
+            "title": x["disp_title"],
+            "start_epoch": x["start"],
+            "stop_epoch": x["stop"],
+            "start": datetime.fromtimestamp(x["start"]),
+            "stop": datetime.fromtimestamp(x["stop"]),
+            "filename": x["filename"],
+            "basename": os.path.basename(x["filename"]),
+            "creator": x["creator"],
+            "channelname": x["channelname"],
+            "error": x["errorcode"],
+            "uuid": uuid if uuid else x["uuid"],
+            "duplicate": x.get("duplicate", 0) > 0,
+        }
 
     def get_upcoming(self, path, hide_duplicates=True):
         programmes = self._send_api_request(path)
@@ -97,83 +95,39 @@ class TVHWidget(base._Widget, base.MarginMixin):
 
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
-        (
-            "refresh_interval",
-            30,
-            "Time to update data"
-        ),
-        (
-            "startup_delay",
-            5,
-            "Time before sending first web request"
-        ),
-        (
-            "host",
-            "http://localhost:9981/api",
-            "TVHeadend server address"
-        ),
+        ("refresh_interval", 30, "Time to update data"),
+        ("startup_delay", 5, "Time before sending first web request"),
+        ("host", "http://localhost:9981/api", "TVHeadend server address"),
         (
             "auth",
             None,
-            "Auth details for accessing tvh. "
-            "Can be None, tuple of (username, password)."
+            "Auth details for accessing tvh. " "Can be None, tuple of (username, password).",
         ),
-        (
-            "tvh_timeout",
-            5,
-            "Seconds before timeout for timeout request"
-        ),
+        ("tvh_timeout", 5, "Seconds before timeout for timeout request"),
         (
             "hide_duplicates",
             True,
-            "Remove duplicate recordings from list of upcoming recordings."
+            "Remove duplicate recordings from list of upcoming recordings.",
         ),
-        (
-            "popup_format",
-            "{start:%a %d %b %H:%M}: {title:.40}",
-            "Upcoming recording text."
-        ),
+        ("popup_format", "{start:%a %d %b %H:%M}: {title:.40}", "Upcoming recording text."),
         (
             "popup_font",
             "monospace",
-            "Font to use for displaying upcoming recordings. A monospace font "
-            "is recommended"
+            "Font to use for displaying upcoming recordings. A monospace font " "is recommended",
         ),
-        (
-            "popup_opacity",
-            0.8,
-            "Opacity for popup window."
-        ),
-        (
-            "popup_padding",
-            10,
-            "Padding for popup window."
-        ),
-        (
-            "popup_display_timeout",
-            10,
-            "Seconds to show recordings."
-        ),
-        (
-            "warning_colour",
-            "aaaa00",
-            "Highlight when there is an error."
-        ),
-        (
-            "recording_colour",
-            "bb0000",
-            "Highlight when TVHeadend is recording"
-        ),
+        ("popup_opacity", 0.8, "Opacity for popup window."),
+        ("popup_padding", 10, "Padding for popup window."),
+        ("popup_display_timeout", 10, "Seconds to show recordings."),
+        ("warning_colour", "aaaa00", "Highlight when there is an error."),
+        ("recording_colour", "bb0000", "Highlight when TVHeadend is recording"),
         (
             "upcoming_recordings_path",
             "/dvr/entry/grid_upcoming",
-            "API point for retrieving data on upcoming recordings."
-        )
+            "API point for retrieving data on upcoming recordings.",
+        ),
     ]
 
-    _screenshots = [
-        ("tvh_widget.gif", "")
-    ]
+    _screenshots = [("tvh_widget.gif", "")]
 
     _dependencies = ["requests"]
 
@@ -194,16 +148,15 @@ class TVHWidget(base._Widget, base.MarginMixin):
         if type(self.auth) == tuple:
             self.auth = HTTPBasicAuth(*self.auth)
 
-        self.tvh = TVHJobServer(host=self.host,
-                                auth=self.auth,
-                                timeout=self.tvh_timeout)
+        self.tvh = TVHJobServer(host=self.host, auth=self.auth, timeout=self.tvh_timeout)
 
         self.timeout_add(self.startup_delay, self.refresh)
 
     def _get_data(self, queue=None):
         try:
-            data = self.tvh.get_upcoming(path=self.upcoming_recordings_path,
-                                         hide_duplicates=self.hide_duplicates)
+            data = self.tvh.get_upcoming(
+                path=self.upcoming_recordings_path, hide_duplicates=self.hide_duplicates
+            )
 
         except (requests.exceptions.Timeout, requests.ConnectionError):
             logger.info("Couldn't connect to TVH server")
@@ -218,7 +171,9 @@ class TVHWidget(base._Widget, base.MarginMixin):
         self.timeout_add(self.refresh_interval, self.refresh)
 
     def setup_images(self):
-        d_images = images.Loader(icon_path())("icon",)
+        d_images = images.Loader(icon_path())(
+            "icon",
+        )
 
         for name, img in d_images.items():
             new_height = self.bar.height - 1
@@ -240,11 +195,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         y = 0 if top else self.bar.height - 2
 
         # Draw the bar
-        self.drawer.fillrect(0,
-                             y,
-                             self.width,
-                             2,
-                             2)
+        self.drawer.fillrect(0, y, self.width, 2, 2)
 
     def draw(self):
         # Remove background
@@ -259,11 +210,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         elif self.is_recording:
             self.draw_highlight(top=False, colour=self.recording_colour)
 
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     @property
     def is_recording(self):
@@ -308,38 +255,36 @@ class TVHWidget(base._Widget, base.MarginMixin):
             for rec in self.data:
                 lines.append(self.popup_format.format(**rec))
 
-        self.popup = Popup(self.qtile,
-                           width=self.bar.screen.width,
-                           height=self.bar.screen.height,
-                           font=self.popup_font,
-                           horizontal_padding=self.popup_padding,
-                           vertical_padding=self.popup_padding,
-                           opacity=self.popup_opacity)
+        self.popup = Popup(
+            self.qtile,
+            width=self.bar.screen.width,
+            height=self.bar.screen.height,
+            font=self.popup_font,
+            horizontal_padding=self.popup_padding,
+            vertical_padding=self.popup_padding,
+            opacity=self.popup_opacity,
+        )
 
         text = pangocffi.markup_escape_text("\n".join(lines))
 
         self.popup.text = text
 
-        self.popup.height = (self.popup.layout.height +
-                             (2 * self.popup.vertical_padding))
-        self.popup.width = (self.popup.layout.width +
-                            (2 * self.popup.horizontal_padding))
+        self.popup.height = self.popup.layout.height + (2 * self.popup.vertical_padding)
+        self.popup.width = self.popup.layout.width + (2 * self.popup.horizontal_padding)
 
         self.popup.x = min(self.offsetx, self.bar.width - self.popup.width)
 
         if self.bar_on_top:
             self.popup.y = self.bar.height
         else:
-            self.popup.y = (self.bar.screen.height - self.popup.height -
-                            self.bar.height)
+            self.popup.y = self.bar.screen.height - self.popup.height - self.bar.height
 
         self.popup.place()
         self.popup.draw_text()
         self.popup.unhide()
         self.popup.draw()
 
-        self.hide_timer = self.timeout_add(self.popup_display_timeout,
-                                           self.kill_popup)
+        self.hide_timer = self.timeout_add(self.popup_display_timeout, self.kill_popup)
 
     def info(self):
         info = base._Widget.info(self)

@@ -51,7 +51,7 @@ async def patched_signal_receiver(callback, **kwargs):
             path="/org/freedesktop/DBus",
             member="AddMatch",
             signature="s",
-            body=["type='signal',path='/org/freedesktop/UPower'"]
+            body=["type='signal',path='/org/freedesktop/UPower'"],
         )
     )
 
@@ -62,7 +62,7 @@ async def patched_signal_receiver(callback, **kwargs):
     assert False
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def widget_hidden(widget):
     """Waits for widget to hide text."""
     assert widget.info()["width"] == 0
@@ -88,13 +88,15 @@ def bright_manager(request, manager_nospawn, brightdevice, monkeypatch):
     tuple that will initiate a datetime object to be parsed for
     datetime.now.
     """
-    monkeypatch.setattr("qtile_extras.widget.brightnesscontrol.add_signal_receiver", patched_signal_receiver)
+    monkeypatch.setattr(
+        "qtile_extras.widget.brightnesscontrol.add_signal_receiver", patched_signal_receiver
+    )
 
     class BrightConfig(libqtile.confreader.Config):
         """Config for the test."""
+
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -106,8 +108,7 @@ def bright_manager(request, manager_nospawn, brightdevice, monkeypatch):
                 top=libqtile.bar.Bar(
                     [
                         qtile_extras.widget.brightnesscontrol.BrightnessControl(
-                            device=brightdevice,
-                            **getattr(request, "param", dict())
+                            device=brightdevice, **getattr(request, "param", dict())
                         )
                     ],
                     50,
@@ -153,7 +154,9 @@ def test_brightness_defaults(bright_manager):
     assert info["brightness"] == 450
 
 
-@pytest.mark.parametrize("bright_manager", [{"max_brightness": 800, "min_brightness": 200}], indirect=True)
+@pytest.mark.parametrize(
+    "bright_manager", [{"max_brightness": 800, "min_brightness": 200}], indirect=True
+)
 def test_brightness_limits(bright_manager):
     """Check brightness is limited to defined values."""
     widget = bright_manager.c.widget["brightnesscontrol"]
@@ -192,7 +195,9 @@ def test_brightness_restrict_max_brightness(bright_manager):
     assert info["brightness"] == info["max_brightness"]
 
 
-@pytest.mark.parametrize("bright_manager", [{"max_brightness": 800, "max_brightness_path": None}], indirect=True)
+@pytest.mark.parametrize(
+    "bright_manager", [{"max_brightness": 800, "max_brightness_path": None}], indirect=True
+)
 def test_brightness_restrict_no_max_brightness_path(bright_manager):
     """Check max brightness is limited to defined value when no system value."""
     widget = bright_manager.c.widget["brightnesscontrol"]
@@ -208,7 +213,9 @@ def test_brightness_restrict_no_max_brightness_path(bright_manager):
     assert info["brightness"] == info["max_brightness"]
 
 
-@pytest.mark.parametrize("bright_manager", [{"max_brightness": None, "max_brightness_path": None}], indirect=True)
+@pytest.mark.parametrize(
+    "bright_manager", [{"max_brightness": None, "max_brightness_path": None}], indirect=True
+)
 def test_brightness_restrict_no_max_brightness_default(bright_manager):
     """Check max brightness is set to default when no defined values."""
     widget = bright_manager.c.widget["brightnesscontrol"]
@@ -225,19 +232,24 @@ def test_brightness_restrict_no_max_brightness_default(bright_manager):
 
 
 @upower_dbus_service
-@pytest.mark.parametrize("bright_manager", [{"enable_power_saving": True, "brightness_on_battery": 450}], indirect=True)
+@pytest.mark.parametrize(
+    "bright_manager", [{"enable_power_saving": True, "brightness_on_battery": 450}], indirect=True
+)
 def test_brightness_power_saving(bright_manager):
     """Check widget responds to power events."""
+
     def toggle_power():
         dbussend = shutil.which("dbus-send")
-        subprocess.run([
-            dbussend,
-            f"--bus={os.environ['DBUS_SESSION_BUS_ADDRESS']}",
-            "--type=method_call",
-            "--dest=test.qtileextras.upower",
-            "/org/freedesktop/UPower",
-            "org.freedesktop.UPower.toggle_charge"
-        ])
+        subprocess.run(
+            [
+                dbussend,
+                f"--bus={os.environ['DBUS_SESSION_BUS_ADDRESS']}",
+                "--type=method_call",
+                "--dest=test.qtileextras.upower",
+                "/org/freedesktop/UPower",
+                "org.freedesktop.UPower.toggle_charge",
+            ]
+        )
 
     widget = bright_manager.c.widget["brightnesscontrol"]
 
@@ -266,9 +278,7 @@ def test_brightness_logging_no_max(caplog):
             f.write(str(500))
 
         _ = qtile_extras.widget.BrightnessControl(
-            max_brightness_path=None,
-            max_brightness=None,
-            device=tempdir
+            max_brightness_path=None, max_brightness=None, device=tempdir
         )
 
     assert caplog.record_tuples == [
@@ -277,7 +287,7 @@ def test_brightness_logging_no_max(caplog):
             logging.WARNING,
             "No maximum brightness defined. "
             "Setting to default value of 500. "
-            "The script may behave unexpectedly."
+            "The script may behave unexpectedly.",
         )
     ]
 
@@ -294,7 +304,7 @@ def test_brightness_logging_power_saving(caplog):
             max_brightness=100,
             brightness_on_battery="100",
             brightness_on_mains="ten%",
-            device=tempdir
+            device=tempdir,
         )
 
     # No log here as we're not tracking this property
@@ -304,11 +314,7 @@ def test_brightness_logging_power_saving(caplog):
     # on_battery value is a string
     widget.update(0, {"OnBattery": Variant("b", True)}, 0)
     assert caplog.record_tuples == [
-        (
-            "libqtile",
-            logging.WARNING,
-            "Unrecognised value for brightness: 100"
-        )
+        ("libqtile", logging.WARNING, "Unrecognised value for brightness: 100")
     ]
 
     caplog.clear()
@@ -317,11 +323,7 @@ def test_brightness_logging_power_saving(caplog):
     widget.update(0, {"OnBattery": Variant("b", False)}, 0)
 
     assert caplog.record_tuples == [
-        (
-            "libqtile",
-            logging.ERROR,
-            "Incorrectly formatted brightness: ten%"
-        )
+        ("libqtile", logging.ERROR, "Incorrectly formatted brightness: ten%")
     ]
 
 
@@ -332,9 +334,7 @@ def test_brightness_logging_invalid_file(caplog):
     init_log(logging.INFO, log_path=None, log_color=False)
 
     widget = qtile_extras.widget.BrightnessControl(
-        max_brightness_path=None,
-        max_brightness=100,
-        device=path
+        max_brightness_path=None, max_brightness=100, device=path
     )
 
     # Will fail to read device during init
@@ -343,13 +343,13 @@ def test_brightness_logging_invalid_file(caplog):
             "libqtile",
             logging.ERROR,
             f"Unexpected error when reading {path}/brightness: "
-            f"[Errno 2] No such file or directory: '{path}/brightness'."
+            f"[Errno 2] No such file or directory: '{path}/brightness'.",
         ),
         (
             "libqtile",
             logging.WARNING,
-            "Current value was not read. Module may behave unexpectedly."
-        )
+            "Current value was not read. Module may behave unexpectedly.",
+        ),
     ]
 
     caplog.clear()
@@ -364,7 +364,7 @@ def test_brightness_logging_invalid_file(caplog):
             "libqtile",
             logging.ERROR,
             f"Unexpected error when writing brightness value: "
-            f"[Errno 2] No such file or directory: '{path}/brightness'."
+            f"[Errno 2] No such file or directory: '{path}/brightness'.",
         )
     ]
 
@@ -377,22 +377,16 @@ def test_brightness_logging_invalid_value(caplog):
             f.write("INVALID")
 
         _ = qtile_extras.widget.BrightnessControl(
-            max_brightness_path=None,
-            max_brightness=1000,
-            device=tempdir
+            max_brightness_path=None, max_brightness=1000, device=tempdir
         )
 
     assert caplog.record_tuples == [
-        (
-            "libqtile",
-            logging.ERROR,
-            f"Unexpected value when reading {tempdir}/brightness."
-        ),
+        ("libqtile", logging.ERROR, f"Unexpected value when reading {tempdir}/brightness."),
         (
             "libqtile",
             logging.WARNING,
-            "Current value was not read. Module may behave unexpectedly."
-        )
+            "Current value was not read. Module may behave unexpectedly.",
+        ),
     ]
 
 
