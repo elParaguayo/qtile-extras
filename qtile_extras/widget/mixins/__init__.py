@@ -25,6 +25,7 @@ from libqtile.popup import Popup
 
 class _BaseMixin:
     """Base class to help docs only show mixins."""
+
     pass
 
 
@@ -48,16 +49,10 @@ class TooltipMixin(_BaseMixin):
         ("tooltip_color", "#ffffff", "Font colur for tooltop"),
         ("tooltip_font", "sans", "Font colour for tooltop"),
         ("tooltip_fontsize", 12, "Font size for tooltop"),
-        (
-            "tooltip_padding",
-            4,
-            "int for all sides or list for [top/bottom, left/right]"
-        )
+        ("tooltip_padding", 4, "int for all sides or list for [top/bottom, left/right]"),
     ]  # type: List[Tuple[str, Any, str]]
 
-    _screenshots = [
-        ("tooltip_mixin.gif", "")
-    ]
+    _screenshots = [("tooltip_mixin.gif", "")]
 
     def __init__(self):
         self._tooltip = None
@@ -73,8 +68,7 @@ class TooltipMixin(_BaseMixin):
             if isinstance(self.tooltip_padding, int):
                 self._tooltip_padding = [self.tooltip_padding] * 2
 
-            elif not(isinstance(self.tooltip_padding, list) and
-                     len(self.tooltip_padding) >= 2):
+            elif not (isinstance(self.tooltip_padding, list) and len(self.tooltip_padding) >= 2):
                 logger.warning("Invalid tooltip padding. Defaulting to [4, 4]")
                 self._tooltip_padding = [4, 4]
 
@@ -86,7 +80,7 @@ class TooltipMixin(_BaseMixin):
             background=self.tooltip_background,
             vertical_padding=self._tooltip_padding[0],
             horizontal_padding=self._tooltip_padding[1],
-            wrap=False
+            wrap=False,
         )
 
         # Size the popup
@@ -131,9 +125,7 @@ class TooltipMixin(_BaseMixin):
             return
 
         if not self._tooltip_timer and not self._tooltip:
-            self._tooltip_timer = self.timeout_add(self.tooltip_delay,
-                                                   self._show_tooltip,
-                                                   (x, y))
+            self._tooltip_timer = self.timeout_add(self.tooltip_delay, self._show_tooltip, (x, y))
 
     def _stop_tooltip(self, x, y):
         if self._tooltip_timer and not self._tooltip:

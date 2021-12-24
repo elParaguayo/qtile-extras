@@ -39,7 +39,6 @@ def test_loader(kwargs, expected_cls):
 
 
 def test_draw(minimal_conf_noscreen, manager_nospawn):
-
     class MaskWidget(_Widget):
         def __init__(self):
             _Widget.__init__(self, bar.CALCULATED)
@@ -59,21 +58,10 @@ def test_draw(minimal_conf_noscreen, manager_nospawn):
         def draw(self):
             self.drawer.clear(self.background or self.bar.background)
             self.img.draw()
-            self.drawer.draw(
-                offsetx=self.offset,
-                offsety=self.offsety,
-                width=self.length
-            )
+            self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     config = minimal_conf_noscreen
-    config.screens = [
-        libqtile.config.Screen(
-            top=bar.Bar(
-                [MaskWidget()],
-                10
-            )
-        )
-    ]
+    config.screens = [libqtile.config.Screen(top=bar.Bar([MaskWidget()], 10))]
 
     manager_nospawn.start(config)
 

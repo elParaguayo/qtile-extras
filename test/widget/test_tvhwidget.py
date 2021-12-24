@@ -35,35 +35,36 @@ QUARTER_HOUR = 15 * 60
 RECORDINGS = {
     "entries": [
         {
-            'channelname': 'BBC ONE HD',
-            'creator': 'elParaguayo',
-            'duplicate': 0,
-            'errorcode': 0,
-            'filename': '',
-            'start': NOW - FIVE_MINS,
-            'stop': NOW + QUARTER_HOUR,
-            'disp_subtitle': 'Fake Recording #1',
-            'disp_title': 'TVH Widget Test 1',
-            'uuid': 'edcba09876543321'
+            "channelname": "BBC ONE HD",
+            "creator": "elParaguayo",
+            "duplicate": 0,
+            "errorcode": 0,
+            "filename": "",
+            "start": NOW - FIVE_MINS,
+            "stop": NOW + QUARTER_HOUR,
+            "disp_subtitle": "Fake Recording #1",
+            "disp_title": "TVH Widget Test 1",
+            "uuid": "edcba09876543321",
         },
         {
-            'channelname': 'BBC ONE HD',
-            'creator': 'elParaguayo',
-            'duplicate': 0,
-            'errorcode': 0,
-            'filename': '',
-            'start': NOW + FIVE_MINS,
-            'stop': NOW + QUARTER_HOUR,
-            'disp_subtitle': 'Fake Recording #2',
-            'disp_title': 'TVH Widget Test 2',
-            'uuid': '1234567890abcde'
-        }
+            "channelname": "BBC ONE HD",
+            "creator": "elParaguayo",
+            "duplicate": 0,
+            "errorcode": 0,
+            "filename": "",
+            "start": NOW + FIVE_MINS,
+            "stop": NOW + QUARTER_HOUR,
+            "disp_subtitle": "Fake Recording #2",
+            "disp_title": "TVH Widget Test 2",
+            "uuid": "1234567890abcde",
+        },
     ]
 }
 
 
 def fake_post(*args, **kwargs):
     """Quick object to return recording data."""
+
     class Response:
         def json(*args, **kwargs):
             return RECORDINGS
@@ -81,6 +82,7 @@ def tvh_manager(request, manager_nospawn, monkeypatch):
 
     class MockDatetime(datetime):
         """Mock object returning date/time set by parameterize."""
+
         @classmethod
         def now(cls, *args, **kwargs):
             return cls(*request.param)
@@ -91,9 +93,9 @@ def tvh_manager(request, manager_nospawn, monkeypatch):
 
     class TVHConfig(libqtile.confreader.Config):
         """Config for the test."""
+
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -103,9 +105,7 @@ def tvh_manager(request, manager_nospawn, monkeypatch):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [
-                        qtile_extras.widget.tvheadend.TVHWidget(startup_delay=0)
-                    ],
+                    [qtile_extras.widget.tvheadend.TVHWidget(startup_delay=0)],
                     50,
                 ),
             )
@@ -156,6 +156,7 @@ def test_tvh_widget_popup(tvh_manager):
 
 def test_tvh_widget_auth(monkeypatch):
     """Simple test to check auth parameters are handled correctly."""
+
     def no_op(*args, **kwargs):
         pass
 

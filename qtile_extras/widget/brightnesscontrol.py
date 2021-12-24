@@ -75,15 +75,12 @@ class BrightnessControl(base._Widget):
             (
                 "Automatically set brightness depending on status. "
                 "Note: this is not checked when the widget is first started."
-            )
+            ),
         ),
         (
             "brightness_on_mains",
             "100%",
-            (
-                "Brightness level on mains power (accepts integer value"
-                "or percentage as string)"
-            )
+            ("Brightness level on mains power (accepts integer value" "or percentage as string)"),
         ),
         (
             "brightness_on_battery",
@@ -91,39 +88,14 @@ class BrightnessControl(base._Widget):
             (
                 "Brightness level on battery power "
                 "(accepts integer value or percentage as string)"
-            )
+            ),
         ),
-        (
-            "device",
-            "/sys/class/backlight/intel_backlight",
-            "Path to backlight device"
-        ),
-        (
-            "step",
-            "5%",
-            "Amount to change brightness (accepts int or percentage as string)"
-        ),
-        (
-            "brightness_path",
-            "brightness",
-            "Name of file holding brightness value"
-        ),
-        (
-            "max_brightness_path",
-            "max_brightness",
-            "Name of file holding max brightness value"
-        ),
-        (
-            "min_brightness",
-            100,
-            "Minimum brightness. Do not set to 0!"
-        ),
-        (
-            "max_brightness",
-            None,
-            "Set value or leave as None to allow device maximum"
-        )
-
+        ("device", "/sys/class/backlight/intel_backlight", "Path to backlight device"),
+        ("step", "5%", "Amount to change brightness (accepts int or percentage as string)"),
+        ("brightness_path", "brightness", "Name of file holding brightness value"),
+        ("max_brightness_path", "max_brightness", "Name of file holding max brightness value"),
+        ("min_brightness", 100, "Minimum brightness. Do not set to 0!"),
+        ("max_brightness", None, "Set value or leave as None to allow device maximum"),
     ]
 
     _screenshots = [
@@ -135,10 +107,7 @@ class BrightnessControl(base._Widget):
         self.add_defaults(BrightnessControl.defaults)
 
         self.add_callbacks(
-            {
-                "Button4": self.cmd_brightness_up,
-                "Button5": self.cmd_brightness_down
-            }
+            {"Button4": self.cmd_brightness_up, "Button5": self.cmd_brightness_down}
         )
 
         # We'll use a timer to hide the widget after a defined period
@@ -168,9 +137,11 @@ class BrightnessControl(base._Widget):
                 self.max = self.max_brightness
 
             else:
-                logger.warning("No maximum brightness defined. "
-                               "Setting to default value of 500. "
-                               "The script may behave unexpectedly.")
+                logger.warning(
+                    "No maximum brightness defined. "
+                    "Setting to default value of 500. "
+                    "The script may behave unexpectedly."
+                )
                 self.max = 500
 
         # If we've defined a percentage step, calculate this in relation
@@ -197,11 +168,12 @@ class BrightnessControl(base._Widget):
             return
 
         subscribe = await add_signal_receiver(
-                        self.message,
-                        session_bus=False,
-                        signal_name="PropertiesChanged",
-                        path="/org/freedesktop/UPower",
-                        dbus_interface="org.freedesktop.DBus.Properties")
+            self.message,
+            session_bus=False,
+            signal_name="PropertiesChanged",
+            path="/org/freedesktop/UPower",
+            dbus_interface="org.freedesktop.DBus.Properties",
+        )
 
         if not subscribe:
             msg = "Unable to add signal receiver for UPower events."
@@ -210,8 +182,7 @@ class BrightnessControl(base._Widget):
     def message(self, message):
         self.update(*message.body)
 
-    def update(self, interface_name, changed_properties,
-               invalidated_properties):
+    def update(self, interface_name, changed_properties, invalidated_properties):
         if "OnBattery" not in changed_properties:
             return
 
@@ -242,9 +213,7 @@ class BrightnessControl(base._Widget):
 
         # Calculate max width of text given defined layout
         width, _ = self.drawer.max_layout_size(
-            [self.text_format.format(percentage=100)],
-            self.font,
-            self.fontsize
+            [self.text_format.format(percentage=100)], self.font, self.fontsize
         )
 
         return width
@@ -278,22 +247,11 @@ class BrightnessControl(base._Widget):
 
         # Draw the bar
         self.drawer.set_source_rgb(bar_colour)
-        self.drawer.fillrect(
-            0,
-            0,
-            self.length * (abs(self.percentage)),
-            self.height,
-            1
-        )
+        self.drawer.fillrect(0, 0, self.length * (abs(self.percentage)), self.height, 1)
 
         # Create a text box
         layout = self.drawer.textlayout(
-            text,
-            self.font_colour,
-            self.font,
-            self.fontsize,
-            None,
-            wrap=False
+            text, self.font_colour, self.font, self.fontsize, None, wrap=False
         )
 
         # We want to centre this vertically
@@ -306,11 +264,7 @@ class BrightnessControl(base._Widget):
         layout.draw(0, y_offset)
 
         # Redraw the bar
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def set_timer(self):
 
@@ -394,8 +348,7 @@ class BrightnessControl(base._Widget):
             logger.error("Unexpected value when reading {}.".format(path))
             value = False
         except Exception as e:
-            logger.error("Unexpected error when reading {}: {}.".format(path,
-                                                                        e))
+            logger.error("Unexpected error when reading {}: {}.".format(path, e))
             value = False
 
         return value
@@ -405,8 +358,7 @@ class BrightnessControl(base._Widget):
 
         maxval = self._read(self.max_path)
         if not maxval:
-            logger.warning("Max value was not read. "
-                           "Module may behave unexpectedly.")
+            logger.warning("Max value was not read. " "Module may behave unexpectedly.")
         return maxval
 
     def get_current(self):
@@ -414,8 +366,7 @@ class BrightnessControl(base._Widget):
 
         current = self._read(self.bright_path)
         if not current:
-            logger.warning("Current value was not read. "
-                           "Module may behave unexpectedly.")
+            logger.warning("Current value was not read. " "Module may behave unexpectedly.")
         return current
 
     def _set_current(self, newval):
@@ -428,8 +379,7 @@ class BrightnessControl(base._Widget):
             logger.error("No write access to {}.".format(self.bright_path))
             success = False
         except Exception as e:
-            logger.error("Unexpected error when writing "
-                         "brightness value: {}.".format(e))
+            logger.error("Unexpected error when writing " "brightness value: {}.".format(e))
             success = False
 
         return success

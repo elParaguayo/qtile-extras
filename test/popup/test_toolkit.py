@@ -40,28 +40,18 @@ class ToolkitConfig(libqtile.confreader.Config):
                         label,
                         col=y,
                         row=x,
-                        mouse_callbacks={
-                            "Button1": lazy.widget["textbox"].update(label)
-                        }
+                        mouse_callbacks={"Button1": lazy.widget["textbox"].update(label)},
                     )
                 )
 
-        menu = PopupGridLayout(
-            qtile,
-            rows=3,
-            cols=3,
-            close_on_click=False,
-            controls=controls
-        )
+        menu = PopupGridLayout(qtile, rows=3, cols=3, close_on_click=False, controls=controls)
 
         menu.show()
 
         qtile.popupmenu = menu
 
     auto_fullscreen = True
-    keys = [
-        libqtile.config.Key(["mod4"], "m", lazy.function(show_menu))
-    ]
+    keys = [libqtile.config.Key(["mod4"], "m", lazy.function(show_menu))]
     mouse = []
     groups = [
         libqtile.config.Group("a"),
@@ -71,9 +61,7 @@ class ToolkitConfig(libqtile.confreader.Config):
     screens = [
         libqtile.config.Screen(
             top=libqtile.bar.Bar(
-                [
-                    libqtile.widget.TextBox("BLANK")
-                ],
+                [libqtile.widget.TextBox("BLANK")],
                 50,
             ),
         )
@@ -85,7 +73,6 @@ toolkit_config = pytest.mark.parametrize("manager", [ToolkitConfig], indirect=Tr
 
 @toolkit_config
 def test_menu_navigation(manager):
-
     def press_key(keycode):
         manager.c.eval(f"self.popupmenu.fake_key_press('{keycode}')")
 
@@ -126,7 +113,8 @@ def test_menu_navigation(manager):
 
 
 def test_absolute_layout(manager):
-    layout = textwrap.dedent("""
+    layout = textwrap.dedent(
+        """
         from qtile_extras.popup.toolkit import PopupAbsoluteLayout, PopupText
         self.popup = PopupAbsoluteLayout(
             self,
@@ -142,7 +130,8 @@ def test_absolute_layout(manager):
         )
 
         self.popup.show()
-    """)
+    """
+    )
     manager.c.eval(layout)
     _, info = manager.c.eval("self.popup.info()")
     info = eval(info)
@@ -154,7 +143,8 @@ def test_absolute_layout(manager):
 
 
 def test_relative_layout(manager):
-    layout = textwrap.dedent("""
+    layout = textwrap.dedent(
+        """
         from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText
         self.popup = PopupRelativeLayout(
             self,
@@ -171,7 +161,8 @@ def test_relative_layout(manager):
         )
 
         self.popup.show()
-    """)
+    """
+    )
     manager.c.eval(layout)
     _, info = manager.c.eval("self.popup.info()")
     info = eval(info)
@@ -183,7 +174,8 @@ def test_relative_layout(manager):
 
 
 def test_grid_layout(manager):
-    layout = textwrap.dedent("""
+    layout = textwrap.dedent(
+        """
         from qtile_extras.popup.toolkit import PopupGridLayout, PopupText
         self.popup = PopupGridLayout(
             self,
@@ -202,7 +194,8 @@ def test_grid_layout(manager):
         )
 
         self.popup.show()
-    """)
+    """
+    )
     manager.c.eval(layout)
     _, info = manager.c.eval("self.popup.info()")
     info = eval(info)

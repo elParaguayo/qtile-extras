@@ -122,9 +122,8 @@ class StravaWidget(base._Widget, base.MarginMixin):
         ("strava_widget.png", ""),
         (
             "strava_widget_detail.png",
-            "Extended info. I've blurred out details of my runs for "
-            "privacy reasons."
-        )
+            "Extended info. I've blurred out details of my runs for " "privacy reasons.",
+        ),
     ]
 
     _dependencies = ["stravalib", "units"]
@@ -176,12 +175,9 @@ class StravaWidget(base._Widget, base.MarginMixin):
 
             text = self.format_text(self.text)
 
-            width, _ = self.drawer.max_layout_size(
-                [text],
-                self.font,
-                self.fontsize)
+            width, _ = self.drawer.max_layout_size([text], self.font, self.fontsize)
 
-            total += (width + 2 * self.margin)
+            total += width + 2 * self.margin
 
         total += self.height
 
@@ -209,11 +205,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
         y = 0 if top else self.bar.height - 2
 
         # Draw the bar
-        self.drawer.fillrect(0,
-                             y,
-                             self.width,
-                             2,
-                             2)
+        self.drawer.fillrect(0, y, self.width, 2, 2)
 
     def draw(self):
         # Remove background
@@ -231,12 +223,9 @@ class StravaWidget(base._Widget, base.MarginMixin):
             self.display_text = self.format_text(self.text)
 
             # Create a text box
-            layout = self.drawer.textlayout(self.display_text,
-                                            self.font_colour,
-                                            self.font,
-                                            self.fontsize,
-                                            None,
-                                            wrap=False)
+            layout = self.drawer.textlayout(
+                self.display_text, self.font_colour, self.font, self.fontsize, None, wrap=False
+            )
 
             # We want to centre this vertically
             y_offset = (self.bar.height - layout.height) / 2
@@ -244,11 +233,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
             # Draw it
             layout.draw(x_offset + self.margin_x, y_offset)
 
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def button_press(self, x, y, button):
         self.show_popup_summary()
@@ -269,51 +254,57 @@ class StravaWidget(base._Widget, base.MarginMixin):
 
         lines = []
 
-        heading = ("{:^6} {:^20} {:^8} {:^10} {:^6}".format("Date",
-                                                            "Title",
-                                                            "km",
-                                                            "time",
-                                                            "pace"))
+        heading = "{:^6} {:^20} {:^8} {:^10} {:^6}".format("Date", "Title", "km", "time", "pace")
         lines.append(heading)
 
         for act in self.data.current.children:
-            line = ("{a.date:%d %b}: {a.name:<20.20} {a.distance:7,.1f} "
-                    "{a.format_time:>10} {a.format_pace:>6}").format(a=act)
+            line = (
+                "{a.date:%d %b}: {a.name:<20.20} {a.distance:7,.1f} "
+                "{a.format_time:>10} {a.format_pace:>6}"
+            ).format(a=act)
             lines.append(line)
 
-        sub = ("\n{a.date:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
-               "{a.format_time:>10} "
-               "{a.format_pace:>6}").format(a=self.data.current)
+        sub = (
+            "\n{a.date:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
+            "{a.format_time:>10} "
+            "{a.format_pace:>6}"
+        ).format(a=self.data.current)
         lines.append(sub)
 
         for month in self.data.previous:
-            line = ("{a.groupdate:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
-                    "{a.format_time:>10} {a.format_pace:>6}").format(a=month)
+            line = (
+                "{a.groupdate:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
+                "{a.format_time:>10} {a.format_pace:>6}"
+            ).format(a=month)
             lines.append(line)
 
-        year = ("\n{a.groupdate:%Y}  : {a.name:<20.20} {a.distance:7,.1f} "
-                "{a.format_time:>10} "
-                "{a.format_pace:>6}").format(a=self.data.year)
+        year = (
+            "\n{a.groupdate:%Y}  : {a.name:<20.20} {a.distance:7,.1f} "
+            "{a.format_time:>10} "
+            "{a.format_pace:>6}"
+        ).format(a=self.data.year)
         lines.append(year)
 
-        alltime = ("\nTOTAL : {a.name:<20.20} {a.distance:7,.1f} "
-                   "{a.format_time:>10} "
-                   "{a.format_pace:>6}").format(a=self.data.alltime)
+        alltime = (
+            "\nTOTAL : {a.name:<20.20} {a.distance:7,.1f} "
+            "{a.format_time:>10} "
+            "{a.format_pace:>6}"
+        ).format(a=self.data.alltime)
         lines.append(alltime)
 
-        self.popup = Popup(self.qtile,
-                           y=self.bar.height,
-                           width=900,
-                           height=900,
-                           font="monospace",
-                           horizontal_padding=10,
-                           vertical_padding=10,
-                           opacity=0.8)
+        self.popup = Popup(
+            self.qtile,
+            y=self.bar.height,
+            width=900,
+            height=900,
+            font="monospace",
+            horizontal_padding=10,
+            vertical_padding=10,
+            opacity=0.8,
+        )
         self.popup.text = "\n".join(lines)
-        self.popup.height = (self.popup.layout.height +
-                             (2 * self.popup.vertical_padding))
-        self.popup.width = (self.popup.layout.width +
-                            (2 * self.popup.horizontal_padding))
+        self.popup.height = self.popup.layout.height + (2 * self.popup.vertical_padding)
+        self.popup.width = self.popup.layout.width + (2 * self.popup.horizontal_padding)
         self.popup.x = min(self.offsetx, self.bar.width - self.popup.width)
         self.popup.place()
         self.popup.draw_text()

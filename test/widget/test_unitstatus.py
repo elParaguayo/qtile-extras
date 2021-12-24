@@ -36,6 +36,7 @@ def unit_manager(manager_nospawn):
     """
     Fixture provides a manager instance with ScriptExit in the bar.
     """
+
     class UnitConfig(libqtile.confreader.Config):
         """
         Config for the test.
@@ -45,9 +46,9 @@ def unit_manager(manager_nospawn):
         local and remote builds, we use a unit that definitely doesn't
         exist.
         """
+
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -57,16 +58,12 @@ def unit_manager(manager_nospawn):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [
-                        qtile_extras.widget.UnitStatus(
-                            unitname="QtileTest.service",
-                            label="Qtile"
-                        )
-                    ],
+                    [qtile_extras.widget.UnitStatus(unitname="QtileTest.service", label="Qtile")],
                     50,
                 ),
             )
         ]
+
     manager_nospawn.start(UnitConfig)
     yield manager_nospawn
 
@@ -86,11 +83,7 @@ def test_unit_status_invalid_bus(caplog):
 
     widget = qtile_extras.widget.UnitStatus(bus_name="test_bus")
     assert caplog.record_tuples == [
-        (
-            "libqtile",
-            logging.WARNING,
-            "Unknown bus name. Defaulting to system bus."
-        )
+        ("libqtile", logging.WARNING, "Unknown bus name. Defaulting to system bus.")
     ]
 
     assert widget.bus_type == BusType.SYSTEM
@@ -104,6 +97,7 @@ def test_unit_status_session_bus(caplog):
 
 def test_unit_status_check_properties():
     """Check handling of changed properties."""
+
     def no_op():
         pass
 
@@ -121,6 +115,7 @@ def test_unit_status_check_properties():
 
 def test_unit_status_indicator_size():
     """Check indicator size is limited."""
+
     def no_op(*args, **kwargs):
         pass
 

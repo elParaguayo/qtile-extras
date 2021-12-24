@@ -40,17 +40,16 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         ("limit_normal", 70, "Max percentage for normal range"),
         ("limit_high", 90, "Max percentage for high range"),
         ("limit_loud", 100, "Max percentage for loud range"),
-        ("update_interval", 5,
-            "Interval to update widget (e.g. if changes made in other apps)."),
+        ("update_interval", 5, "Interval to update widget (e.g. if changes made in other apps)."),
         ("theme_path", None, "Path to theme icons."),
         ("step", 5, "Amount to increase volume by"),
-        ("device", "Master", "Name of ALSA device")
+        ("device", "Master", "Name of ALSA device"),
     ]
 
     _screenshots = [
         ("volumecontrol-icon.gif", "'icon' mode"),
         ("volumecontrol-bar.gif", "'bar' mode"),
-        ("volumecontrol-both.gif", "'both' mode")
+        ("volumecontrol-both.gif", "'both' mode"),
     ]
 
     icon_map = []
@@ -65,7 +64,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             {
                 "Button1": self.cmd_toggle_mute,
                 "Button4": self.cmd_volume_up,
-                "Button5": self.cmd_volume_down
+                "Button5": self.cmd_volume_down,
             }
         )
 
@@ -97,7 +96,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         self.colours = [
             (self.limit_normal, self.bar_colour_normal),
             (self.limit_high, self.bar_colour_high),
-            (self.limit_loud, self.bar_colour_loud)
+            (self.limit_loud, self.bar_colour_loud),
         ]
 
     def _configure(self, qtile, bar):
@@ -128,9 +127,8 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
     def max_text_width(self):
         # Calculate max width of text given defined layout
         txt_width, _ = self.drawer.max_layout_size(
-                                [self.text_format.format(volume=100)],
-                                self.font,
-                                self.fontsize)
+            [self.text_format.format(volume=100)], self.font, self.fontsize
+        )
 
         return txt_width
 
@@ -174,7 +172,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             "audio-volume-muted",
             "audio-volume-low",
             "audio-volume-medium",
-            "audio-volume-high"
+            "audio-volume-high",
         )
 
         d_images = images.Loader(self.theme_path)(*names)
@@ -225,19 +223,12 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             self.drawer.set_source_rgb(fill)
 
             # Draw the bar
-            self.drawer.fillrect(x_offset,
-                                 0,
-                                 self.bar_size * (self.volume / 100),
-                                 self.height,
-                                 1)
+            self.drawer.fillrect(x_offset, 0, self.bar_size * (self.volume / 100), self.height, 1)
 
             # Create a text box
-            layout = self.drawer.textlayout(text,
-                                            self.foreground,
-                                            self.font,
-                                            self.fontsize,
-                                            None,
-                                            wrap=False)
+            layout = self.drawer.textlayout(
+                text, self.foreground, self.font, self.fontsize, None, wrap=False
+            )
 
             # We want to centre this vertically
             y_offset = (self.bar.height - layout.height) / 2
@@ -248,11 +239,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             # Add the text to our drawer
             layout.draw(x_offset, y_offset)
 
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def refresh(self):
         # Check the volume levels to see if they've changed
@@ -269,8 +256,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
             self.update_timer.cancel()
 
         # Start new timer
-        self.update_timer = self.timeout_add(self.update_interval,
-                                             self.refresh)
+        self.update_timer = self.timeout_add(self.update_interval, self.refresh)
 
     def set_hide_timer(self):
         # Cancel old timer

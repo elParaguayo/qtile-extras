@@ -32,18 +32,20 @@ from qtile_extras.widget.upower import UPowerWidget
 from test.helpers import Retry  # noqa: I001
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def battery_found(manager):
     """Waits for widget to report batteries."""
     _, output = manager.c.widget["upowerwidget"].eval("len(self.batteries)")
     while int(output) == 0:
         # If there are no batteries (shouldn't happen) try looking again.
-        manager.c.widget["upowerwidget"].eval("import asyncio;asyncio.create_task(self._find_batteries())")
+        manager.c.widget["upowerwidget"].eval(
+            "import asyncio;asyncio.create_task(self._find_batteries())"
+        )
         assert False
     assert True
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def text_hidden(manager, target):
     """Waits for widget to hide text."""
     assert manager.c.widget["upowerwidget"].info()["width"] == target
@@ -60,10 +62,10 @@ def powerwidget(monkeypatch):
 @pytest.fixture(scope="function")
 def powerconfig(request, powerwidget):
     """Config for the UPower widget. Parameters set via request."""
+
     class PowerConfig(libqtile.confreader.Config):
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -73,9 +75,7 @@ def powerconfig(request, powerwidget):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [
-                        powerwidget(**getattr(request, "param", dict()))
-                    ],
+                    [powerwidget(**getattr(request, "param", dict()))],
                     50,
                 ),
             )
@@ -105,7 +105,9 @@ def test_upower_named_battery(manager_nospawn, powerconfig):
 
 
 @upower_dbus_servive
-@pytest.mark.parametrize("powerconfig", [{"battery_name": "BAT1", "percentage_low": 0.6}], indirect=True)
+@pytest.mark.parametrize(
+    "powerconfig", [{"battery_name": "BAT1", "percentage_low": 0.6}], indirect=True
+)
 def test_upower_low_battery(manager_nospawn, powerconfig):
     manager_nospawn.start(powerconfig)
     battery_found(manager_nospawn)
@@ -117,7 +119,7 @@ def test_upower_low_battery(manager_nospawn, powerconfig):
 @pytest.mark.parametrize(
     "powerconfig",
     [{"battery_name": "BAT1", "percentage_low": 0.7, "percentage_critical": 0.55}],
-    indirect=True
+    indirect=True,
 )
 def test_upower_critical_battery(manager_nospawn, powerconfig):
     manager_nospawn.start(powerconfig)
@@ -139,14 +141,16 @@ def test_upower_charging(manager_nospawn, powerconfig):
 
     # Trigger our method to toggle the charging state of the batteries
     dbussend = shutil.which("dbus-send")
-    subprocess.run([
-        dbussend,
-        f"--bus={os.environ['DBUS_SESSION_BUS_ADDRESS']}",
-        "--type=method_call",
-        "--dest=test.qtileextras.upower",
-        "/org/freedesktop/UPower",
-        "org.freedesktop.UPower.toggle_charge"
-    ])
+    subprocess.run(
+        [
+            dbussend,
+            f"--bus={os.environ['DBUS_SESSION_BUS_ADDRESS']}",
+            "--type=method_call",
+            "--dest=test.qtileextras.upower",
+            "/org/freedesktop/UPower",
+            "org.freedesktop.UPower.toggle_charge",
+        ]
+    )
 
     assert manager_nospawn.c.widget["upowerwidget"].info()["charging"]
     assert manager_nospawn.c.widget["upowerwidget"].info()["batteries"][0]["ttf"] == "1:03"
@@ -154,7 +158,9 @@ def test_upower_charging(manager_nospawn, powerconfig):
 
 
 @upower_dbus_servive
-@pytest.mark.parametrize("powerconfig", [{"battery_name": "BAT1", "text_displaytime": 0.5}], indirect=True)
+@pytest.mark.parametrize(
+    "powerconfig", [{"battery_name": "BAT1", "text_displaytime": 0.5}], indirect=True
+)
 def test_upower_show_text(manager_nospawn, powerconfig):
     manager_nospawn.start(powerconfig)
     battery_found(manager_nospawn)
@@ -173,14 +179,16 @@ def test_upower_show_text(manager_nospawn, powerconfig):
     # Check this still works when battery is charging
     # Trigger our method to toggle the charging state of the batteries
     dbussend = shutil.which("dbus-send")
-    subprocess.run([
-        dbussend,
-        f"--bus={os.environ['DBUS_SESSION_BUS_ADDRESS']}",
-        "--type=method_call",
-        "--dest=test.qtileextras.upower",
-        "/org/freedesktop/UPower",
-        "org.freedesktop.UPower.toggle_charge"
-    ])
+    subprocess.run(
+        [
+            dbussend,
+            f"--bus={os.environ['DBUS_SESSION_BUS_ADDRESS']}",
+            "--type=method_call",
+            "--dest=test.qtileextras.upower",
+            "/org/freedesktop/UPower",
+            "org.freedesktop.UPower.toggle_charge",
+        ]
+    )
 
     # Click on widget shows text so it should be wider now
     manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)

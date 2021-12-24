@@ -52,9 +52,11 @@ def exit_manager(manager_nospawn, monkeypatch, temp_output):
     """
     Fixture provides a manager instance with ScriptExit in the bar.
     """
+
     def no_op(self, *args, **kwargs):
         def _():
             self.is_counting = False
+
         return _
 
     def new_config(self, qtile, bar):
@@ -65,9 +67,9 @@ def exit_manager(manager_nospawn, monkeypatch, temp_output):
 
     class ExitConfig(libqtile.confreader.Config):
         """Config for the test."""
+
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -79,14 +81,14 @@ def exit_manager(manager_nospawn, monkeypatch, temp_output):
                 top=libqtile.bar.Bar(
                     [
                         qtile_extras.widget.ScriptExit(
-                            timer_interval=0.05,
-                            exit_script=temp_output
+                            timer_interval=0.05, exit_script=temp_output
                         )
                     ],
                     50,
                 ),
             )
         ]
+
     manager_nospawn.start(ExitConfig)
     yield manager_nospawn
 
@@ -101,6 +103,7 @@ def test_exit(exit_manager, temp_output):
 
 def test_error_handling(caplog, temp_output):
     """Check invalid script."""
+
     def no_op(*args, **kwargs):
         pass
 
@@ -109,10 +112,7 @@ def test_error_handling(caplog, temp_output):
     # Adding an extra arg to the script will cause it to raise an error when run
     invalid_script = f"{temp_output} extra_arg"
 
-    widget = qtile_extras.widget.ScriptExit(
-        exit_script=invalid_script,
-        countdown_start=1
-    )
+    widget = qtile_extras.widget.ScriptExit(exit_script=invalid_script, countdown_start=1)
 
     # Disable some things we don't need here
     widget.draw = no_op
@@ -125,9 +125,5 @@ def test_error_handling(caplog, temp_output):
 
     # Check the output
     assert caplog.record_tuples == [
-        (
-            "libqtile",
-            logging.ERROR,
-            f"Exit script ({invalid_script}) failed to run."
-        )
+        ("libqtile", logging.ERROR, f"Exit script ({invalid_script}) failed to run.")
     ]

@@ -31,7 +31,7 @@ from qtile_extras.widget.statusnotifier import DBusMenuItem
 from test.helpers import Retry  # noqa: I001
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def wait_for_icon(widget, hidden=True, prop="width"):
     width = widget.info()[prop]
     if hidden:
@@ -40,7 +40,7 @@ def wait_for_icon(widget, hidden=True, prop="width"):
         assert width > 0
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def wait_for_menu(manager, hidden=True):
     windows = len(manager.c.internal_windows())
     if hidden:
@@ -49,7 +49,7 @@ def wait_for_menu(manager, hidden=True):
         assert windows == 2
 
 
-@Retry(ignore_exceptions=(AssertionError, ))
+@Retry(ignore_exceptions=(AssertionError,))
 def check_fullscreen(windows, fullscreen=True):
     full = windows()[0]["fullscreen"]
     assert full is fullscreen
@@ -62,11 +62,12 @@ def sni_config(request, manager_nospawn):
 
     Widget can be customised via parameterize.
     """
+
     class SNIConfig(libqtile.confreader.Config):
         """Config for the test."""
+
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -76,11 +77,7 @@ def sni_config(request, manager_nospawn):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [
-                        qtile_extras.widget.StatusNotifier(
-                            **getattr(request, "param", dict())
-                        )
-                    ],
+                    [qtile_extras.widget.StatusNotifier(**getattr(request, "param", dict()))],
                     50,
                 ),
             )
@@ -107,7 +104,9 @@ def test_statusnotifier_menu(manager_nospawn, sni_config):
     manager_nospawn.c.bar["top"].fake_button_press(0, "top", 10, 0, 3)
     wait_for_menu(manager_nospawn, hidden=False)
 
-    menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][0]
+    menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][
+        0
+    ]
     assert menu
     assert menu["controls"]
 
@@ -117,21 +116,16 @@ def test_statusnotifier_menu(manager_nospawn, sni_config):
     assert len(group.info()["windows"]) == 0
 
 
-@pytest.mark.parametrize("position, coords", [
-    ("top", (0, 50)),
-    ("bottom", (0, 502)),
-    ("left", (50, 0)),
-    ("right", (548, 0))
-])
+@pytest.mark.parametrize(
+    "position, coords",
+    [("top", (0, 50)), ("bottom", (0, 502)), ("left", (50, 0)), ("right", (548, 0))],
+)
 @pytest.mark.usefixtures("dbus")
 def test_statusnotifier_menu_positions(manager_nospawn, sni_config, position, coords):
     """Check menu positioning."""
-    screen = libqtile.config.Screen(**{
-        position: libqtile.bar.Bar(
-            [qtile_extras.widget.StatusNotifier()],
-            50
-        )
-    })
+    screen = libqtile.config.Screen(
+        **{position: libqtile.bar.Bar([qtile_extras.widget.StatusNotifier()], 50)}
+    )
 
     sni_config.screens = [screen]
     manager_nospawn.start(sni_config)
@@ -147,7 +141,9 @@ def test_statusnotifier_menu_positions(manager_nospawn, sni_config, position, co
     wait_for_menu(manager_nospawn, hidden=False)
 
     # Get menu and check menu positioning is adjusted
-    menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][0]
+    menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][
+        0
+    ]
     assert (menu["x"], menu["y"]) == coords
 
 
@@ -171,11 +167,14 @@ async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
             class Bus:
                 async def introspect(self, *args, **kwargs):
                     raise MockBus.error
+
             return Bus()
 
     monkeypatch.setattr("qtile_extras.widget.statusnotifier.MessageBus", MockBus)
 
-    menu = qtile_extras.widget.statusnotifier.DBusMenu(None, "test.qtile_extras.menu", "/DBusMenu")
+    menu = qtile_extras.widget.statusnotifier.DBusMenu(
+        None, "test.qtile_extras.menu", "/DBusMenu"
+    )
 
     started = await menu.start()
 
@@ -184,7 +183,7 @@ async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
         (
             "libqtile",
             logging.WARNING,
-            "Cannot find com.canonical.dbusmenu interface at test.qtile_extras.menu"
+            "Cannot find com.canonical.dbusmenu interface at test.qtile_extras.menu",
         )
     ]
 
@@ -196,9 +195,5 @@ async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
 
     assert not started
     assert caplog.record_tuples == [
-        (
-            "libqtile",
-            logging.WARNING,
-            "Path /DBusMenu does not present a valid dbusmenu object"
-        )
+        ("libqtile", logging.WARNING, "Path /DBusMenu does not present a valid dbusmenu object")
     ]

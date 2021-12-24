@@ -24,8 +24,7 @@ import requests
 
 from qtile_extras.resources.footballscores.exceptions import FSConnectionError
 from qtile_extras.resources.footballscores.matchdict import MatchDict
-from qtile_extras.resources.footballscores.matchdict import \
-    MatchDictKeys as MDKey
+from qtile_extras.resources.footballscores.matchdict import MatchDictKeys as MDKey
 from qtile_extras.resources.footballscores.matchevent import MatchEvent
 from qtile_extras.resources.footballscores.morphlinks import ML
 from qtile_extras.resources.footballscores.playeraction import PlayerAction
@@ -35,6 +34,7 @@ from qtile_extras.resources.footballscores.utils import UTC
 # and set a flag showing success or otherwise
 try:
     import dateutil.parser
+
     HAS_DATEUTIL = True
 
 except ImportError:
@@ -48,28 +48,32 @@ API_BASE = "http://push.api.bbci.co.uk"
 
 
 class FootballMatch:
-    '''Class for getting details of individual football matches.
+    """Class for getting details of individual football matches.
     Data is pulled from BBC live scores page.
-    '''
-    scoreslink = ("/proxy/data/bbc-morph-football-scores-match-list-data/"
-                  "endDate/{end_date}/startDate/{start_date}/{source}/"
-                  "version/2.4.0/withPlayerActions/{detailed}")
+    """
 
-    detailprefix = ("http://www.bbc.co.uk/sport/football/live/"
-                    "partial/{id}")
+    scoreslink = (
+        "/proxy/data/bbc-morph-football-scores-match-list-data/"
+        "endDate/{end_date}/startDate/{start_date}/{source}/"
+        "version/2.4.0/withPlayerActions/{detailed}"
+    )
 
-    match_format = {"%H": "home_team",
-                    "%A": "away_team",
-                    "%h": "home_score",
-                    "%a": "away_score",
-                    "%v": "venue",
-                    "%T": "display_time",
-                    "%S": "status",
-                    "%R": "home_red_cards",
-                    "%r": "away_red_cards",
-                    "%G": "home_scorer_text",
-                    "%g": "away_scorer_text",
-                    "%C": "competition"}
+    detailprefix = "http://www.bbc.co.uk/sport/football/live/" "partial/{id}"
+
+    match_format = {
+        "%H": "home_team",
+        "%A": "away_team",
+        "%h": "home_score",
+        "%a": "away_score",
+        "%v": "venue",
+        "%T": "display_time",
+        "%S": "status",
+        "%R": "home_red_cards",
+        "%r": "away_red_cards",
+        "%G": "home_scorer_text",
+        "%g": "away_scorer_text",
+        "%C": "competition",
+    }
 
     ACTION_GOAL = "goal"
     ACTION_RED_CARD = "red-card"
@@ -81,10 +85,19 @@ class FootballMatch:
     STATUS_ET_FIRST_HALF = "EXTRATIMEFIRSTHALF"
     STATUS_ET_HALF_TIME = "EXTRATIMEHALFTIME"
 
-    def __init__(self, team, detailed=True, data=None, on_goal=None,
-                 on_red=None, on_status_change=None, on_new_match=None,
-                 matchdate=None, events_on_first_run=False):
-        '''Creates an instance of the Match object.
+    def __init__(
+        self,
+        team,
+        detailed=True,
+        data=None,
+        on_goal=None,
+        on_red=None,
+        on_status_change=None,
+        on_new_match=None,
+        matchdate=None,
+        events_on_first_run=False,
+    ):
+        """Creates an instance of the Match object.
         Must be created by passing the name of one team.
 
         data - User can also send data to the class e.g. if multiple instances
@@ -92,7 +105,7 @@ class FootballMatch:
         can handle request on its own.
 
         detailed - Do we want additional data (e.g. goal scorers, bookings)?
-        '''
+        """
         super(FootballMatch, self).__init__()
         self.detailed = detailed
         self.myteam = team
@@ -128,7 +141,7 @@ class FootballMatch:
 
     def __repr__(self):
 
-        return "<FootballMatch(\'%s\')>" % (self.myteam)
+        return "<FootballMatch('%s')>" % (self.myteam)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -154,8 +167,8 @@ class FootballMatch:
             def home_team(self):
                 ...
         """
-        def wrapper(func):
 
+        def wrapper(func):
             def wrapped(self):
 
                 if self.match:
@@ -183,8 +196,8 @@ class FootballMatch:
             def home_score(self):
                 ...
         """
-        def wrapper(func):
 
+        def wrapper(func):
             def wrapped(self):
 
                 if func(self) is None:
@@ -201,8 +214,7 @@ class FootballMatch:
         url = API_BASE + url
         try:
             r = requests.get(url)
-        except (requests.exceptions.ConnectionError,
-                requests.exceptions.Timeout):
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             raise FSConnectionError
 
         if r.status_code == 200:
@@ -215,8 +227,7 @@ class FootballMatch:
         try:
             rq = requests.head(page)
             return rq.status_code == 200
-        except (requests.exceptions.ConnectionError,
-                requests.exceptions.Timeout):
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             return False
 
     def _check_match_date(self, matchdate):
@@ -229,8 +240,7 @@ class FootballMatch:
             return matchdate
 
         except (ValueError, TypeError):
-            raise ValueError("Invalid match date. "
-                             "Match date format must by YYYY-MM-DD.")
+            raise ValueError("Invalid match date. " "Match date format must by YYYY-MM-DD.")
 
     def _can_update(self):
 
@@ -279,8 +289,7 @@ class FootballMatch:
         else:
             return False
 
-    def _get_scores_fixtures(self, start_date=None, end_date=None,
-                             source=None, detailed=None):
+    def _get_scores_fixtures(self, start_date=None, end_date=None, source=None, detailed=None):
         if start_date is None:
             if self._matchdate:
                 start_date = self._matchdate
@@ -299,10 +308,12 @@ class FootballMatch:
         if detailed is None:
             detailed = self.detailed
 
-        pl = self.scoreslink.format(start_date=start_date,
-                                    end_date=end_date,
-                                    source=source,
-                                    detailed=str(detailed).lower())
+        pl = self.scoreslink.format(
+            start_date=start_date,
+            end_date=end_date,
+            source=source,
+            detailed=str(detailed).lower(),
+        )
 
         return self._request(pl)
 
@@ -310,7 +321,9 @@ class FootballMatch:
         match = payload["matchData"]
 
         if match:
-            return list(match[0]["tournamentDatesWithEvents"].values())[0][0]["events"][0]  # noqa: E501
+            return list(match[0]["tournamentDatesWithEvents"].values())[0][0]["events"][
+                0
+            ]  # noqa: E501
         else:
             return None
 
@@ -355,12 +368,10 @@ class FootballMatch:
     def _last_reds(self, just_home=False, just_away=False):
 
         reds = []
-        red = self._last_event(self.ACTION_RED_CARD,
-                               just_home=just_home,
-                               just_away=just_away)
-        yellow = self._last_event(self.ACTION_YELLOW_RED_CARD,
-                                  just_home=just_home,
-                                  just_away=just_away)
+        red = self._last_event(self.ACTION_RED_CARD, just_home=just_home, just_away=just_away)
+        yellow = self._last_event(
+            self.ACTION_YELLOW_RED_CARD, just_home=just_home, just_away=just_away
+        )
 
         if red:
             reds.append(red)
@@ -383,8 +394,7 @@ class FootballMatch:
         return self._get_events(event, self.ACTION_GOAL)
 
     def _check_goal(self, old, new):
-        return ((old.scores.score != new.scores.score)
-                and (new.scores.score > 0))
+        return (old.scores.score != new.scores.score) and (new.scores.score > 0)
 
     def _check_red(self, old, new):
 
@@ -474,13 +484,11 @@ class FootballMatch:
             self._fire(func, payload)
 
     def _grouped_events(self, events):
-
         def timesort(event):
             return (event.elapsed_time, event.added_time)
 
         events = sorted(events, key=lambda x: x.full_name)
-        events = [list(y) for x, y in groupby(events,
-                                              key=lambda x: x.full_name)]
+        events = [list(y) for x, y in groupby(events, key=lambda x: x.full_name)]
         events = sorted(events, key=lambda x: timesort(x[0]))
         events = [sorted(x, key=timesort) for x in events]
 
@@ -535,8 +543,7 @@ class FootballMatch:
             try:
                 fmt = fmt.replace(key, getattr(self, self.match_format[key]))
             except TypeError:
-                fmt = fmt.replace(key,
-                                  str(getattr(self, self.match_format[key])))
+                fmt = fmt.replace(key, str(getattr(self, self.match_format[key])))
 
         return fmt
 
@@ -652,35 +659,27 @@ class FootballMatch:
     @property
     @_no_match(str())
     def home_team(self):
-        """Returns string of the home team's name
-
-        """
+        """Returns string of the home team's name"""
         return self.match.homeTeam.name.full
 
     @property
     @_no_match(str())
     def away_team(self):
-        """Returns string of the away team's name
-
-        """
+        """Returns string of the away team's name"""
         return self.match.awayTeam.name.full
 
     @property
     @_no_match(int())
     @_override_none(0)
     def home_score(self):
-        """Returns the number of goals scored by the home team
-
-        """
+        """Returns the number of goals scored by the home team"""
         return self.match.homeTeam.scores.score
 
     @property
     @_no_match(int())
     @_override_none(0)
     def away_score(self):
-        """Returns the number of goals scored by the away team
-
-        """
+        """Returns the number of goals scored by the away team"""
         return self.match.awayTeam.scores.score
 
     @property
@@ -760,8 +759,7 @@ class FootballMatch:
     @property
     @_no_match(False)
     def is_live(self):
-        return (self.match.eventStatus == "mid-event" and
-                not self.status == self.STATUS_HALF_TIME)
+        return self.match.eventStatus == "mid-event" and not self.status == self.STATUS_HALF_TIME
 
     @property
     @_no_match(False)
@@ -786,9 +784,7 @@ class FootballMatch:
     @property
     @_no_match(list())
     def home_scorers(self):
-        """Returns list of goalscorers for home team
-
-        """
+        """Returns list of goalscorers for home team"""
         return self._get_goals(self.match.homeTeam)
 
     @property
@@ -799,9 +795,7 @@ class FootballMatch:
     @property
     @_no_match(list())
     def away_scorers(self):
-        """Returns list of goalscorers for away team
-
-        """
+        """Returns list of goalscorers for away team"""
         return self._get_goals(self.match.awayTeam)
 
     @property
@@ -827,17 +821,13 @@ class FootballMatch:
     @property
     @_no_match(list())
     def home_red_cards(self):
-        """Returns list of players sent off for home team
-
-        """
+        """Returns list of players sent off for home team"""
         return self._get_reds(self.match.homeTeam)
 
     @property
     @_no_match(list())
     def away_red_cards(self):
-        """Returns list of players sent off for away team
-
-        """
+        """Returns list of players sent off for away team"""
         return self._get_reds(self.match.awayTeam)
 
     @property
@@ -866,12 +856,12 @@ class FootballMatch:
         if self.match:
 
             return u"%s %s-%s %s (%s)" % (
-                                          self.home_team,
-                                          self.home_score,
-                                          self.away_score,
-                                          self.away_team,
-                                          self.display_time
-                                          )
+                self.home_team,
+                self.home_score,
+                self.away_score,
+                self.away_team,
+                self.display_time,
+            )
 
         else:
 
@@ -916,13 +906,12 @@ class FootballMatch:
     @property
     @_no_match(None)
     def time_to_kick_off(self):
-        '''Returns a timedelta object for the time until the match kicks off.
+        """Returns a timedelta object for the time until the match kicks off.
 
         Returns None if unable to parse match time or if match in progress.
-        '''
+        """
         if HAS_DATEUTIL and self.is_fixture:
-            return (self.start_time_datetime.astimezone(TZ_UTZ)
-                    - datetime.now(TZ_UTZ))
+            return self.start_time_datetime.astimezone(TZ_UTZ) - datetime.now(TZ_UTZ)
 
         else:
             return None

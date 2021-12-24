@@ -26,16 +26,15 @@ class Bar(libqtile.bar.Bar):
     """
     A modded version of the bar, which can display a border around it.
     """
+
     _experimental = True
 
     defaults = [
         ("border_color", "#000000", "Border colour as str or list of str [N E S W]"),
-        ("border_width", 0, "Width of border as int or list of ints [N E S W]")
+        ("border_width", 0, "Width of border as int or list of ints [N E S W]"),
     ]
 
-    _screenshots = [
-        ("bar.png", "")
-    ]
+    _screenshots = [("bar.png", "")]
 
     def __init__(self, widgets, size, **config):
         libqtile.bar.Bar.__init__(self, widgets, size, **config)
@@ -61,10 +60,10 @@ class Bar(libqtile.bar.Bar):
 
             if self.horizontal:
                 self.x += self.margin[3] - self.border_width[3]
-                self.width -= (self.margin[1] + self.margin[3])
+                self.width -= self.margin[1] + self.margin[3]
                 self.length = self.width
                 if self.size == self.initial_size:
-                    self.size += (self.margin[0] + self.margin[2])
+                    self.size += self.margin[0] + self.margin[2]
                 if self.screen.top is self:
                     self.y += self.margin[0] - self.border_width[0]
                 else:
@@ -72,9 +71,9 @@ class Bar(libqtile.bar.Bar):
 
             else:
                 self.y += self.margin[0] - self.border_width[0]
-                self.height -= (self.margin[0] + self.margin[2])
+                self.height -= self.margin[0] + self.margin[2]
                 self.length = self.height
-                self.size += (self.margin[1] + self.margin[3])
+                self.size += self.margin[1] + self.margin[3]
                 if self.screen.left is self:
                     self.x += self.margin[3]
                 else:
@@ -102,7 +101,11 @@ class Bar(libqtile.bar.Bar):
             # To preserve correct display of SysTray widget, we need a 24-bit
             # window where the user requests an opaque bar.
             if self.qtile.core.name == "x11":
-                depth = 32 if has_transparency(self.background) else self.qtile.core.conn.default_screen.root_depth
+                depth = (
+                    32
+                    if has_transparency(self.background)
+                    else self.qtile.core.conn.default_screen.root_depth
+                )
 
                 self.window = self.qtile.core.create_internal(
                     self.x, self.y, width, height, depth
@@ -159,27 +162,26 @@ class Bar(libqtile.bar.Bar):
             # in the order N, E, S, W. The border tuple contains two pairs of
             # co-ordinates for the start and end of the border.
             line_opts = [
-                (
-                    (0, self.border_width[0] * 0.5),
-                    (width, self.border_width[0] * 0.5)
-                ),
+                ((0, self.border_width[0] * 0.5), (width, self.border_width[0] * 0.5)),
                 (
                     (width - (self.border_width[1] * 0.5), self.border_width[0]),
-                    (width - (self.border_width[1] * 0.5), height - self.border_width[2])
+                    (width - (self.border_width[1] * 0.5), height - self.border_width[2]),
                 ),
                 (
                     (0, height - self.border_width[2] + (self.border_width[2] * 0.5)),
-                    (width, height - self.border_width[2] + (self.border_width[2] * 0.5))
+                    (width, height - self.border_width[2] + (self.border_width[2] * 0.5)),
                 ),
                 (
                     (self.border_width[3] * 0.5, self.border_width[0]),
-                    (self.border_width[3] * 0.5, height - self.border_width[2])
-                )
+                    (self.border_width[3] * 0.5, height - self.border_width[2]),
+                ),
             ]
 
             self.drawer.clear(self.background)
 
-            for border_width, colour, opts in zip(self.border_width, self.border_color, line_opts):
+            for border_width, colour, opts in zip(
+                self.border_width, self.border_color, line_opts
+            ):
 
                 if not border_width:
                     continue
@@ -207,7 +209,6 @@ class Bar(libqtile.bar.Bar):
 
 
 def inject_bar_border(classdef):
-
     @property
     def width(self):
         if self.bar.horizontal:

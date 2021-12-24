@@ -52,101 +52,33 @@ class UPowerWidget(base._Widget):
 
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
-        (
-            "font",
-            "sans",
-            "Default font"
-        ),
-        (
-            "fontsize",
-            None,
-            "Font size"
-        ),
-        (
-            "font_colour",
-            "ffffff",
-            "Font colour for information text"
-        ),
-        (
-            "battery_height",
-            10,
-            "Height of battery icon"
-        ),
-        (
-            "battery_width",
-            20,
-            "Size of battery icon"
-        ),
-        (
-            "battery_name",
-            None,
-            "Battery name. None = all batteries"
-        ),
-        (
-            "border_charge_colour",
-            "8888ff",
-            "Border colour when charging."
-        ),
-        (
-            "border_colour",
-            "dbdbe0",
-            "Border colour when discharging."
-        ),
-        (
-            "border_critical_colour",
-            "cc0000",
-            "Border colour when battery low."
-        ),
-        (
-            "fill_normal",
-            "dbdbe0",
-            "Fill when normal"
-        ),
-        (
-            "fill_low",
-            "aa00aa",
-            "Fill colour when battery low"
-        ),
-        (
-            "fill_critical",
-            "cc0000",
-            "Fill when critically low"
-        ),
-        (
-            "margin",
-            2,
-            "Margin on sides of widget"
-        ),
-        (
-            "spacing",
-            5,
-            "Space between batteries"
-        ),
-        (
-            "percentage_low",
-            0.20,
-            "Low level threshold."
-        ),
-        (
-            "percentage_critical",
-            0.10,
-            "Critical level threshold."
-        ),
+        ("font", "sans", "Default font"),
+        ("fontsize", None, "Font size"),
+        ("font_colour", "ffffff", "Font colour for information text"),
+        ("battery_height", 10, "Height of battery icon"),
+        ("battery_width", 20, "Size of battery icon"),
+        ("battery_name", None, "Battery name. None = all batteries"),
+        ("border_charge_colour", "8888ff", "Border colour when charging."),
+        ("border_colour", "dbdbe0", "Border colour when discharging."),
+        ("border_critical_colour", "cc0000", "Border colour when battery low."),
+        ("fill_normal", "dbdbe0", "Fill when normal"),
+        ("fill_low", "aa00aa", "Fill colour when battery low"),
+        ("fill_critical", "cc0000", "Fill when critically low"),
+        ("margin", 2, "Margin on sides of widget"),
+        ("spacing", 5, "Space between batteries"),
+        ("percentage_low", 0.20, "Low level threshold."),
+        ("percentage_critical", 0.10, "Critical level threshold."),
         (
             "text_charging",
             "({percentage:.0f}%) {ttf} until fully charged",
-            "Text to display when charging."
+            "Text to display when charging.",
         ),
         (
             "text_discharging",
             "({percentage:.0f}%) {tte} until empty",
-            "Text to display when on battery."
+            "Text to display when on battery.",
         ),
-        (
-            "text_displaytime",
-            5,
-            "Time for text to remain before hiding"
-        ),
+        ("text_displaytime", 5, "Time for text to remain before hiding"),
     ]
 
     _screenshots = [
@@ -155,7 +87,7 @@ class UPowerWidget(base._Widget):
         ("battery_critical.png", "Critical"),
         ("battery_charging.png", "Charging"),
         ("battery_multiple.png", "Multiple batteries"),
-        ("battery_textdisplay.gif", "Showing text")
+        ("battery_textdisplay.gif", "Showing text"),
     ]
 
     _dependencies = ["dbus-next"]
@@ -180,17 +112,16 @@ class UPowerWidget(base._Widget):
 
         # Define colours
         self.colours = [
-          (self.percentage_critical, self.fill_critical),
-          (self.percentage_low, self.fill_low),
-          (100, self.fill_normal)
+            (self.percentage_critical, self.fill_critical),
+            (self.percentage_low, self.fill_low),
+            (100, self.fill_normal),
         ]
         self.status = [
-          (self.percentage_critical, "Critical"),
-          (self.percentage_low, "Low"),
-          (100, "Normal")
+            (self.percentage_critical, "Critical"),
+            (self.percentage_low, "Low"),
+            (100, "Normal"),
         ]
-        self.borders = {True: self.border_charge_colour,
-                        False: self.border_colour}
+        self.borders = {True: self.border_charge_colour, False: self.border_colour}
 
     async def _config_async(self):
         await self._setup_dbus()
@@ -198,11 +129,8 @@ class UPowerWidget(base._Widget):
     async def _setup_dbus(self):
         # Set up connection to DBus
         self.bus = await MessageBus(bus_type=UPOWER_BUS).connect()
-        introspection = await self.bus.introspect(UPOWER_SERVICE,
-                                                  UPOWER_PATH)
-        object = self.bus.get_proxy_object(UPOWER_SERVICE,
-                                           UPOWER_PATH,
-                                           introspection)
+        introspection = await self.bus.introspect(UPOWER_SERVICE, UPOWER_PATH)
+        object = self.bus.get_proxy_object(UPOWER_SERVICE, UPOWER_PATH, introspection)
 
         props = object.get_interface("org.freedesktop.DBus.Properties")
         props.on_properties_changed(self.upower_change)
@@ -225,11 +153,7 @@ class UPowerWidget(base._Widget):
             text = self.text_discharging.format(percentage=100, tte="99:99")
 
         # Calculate width of text
-        width, _ = self.drawer.max_layout_size(
-            [text],
-            self.font,
-            self.fontsize
-        )
+        width, _ = self.drawer.max_layout_size([text], self.font, self.fontsize)
 
         return width
 
@@ -245,17 +169,18 @@ class UPowerWidget(base._Widget):
 
         if num_batteries:
             # Icon widths
-            length = ((self.margin * 2) +
-                      (self.spacing * (num_batteries - 1)) +
-                      (self.battery_width * num_batteries))
+            length = (
+                (self.margin * 2)
+                + (self.spacing * (num_batteries - 1))
+                + (self.battery_width * num_batteries)
+            )
 
             bar_length += length
 
             # Add text width if it's being displayed
             if self.show_text:
 
-                bar_length += (self.max_text_length() +
-                               self.spacing) * num_batteries
+                bar_length += (self.max_text_length() + self.spacing) * num_batteries
 
         return bar_length
 
@@ -274,11 +199,8 @@ class UPowerWidget(base._Widget):
         for battery in batteries:
             bat = {}
 
-            introspection = await self.bus.introspect(UPOWER_SERVICE,
-                                                      battery)
-            battery_obj = self.bus.get_proxy_object(UPOWER_SERVICE,
-                                                    battery,
-                                                    introspection)
+            introspection = await self.bus.introspect(UPOWER_SERVICE, battery)
+            battery_obj = self.bus.get_proxy_object(UPOWER_SERVICE, battery, introspection)
             battery_dev = battery_obj.get_interface(UPOWER_DEVICE)
             props = battery_obj.get_interface(PROPS_IFACE)
 
@@ -290,10 +212,7 @@ class UPowerWidget(base._Widget):
 
         # If user only wants named battery, get it here
         if self.battery_name:
-            battery_devices = [
-                b for b in battery_devices
-                if b["name"] == self.battery_name
-            ]
+            battery_devices = [b for b in battery_devices if b["name"] == self.battery_name]
 
             if not battery_devices:
                 err = "No battery found matching {}.".format(self.battery_name)
@@ -373,11 +292,7 @@ class UPowerWidget(base._Widget):
 
             # Draw the border
             self.drawer._rounded_rect(
-                offset,
-                top_margin,
-                self.battery_width,
-                self.battery_height,
-                1
+                offset, top_margin, self.battery_width, self.battery_height, 1
             )
 
             self.drawer.set_source_rgb(border)
@@ -388,11 +303,8 @@ class UPowerWidget(base._Widget):
 
             # Draw the filling of the battery
             self.drawer._rounded_rect(
-                offset + 2,
-                top_margin + 2,
-                fill_width,
-                (self.battery_height - 4),
-                0)
+                offset + 2, top_margin + 2, fill_width, (self.battery_height - 4), 0
+            )
             self.drawer.set_source_rgb(fill)
             self.drawer.ctx.fill()
 
@@ -409,12 +321,9 @@ class UPowerWidget(base._Widget):
                     text = self.text_discharging.format(**battery)
 
                 # Create a text box
-                layout = self.drawer.textlayout(text,
-                                                self.font_colour,
-                                                self.font,
-                                                self.fontsize,
-                                                None,
-                                                wrap=False)
+                layout = self.drawer.textlayout(
+                    text, self.font_colour, self.font, self.fontsize, None, wrap=False
+                )
 
                 # We want to centre this vertically
                 y_offset = (self.bar.height - layout.height) / 2
@@ -429,11 +338,7 @@ class UPowerWidget(base._Widget):
                 offset += layout.width
 
         # Redraw the bar
-        self.drawer.draw(
-            offsetx=self.offset,
-            offsety=self.offsety,
-            width=self.length
-        )
+        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def secs_to_hm(self, secs):
         # Basic maths to convert seconds to h:mm format
@@ -441,7 +346,7 @@ class UPowerWidget(base._Widget):
         h, m = divmod(m, 60)
 
         # Need to mke sure minutes are zero padded in case single digit
-        return ("{}:{:02d}".format(h, m))
+        return "{}:{:02d}".format(h, m)
 
     def toggle_text(self):
 
@@ -449,8 +354,7 @@ class UPowerWidget(base._Widget):
             self.show_text = True
 
             # Start a timer to hide the text
-            self.hide_timer = self.timeout_add(self.text_displaytime,
-                                               self.hide)
+            self.hide_timer = self.timeout_add(self.text_displaytime, self.hide)
         else:
             self.show_text = False
 
@@ -467,7 +371,9 @@ class UPowerWidget(base._Widget):
 
     def info(self):
         info = base._Widget.info(self)
-        info["batteries"] = [{k: v for k, v in x.items() if k not in ["device", "props"]} for x in self.batteries]
+        info["batteries"] = [
+            {k: v for k, v in x.items() if k not in ["device", "props"]} for x in self.batteries
+        ]
         info["charging"] = self.charging
         info["levels"] = self.status
         return info

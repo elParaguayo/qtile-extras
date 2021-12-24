@@ -31,8 +31,8 @@ from pathlib import Path
 
 import gi
 
-gi.require_version('Gdk', '3.0')
-gi.require_version('Gtk', '3.0')
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk
 
 from dbus_next import Message, Variant
@@ -51,21 +51,22 @@ class SNIMenu(ServiceInterface):
     Only exports methods, properties and signals required by
     StatusNotifier widget.
     """
+
     def __init__(self, window, kill, *args):
         ServiceInterface.__init__(self, *args)
         self.window = window
         self.kill = kill
 
     @signal()
-    def LayoutUpdated(self) -> 'ui':
+    def LayoutUpdated(self) -> "ui":
         return [1, 0]
 
     @method()
-    def AboutToShow(self, id: 'i') -> 'b':
+    def AboutToShow(self, id: "i") -> "b":
         return True
 
     @method()
-    def GetLayout(self, parent_id: 'i', recursion_depth: 'i', properties: 'as') -> 'u(ia{sv}av)':
+    def GetLayout(self, parent_id: "i", recursion_depth: "i", properties: "as") -> "u(ia{sv}av)":
         with open(icon_path.as_posix(), "rb") as icon:
             raw = icon.read()
 
@@ -76,7 +77,7 @@ class SNIMenu(ServiceInterface):
                 {},
                 [
                     Variant(
-                        "(ia{sv}av)", 
+                        "(ia{sv}av)",
                         [
                             0,
                             {
@@ -84,10 +85,10 @@ class SNIMenu(ServiceInterface):
                                 "visible": Variant("b", True),
                                 "label": Variant("s", "Test Menu"),
                                 "children-display": Variant("s", "submenu"),
-                                "icon-data": Variant("ay", bytes(raw))
+                                "icon-data": Variant("ay", bytes(raw)),
                             },
-                            []
-                        ]
+                            [],
+                        ],
                     ),
                     Variant(
                         "(ia{sv}av)",
@@ -96,18 +97,18 @@ class SNIMenu(ServiceInterface):
                             {
                                 "enabled": Variant("b", True),
                                 "visible": Variant("b", True),
-                                "label": Variant("s","Quit"),
-                                "icon-data": Variant("s", icon_path.as_posix())
+                                "label": Variant("s", "Quit"),
+                                "icon-data": Variant("s", icon_path.as_posix()),
                             },
-                            []
-                        ]
+                            [],
+                        ],
                     ),
-                ]
-            ]
+                ],
+            ],
         ]
-    
+
     @method()
-    def Event(self, id: 'i', event_id: 's', data: 'v', timestamp: 'u'):
+    def Event(self, id: "i", event_id: "s", data: "v", timestamp: "u"):
         if id == 1:
             self.kill()
 
@@ -119,13 +120,14 @@ class SNItem(ServiceInterface):
     Only exports methods, properties and signals required by
     StatusNotifier widget.
     """
+
     def __init__(self, window, *args):
         ServiceInterface.__init__(self, *args)
         self.window = window
         self.fullscreen = False
 
     @method()
-    def Activate(self, x: 'i', y: 'i'):
+    def Activate(self, x: "i", y: "i"):
         if self.fullscreen:
             self.window.unfullscreen()
         else:
@@ -134,31 +136,28 @@ class SNItem(ServiceInterface):
         self.fullscreen = not self.fullscreen
 
     @dbus_property(PropertyAccess.READ)
-    def IconName(self) -> 's':
+    def IconName(self) -> "s":
         return ""
 
     @dbus_property(PropertyAccess.READ)
-    def IconPixmap(self) -> 'a(iiay)':
-        return [
-            [32, 32, bytes([100] * (32 * 32 * 4))]
-        ]
+    def IconPixmap(self) -> "a(iiay)":
+        return [[32, 32, bytes([100] * (32 * 32 * 4))]]
 
     @dbus_property(PropertyAccess.READ)
-    def AttentionIconPixmap(self) -> 'a(iiay)':
+    def AttentionIconPixmap(self) -> "a(iiay)":
         return []
 
     @dbus_property(PropertyAccess.READ)
-    def OverlayIconPixmap(self) -> 'a(iiay)':
+    def OverlayIconPixmap(self) -> "a(iiay)":
         return []
 
     @dbus_property(PropertyAccess.READ)
-    def IsMenu(self) -> 'b':
+    def IsMenu(self) -> "b":
         return False
 
     @dbus_property(PropertyAccess.READ)
-    def Menu(self) -> 's':
+    def Menu(self) -> "s":
         return "/DBusMenu"
-
 
     @signal()
     def NewIcon(self):
@@ -197,11 +196,11 @@ if __name__ == "__main__":
     if window_type == "notification":
         if os.environ["GDK_BACKEND"] == "wayland":
             try:
-                gi.require_version('GtkLayerShell', '0.1')
+                gi.require_version("GtkLayerShell", "0.1")
                 from gi.repository import GtkLayerShell
             except ValueError:
                 sys.exit(1)
-            win.add(Gtk.Label(label='This is a test notification'))
+            win.add(Gtk.Label(label="This is a test notification"))
             GtkLayerShell.init_for_window(win)
 
         else:
@@ -231,7 +230,7 @@ if __name__ == "__main__":
                 path="/StatusNotifierWatcher",
                 member="RegisterStatusNotifierItem",
                 signature="s",
-                body=[bus.unique_name]
+                body=[bus.unique_name],
             )
         )
 

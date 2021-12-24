@@ -17,9 +17,10 @@ from dbus_next.constants import PropertyAccess
 from dbus_next.service import ServiceInterface, dbus_property, method
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fake_bar():
     from libqtile.bar import Bar
+
     height = 24
     b = Bar([], height)
     b.height = height
@@ -27,21 +28,24 @@ def fake_bar():
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(os.path.dirname(TEST_DIR), 'data')
+DATA_DIR = os.path.join(os.path.dirname(TEST_DIR), "data")
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def svg_img_as_pypath():
     "Return the py.path object of a svg image"
     import py
+
     audio_volume_muted = os.path.join(
-        DATA_DIR, 'svg', 'audio-volume-muted.svg',
+        DATA_DIR,
+        "svg",
+        "audio-volume-muted.svg",
     )
     audio_volume_muted = py.path.local(audio_volume_muted)
     return audio_volume_muted
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def fake_qtile():
     import asyncio
 
@@ -71,7 +75,7 @@ def fake_qtile():
 # When used in a test, the function needs to receive a list of screens
 # (including bar and widgets) as an argument. This config can then be
 # passed to the manager to start.
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def minimal_conf_noscreen():
     class MinimalConf(libqtile.confreader.Config):
         auto_fullscreen = False
@@ -85,7 +89,7 @@ def minimal_conf_noscreen():
     return MinimalConf
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def dbus(monkeypatch):
     # for Github CI/Ubuntu, dbus-launch is provided by "dbus-x11" package
     launcher = shutil.which("dbus-launch")
@@ -138,17 +142,17 @@ class Power(ServiceInterface):
         self._charging = False
 
     @method()
-    def EnumerateDevices(self) -> 'ao':  # noqa: F821, N802
+    def EnumerateDevices(self) -> "ao":  # noqa: F821, N802
         return [BAT0, BAT1]
 
     @dbus_property(access=PropertyAccess.READ)
-    def OnBattery(self) -> 'b':  # noqa: F821, N802
+    def OnBattery(self) -> "b":  # noqa: F821, N802
         return not self._charging
 
     @method()
     def toggle_charge(self):
         self._charging = not self._charging
-        self.emit_properties_changed({'OnBattery': self._charging})
+        self.emit_properties_changed({"OnBattery": self._charging})
 
 
 class Battery(ServiceInterface):
@@ -159,28 +163,29 @@ class Battery(ServiceInterface):
         self._server = server
 
     @dbus_property(access=PropertyAccess.READ)
-    def Percentage(self) -> 'd':  # noqa: F821, N802
+    def Percentage(self) -> "d":  # noqa: F821, N802
         return self._level
 
     @dbus_property(access=PropertyAccess.READ)
-    def TimeToFull(self) -> 'x':  # noqa: F821, N802
+    def TimeToFull(self) -> "x":  # noqa: F821, N802
         if self._server._charging:
             return 3780
         return 0
 
     @dbus_property(access=PropertyAccess.READ)
-    def TimeToEmpty(self) -> 'x':  # noqa: F821, N802
+    def TimeToEmpty(self) -> "x":  # noqa: F821, N802
         if not self._server._charging:
             return 12200
         return 0
 
     @dbus_property(access=PropertyAccess.READ)
-    def NativePath(self) -> 's':  # noqa: F821, N802
+    def NativePath(self) -> "s":  # noqa: F821, N802
         return self._native_path
 
 
 class FakeUpower(Thread):
     """Class that runs fake UPower interface in a thread."""
+
     def __init__(self, *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
 

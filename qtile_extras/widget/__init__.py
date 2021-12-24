@@ -38,7 +38,7 @@ widgets = {
     "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower",
-    "WordClock": "wordclock"
+    "WordClock": "wordclock",
 }
 
 
@@ -68,6 +68,7 @@ def modify(classdef, *args, initialise=True, **config):
 
 # import_class and lazify_imports adapted from qtile/qtile
 
+
 def import_class(module_path, class_name, fallback=None):
     """Import a class safely
 
@@ -83,8 +84,7 @@ def import_class(module_path, class_name, fallback=None):
         return classdef
 
     except ImportError as error:
-        logger.warning("Unmet dependencies for '%s.%s': %s", module_path,
-                       class_name, error)
+        logger.warning("Unmet dependencies for '%s.%s': %s", module_path, class_name, error)
         if fallback:
             logger.debug("%s", traceback.format_exc())
             return fallback(module_path, class_name)

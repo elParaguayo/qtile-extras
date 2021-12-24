@@ -31,13 +31,11 @@ from libqtile.widget import base
 
 class _Decoration(base.PaddingMixin):
     """
-        Base decoration class. Should not be called by
-        configs directly.
+    Base decoration class. Should not be called by
+    configs directly.
     """
 
-    defaults = [
-        ("padding", 0, "Default padding")
-    ]  # type: List[Tuple[str, Any, str]]
+    defaults = [("padding", 0, "Default padding")]  # type: List[Tuple[str, Any, str]]
 
     def __init__(self, **config):
         base.PaddingMixin.__init__(self, **config)
@@ -89,24 +87,25 @@ class _Decoration(base.PaddingMixin):
 
 class RectDecoration(_Decoration):
     """
-        Widget decoration that draws a rectangle behind the widget contents.
+    Widget decoration that draws a rectangle behind the widget contents.
 
-        Only one colour can be set but decorations can be layered to achieve
-        multi-coloured effects.
+    Only one colour can be set but decorations can be layered to achieve
+    multi-coloured effects.
 
-        Rectangles can be drawn as just the the outline or filled. Curved corners
-        can be obtained by setting the ``radius`` parameter.
+    Rectangles can be drawn as just the the outline or filled. Curved corners
+    can be obtained by setting the ``radius`` parameter.
     """
+
     defaults = [
         ("filled", False, "Whether to fill shape"),
         ("radius", 4, "Corner radius as int or list of ints [TL TR BR BL]. 0 is square"),
         ("colour", "#000000", "Colour for decoration"),
-        ("line_width", 2, "Line width for decoration")
+        ("line_width", 2, "Line width for decoration"),
     ]  # type: List[Tuple[str, Any, str]]
 
     _screenshots = [
         ("rect_decoration.png", "Single decoration"),
-        ("rect_decoration_stacked.png", "Two decorations stacked")
+        ("rect_decoration_stacked.png", "Two decorations stacked"),
     ]
 
     def __init__(self, **config):
@@ -122,12 +121,7 @@ class RectDecoration(_Decoration):
 
         if not self.radius:
 
-            self.ctx.rectangle(
-                self.padding_x,
-                self.padding_y,
-                box_width,
-                box_height
-            )
+            self.ctx.rectangle(self.padding_x, self.padding_y, box_width, box_height)
 
         else:
 
@@ -143,7 +137,7 @@ class RectDecoration(_Decoration):
                 self.padding_y + delta,
                 radius,
                 180 * degrees,
-                270 * degrees
+                270 * degrees,
             )
 
             # Top right
@@ -154,7 +148,7 @@ class RectDecoration(_Decoration):
                 self.padding_y + delta,
                 radius,
                 -90 * degrees,
-                0 * degrees
+                0 * degrees,
             )
 
             # Bottom right
@@ -165,7 +159,7 @@ class RectDecoration(_Decoration):
                 self.padding_y + box_height - delta,
                 radius,
                 0 * degrees,
-                90 * degrees
+                90 * degrees,
             )
 
             # Bottom left
@@ -176,7 +170,7 @@ class RectDecoration(_Decoration):
                 self.padding_y + box_height - delta,
                 radius,
                 90 * degrees,
-                180 * degrees
+                180 * degrees,
             )
 
             self.ctx.close_path()
@@ -190,24 +184,19 @@ class RectDecoration(_Decoration):
 
 class BorderDecoration(_Decoration):
     """
-        Widget decoration that draws a straight line on the widget border.
-        Padding can be used to adjust the position of the border further.
+    Widget decoration that draws a straight line on the widget border.
+    Padding can be used to adjust the position of the border further.
 
-        Only one colour can be set but decorations can be layered to achieve
-        multi-coloured effects.
+    Only one colour can be set but decorations can be layered to achieve
+    multi-coloured effects.
     """
+
     defaults = [
         ("colour", "#000000", "Border colour"),
-        (
-            "border_width",
-            2,
-            "Border width as int or list of ints [N E S W]."
-        )
+        ("border_width", 2, "Border width as int or list of ints [N E S W]."),
     ]  # type: List[Tuple[str, Any, str]]
 
-    _screenshots = [
-        ("border_decoration.png", "Stacked borders")
-    ]
+    _screenshots = [("border_decoration.png", "Stacked borders")]
 
     def __init__(self, **config):
         _Decoration.__init__(self, **config)
@@ -226,7 +215,7 @@ class BorderDecoration(_Decoration):
                 offset + self.padding_y,
                 self.width - self.padding_x,
                 offset + self.padding_y,
-                top
+                top,
             )
 
         if right:
@@ -236,7 +225,7 @@ class BorderDecoration(_Decoration):
                 offset + self.padding_y,
                 self.width - offset - self.padding_x,
                 self.height - offset - self.padding_y,
-                right
+                right,
             )
 
         if bottom:
@@ -246,7 +235,7 @@ class BorderDecoration(_Decoration):
                 self.height - offset - self.padding_y,
                 self.width - self.padding_y,
                 self.height - offset - self.padding_y,
-                bottom
+                bottom,
             )
 
         if left:
@@ -256,7 +245,7 @@ class BorderDecoration(_Decoration):
                 offset + self.padding_y,
                 offset + self.padding_x,
                 self.height - offset - self.padding_y,
-                left
+                left,
             )
 
     def _draw_border(self, x1: float, y1: float, x2: float, y2: float, line_width: float) -> None:
@@ -303,8 +292,6 @@ def inject_decorations(classdef):
         classdef.configure_decorations = configure_decorations
         classdef._configure = new_configure
 
-        classdef.defaults.append(
-            ("decorations", [], "Decorations for widgets")
-        )
+        classdef.defaults.append(("decorations", [], "Decorations for widgets"))
 
         classdef._injected_decorations = True

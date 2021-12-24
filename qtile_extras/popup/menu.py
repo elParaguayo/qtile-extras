@@ -37,6 +37,7 @@ class PopupMenuItem(PopupText):
         The menu item does not store the state of the toggle box, this is
         determined when the object is created.
     """
+
     defaults = [
         ("menu_icon", None, "Optional icon to display next to text"),
         ("icon_size", 12, "Size of menu icon"),
@@ -44,7 +45,7 @@ class PopupMenuItem(PopupText):
         ("show_icon", True, "Show menu icons"),
         ("toggle_box", False, "Whether to show a toggle box"),
         ("toggled", False, "Whether toggle box is toggled"),
-        ("row_span", 2, "Text item is twice size of separator")
+        ("row_span", 2, "Text item is twice size of separator"),
     ]
 
     def __init__(self, text="", **config):
@@ -106,19 +107,19 @@ class PopupMenuItem(PopupText):
             offset = self.icon_size + self.icon_gap
 
         self.drawer.ctx.save()
-        self.drawer.ctx.translate(offset,
-                                  int((self.height - self.layout.height) / 2))
+        self.drawer.ctx.translate(offset, int((self.height - self.layout.height) / 2))
         self.layout.draw(0, 0)
         self.drawer.ctx.restore()
 
 
 class PopupMenuSeparator(PopupSlider):
     """Draws a single horizontal line in the menu."""
+
     defaults = [
         ("colour_above", "555555", "Separator colour"),
         ("end_margin", 10, ""),
         ("marker_size", 0, ""),
-        ("row_span", 1, "Separator is half height of text item")
+        ("row_span", 1, "Separator is half height of text item"),
     ]
 
     def __init__(self, **config):
@@ -140,6 +141,7 @@ class PopupMenu(PopupGridLayout):
     the `row_span` attribute. By default, a text item will be twice
     the height of a separator.
     """
+
     def __init__(self, qtile, controls, **config):
         PopupGridLayout.__init__(self, qtile, controls=controls, **config)
         self._hide_timer = None
@@ -168,12 +170,7 @@ class PopupMenu(PopupGridLayout):
                 continue
 
             if sep:
-                menuitems.append(
-                    PopupMenuSeparator(
-                        bar_size=1,
-                        **config
-                    )
-                )
+                menuitems.append(PopupMenuSeparator(bar_size=1, **config))
             else:
                 menuitems.append(
                     PopupMenuItem(
@@ -208,7 +205,7 @@ class PopupMenu(PopupGridLayout):
             "width": menu_width,
             "height": row_count * row_height,
             "rows": row_count,
-            "cols": 1
+            "cols": 1,
         }
         menu_config.update(config)
 

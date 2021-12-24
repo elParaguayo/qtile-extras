@@ -35,7 +35,7 @@ def round_down(num, divisor):
 
 
 class WordClock(base._Widget):
-    '''
+    """
     A widget to draw a word clock to the screen.
 
     This is not a traditional widget in that you will not see anything
@@ -48,22 +48,23 @@ class WordClock(base._Widget):
 
     Custom layouts can be added by referring to the instructions in
     ``qtile_extras/resources/wordclock/english.py``.
-    '''
+    """
 
     # Dynamically update docstring for supported languages
-    __doc__ += '''
+    __doc__ += """
     .. admonition:: Supported languages
 
         Available languages: {}
-    '''.format(", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES]))
+    """.format(
+        ", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES])
+    )
 
     orientations = base.ORIENTATION_BOTH
     defaults = [
         (
             "language",
             "english",
-            "Display language. "
-            "Choose from {}.".format(", ".join(f"'{x}'" for x in LANGUAGES))
+            "Display language. " "Choose from {}.".format(", ".join(f"'{x}'" for x in LANGUAGES)),
         ),
         ("background", "000000", "Background colour."),
         ("inactive", "202020", "Colour for inactive characters"),
@@ -71,12 +72,10 @@ class WordClock(base._Widget):
         ("update_interval", 1, "Interval to check time"),
         ("cache", "~/.cache/qtile-extras", "Location to store wallpaper"),
         ("fontsize", 70, "Font size for letters"),
-        ("font", "sans", "Font for text")
+        ("font", "sans", "Font for text"),
     ]
 
-    _screenshots = [
-        ("wordclock.png", "")
-    ]
+    _screenshots = [("wordclock.png", "")]
 
     def __init__(self, **config):
         base._Widget.__init__(self, 0, **config)
@@ -100,9 +99,9 @@ class WordClock(base._Widget):
         self.clockfile = os.path.join(self.cache, "wordclock.png")
 
     def update(self, *args):
-        '''
+        """
         Checks the time and calculates which letters should be highlighted.
-        '''
+        """
         nw = datetime.now()
 
         # Clock works on 5 minute intervals so round time to nearest 5 mins.
@@ -159,9 +158,9 @@ class WordClock(base._Widget):
         return config
 
     def setup(self):
-        '''
+        """
         Sets up the grid layour holding the word clock.
-        '''
+        """
         # Get the layout
         self.config = self.load_layout()
 
@@ -183,7 +182,7 @@ class WordClock(base._Widget):
                     fontsize=self.fontsize,
                     font=self.font,
                     highlight_method="text",
-                    highlight=self.active
+                    highlight=self.active,
                 )
 
                 letters.append(cell)
@@ -195,7 +194,7 @@ class WordClock(base._Widget):
             cols=self.config.COLS,
             width=self.bar.screen.width,
             height=self.bar.screen.height,
-            controls=letters
+            controls=letters,
         )
 
         self.grid._configure()
@@ -206,14 +205,12 @@ class WordClock(base._Widget):
         self.grid.popup.draw = self.hook_draw
 
     def hook_draw(self):
-        '''
+        """
         Extracts the popup's surface and writes it to a file before being
         cleared by the popup's drawer.draw() call.
-        '''
+        """
         surface = cairocffi.ImageSurface(
-            cairocffi.FORMAT_ARGB32,
-            self.bar.screen.width,
-            self.bar.screen.height
+            cairocffi.FORMAT_ARGB32, self.bar.screen.width, self.bar.screen.height
         )
         ctx = cairocffi.Context(surface)
         ctx.set_source_rgba(*rgb(self.background))

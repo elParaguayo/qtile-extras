@@ -24,7 +24,7 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
-from libqtile import confreader, images
+from libqtile import confreader
 from libqtile.log_utils import init_log
 
 import qtile_extras.widget.alsavolumecontrol
@@ -96,9 +96,9 @@ def alsa_manager(manager_nospawn, monkeypatch, request):
 
     class ALSAConfig(libqtile.confreader.Config):
         """Config for the test."""
+
         auto_fullscreen = True
-        keys = [
-        ]
+        keys = []
         mouse = []
         groups = [
             libqtile.config.Group("a"),
@@ -110,14 +110,14 @@ def alsa_manager(manager_nospawn, monkeypatch, request):
                 top=libqtile.bar.Bar(
                     [
                         qtile_extras.widget.alsavolumecontrol.ALSAWidget(
-                            hide_interval=0.5,
-                            **getattr(request, "param", dict())
+                            hide_interval=0.5, **getattr(request, "param", dict())
                         )
                     ],
                     50,
                 ),
             )
         ]
+
     manager_nospawn.start(ALSAConfig)
     yield manager_nospawn
 
@@ -184,7 +184,9 @@ def test_step(alsa_manager):
     assert widget.info()["volume"] == 60
 
 
-@pytest.mark.parametrize("alsa_manager", [{"theme_path": ICON_FOLDER, "mode": "icon"}], indirect=True)
+@pytest.mark.parametrize(
+    "alsa_manager", [{"theme_path": ICON_FOLDER, "mode": "icon"}], indirect=True
+)
 def test_icons(alsa_manager):
     """Check widget reads and parses volume"""
     widget = alsa_manager.c.widget["alsawidget"]
@@ -223,8 +225,10 @@ def test_no_amixer(monkeypatch, caplog):
 
 def test_no_theme_path(monkeypatch):
     """Widget should raise config error if no theme_path for icons."""
+
     def no_op(*args, **kwargs):
         pass
+
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.base._Widget._configure", no_op)
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.ALSAWidget.get_volume", no_op)
     widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget(mode="icon")
@@ -237,8 +241,10 @@ def test_no_theme_path(monkeypatch):
 
 def test_no_icons(monkeypatch):
     """Widget should raise a config error if there are no icons in the path."""
+
     def no_op(*args, **kwargs):
         pass
+
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.base._Widget._configure", no_op)
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.ALSAWidget.get_volume", no_op)
     widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget(mode="icon", theme_path="/no/path")
