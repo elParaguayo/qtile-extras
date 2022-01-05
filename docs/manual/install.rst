@@ -19,6 +19,17 @@ Alternatively, you can download the `PKGBUILD`_ file from the repo and run ``mak
 
 .. _PKGBUILD: https://raw.githubusercontent.com/elParaguayo/qtile-extras/main/PKGBUILD
 
+Fedora
+======
+
+There is no official package for Fedora yet but you can install it
+from `Copr`_::
+
+    dnf copr enable frostyx/qtile
+    dnf install qtile-extras
+
+.. _Copr: https://copr.fedorainfracloud.org/
+
 Everyone else
 =============
 
