@@ -6,7 +6,7 @@ from libqtile import bar, confreader, images
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
-RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\]\s\[(on|off)\]")
+RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\].*\[(on|off)\]")
 
 
 class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
