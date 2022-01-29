@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -46,6 +47,7 @@ class SnapCast(base._Widget):
         ("client_name", None, "Client name (as recognised by server)."),
         ("server_address", "localhost", "Name or IP address of server."),
         ("snapclient", "/usr/bin/snapclient", "Path to snapclient"),
+        ("options", "", "Options to be passed to snapclient."),
         ("icon_size", None, "Icon size. None = autofit."),
         ("padding", 2, "Padding around icon (and text)."),
         (
@@ -81,6 +83,9 @@ class SnapCast(base._Widget):
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
+        self._cmd = [self.snapclient]
+        if self.options:
+            self._cmd.extend(shlex.split(self.options))
         self._load_icon()
         self._url = f"http://{self.server_address}:1780/jsonrpc"
         self.timeout_add(1, self._check_server)
@@ -143,7 +148,7 @@ class SnapCast(base._Widget):
     def toggle_state(self):
         if self._proc is None:
             self._proc = subprocess.Popen(
-                [self.snapclient], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                self._cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
         else:
             self._proc.terminate()

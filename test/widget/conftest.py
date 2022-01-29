@@ -19,11 +19,24 @@ from dbus_next.service import ServiceInterface, dbus_property, method
 
 @pytest.fixture(scope="function")
 def fake_bar():
+    class _Drawer:
+        def clear(self, *args, **kwargs):
+            pass
+
+        def draw(self, *args, **kwargs):
+            pass
+
+    class _Window:
+        def create_drawer(self, *args, **kwargs):
+            return _Drawer()
+
     from libqtile.bar import Bar
 
     height = 24
     b = Bar([], height)
     b.height = height
+    b.horizontal = True
+    b.window = _Window()
     return b
 
 
@@ -67,6 +80,9 @@ def fake_qtile():
                 for func in coroutines:
                     loop.run_until_complete(func)
                 loop.close()
+
+        def call_later(self, *args, **kwargs):
+            pass
 
     return FakeQtile()
 
