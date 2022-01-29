@@ -9,11 +9,11 @@ jobs:
         runs-on: ubuntu-20.04
         name: "python ${{ matrix.python-version }}"
         env:
-          WAYLAND: 1.19.0
-          WAYLAND_PROTOCOLS: 1.21
-          WLROOTS: 0.14.0
-          SEATD: 0.5.0
-          LIBDRM: 2.4.105
+          WAYLAND: 1.20.0
+          WAYLAND_PROTOCOLS: 1.24
+          WLROOTS: 0.15.0
+          SEATD: 0.6.3
+          LIBDRM: 2.4.109
         strategy:
             matrix:
                 # if you change one of these, be sure to update
@@ -33,7 +33,9 @@ jobs:
                   libdbus-1-dev libgirepository1.0-dev gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-gudev-1.0 graphviz \
                   imagemagick libpulse-dev lm-sensors git xserver-xephyr xterm xvfb ninja-build libegl1-mesa-dev \
                   libgles2-mesa-dev libgbm-dev libinput-dev libxkbcommon-dev libpixman-1-dev libpciaccess-dev \
-                  dbus-x11 libnotify-bin libiw-dev
+                  dbus-x11 libnotify-bin libiw-dev \
+                  xwayland libxcb-composite0-dev libxcb-icccm4-dev libxcb-res0-dev \
+                  libxcb-render0-dev libxcb-res0-dev libxcb-xfixes0-dev 
                 sudo pip -q install meson PyGObject
                 pip -q install "tox<4" tox-gh-actions
             - name: Build wayland
@@ -70,10 +72,10 @@ jobs:
                 sudo ninja -C build install
             - name: Build wlroots
               run: |
-                wget -q --no-check-certificate https://github.com/swaywm/wlroots/archive/$WLROOTS.tar.gz
-                tar -xzf $WLROOTS.tar.gz
+                wget -q --no-check-certificate https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/$WLROOTS/wlroots-$WLROOTS.tar.gz
+                tar -xzf wlroots-$WLROOTS.tar.gz
                 cd wlroots-$WLROOTS
-                meson build -Dexamples=false --prefix=/usr
+                meson build -Dexamples=false --prefix=/usr -Dxwayland=enabled
                 ninja -C build
                 sudo ninja -C build install
             # - name: Build qtile
