@@ -31,10 +31,10 @@ class PlayerAction(object):
             player = dict()
 
         nm = player.get("name", dict())
-        self._fullname = nm.get("full", u"")
-        self._abbreviatedname = nm.get("abbreviation", u"")
-        self._firstname = nm.get("first", u"")
-        self._lastname = nm.get("last", u"")
+        self._fullname = nm.get("full", "")
+        self._abbreviatedname = nm.get("abbreviation", "")
+        self._firstname = nm.get("first", "")
+        self._lastname = nm.get("last", "")
 
         if not type(action) == dict:
             action = dict()

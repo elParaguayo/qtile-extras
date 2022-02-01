@@ -17,11 +17,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import annotations
+
 import asyncio
 import os
 import time
 from functools import partial
-from typing import Callable, List, Optional
+from typing import TYPE_CHECKING
 
 from dbus_next import InterfaceNotFoundError, InvalidIntrospectionError, Variant
 from dbus_next.aio import MessageBus
@@ -31,6 +33,10 @@ from libqtile.widget.statusnotifier import StatusNotifier as QtileStatusNotifier
 from libqtile.widget.statusnotifier import StatusNotifierItem, host
 
 from qtile_extras.popup.menu import PopupMenu
+
+if TYPE_CHECKING:
+    from typing import Callable
+
 
 MENU_INTERFACE = "com.canonical.dbusmenu"
 NO_MENU = "/NO_DBUSMENU"
@@ -43,16 +49,16 @@ class DBusMenuItem:  # noqa: E303
         self,
         menu,
         id: int,
-        item_type: Optional[str] = "",
-        enabled: Optional[bool] = True,
-        visible: Optional[bool] = True,
-        icon_name: Optional[str] = "",
-        icon_data: Optional[List[bytes]] = list(),
-        shortcut: Optional[List[List[str]]] = list(),
-        label: Optional[str] = "",
-        toggle_type: Optional[str] = "",
-        toggle_state: Optional[int] = 0,
-        children_display: Optional[str] = "",
+        item_type: str = "",
+        enabled: bool = True,
+        visible: bool = True,
+        icon_name: str = "",
+        icon_data: list[bytes] = list(),
+        shortcut: list[list[str]] = list(),
+        label: str = "",
+        toggle_type: str = "",
+        toggle_state: int = 0,
+        children_display: str = "",
     ):
         self.menu = menu
         self.id = id
@@ -101,7 +107,7 @@ class DBusMenu:  # noqa: E303
         ("toggle-type", "toggle_type"),
     ]
 
-    def __init__(self, parent, service: str, path: str, bus: Optional[MessageBus] = None):
+    def __init__(self, parent, service: str, path: str, bus: MessageBus | None = None):
         self.parent = parent
         self.service = service
         self.path = path
@@ -238,9 +244,9 @@ class DBusMenu:  # noqa: E303
         self._menus = {}
 
 
-async def attach_menu(self, display_menu_callback: Optional[Callable] = None):
+async def attach_menu(self, display_menu_callback: Callable | None = None):
     self.display_menu_callback = display_menu_callback
-    self.menu: Optional[DBusMenu] = None
+    self.menu: DBusMenu | None = None
 
     # Check if the default action for this item should be to show a context menu
     try:

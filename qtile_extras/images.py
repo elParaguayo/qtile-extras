@@ -17,8 +17,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import annotations
+
 import os
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import cairocffi
 from libqtile.backend.base import Drawer
@@ -26,7 +28,10 @@ from libqtile.images import Img
 from libqtile.images import Loader as QtileLoader
 from libqtile.images import LoadingError
 from libqtile.log_utils import logger
-from libqtile.utils import ColorsType, scan_files
+from libqtile.utils import scan_files
+
+if TYPE_CHECKING:
+    from libqtile.utils import ColorsType
 
 
 class ImgMask(Img):
@@ -37,14 +42,14 @@ class ImgMask(Img):
     advance.
     """
 
-    def __init__(self, *args, drawer: Optional[Drawer] = None, **kwargs):
+    def __init__(self, *args, drawer: Drawer | None = None, **kwargs):
         self.drawer = drawer
         Img.__init__(self, *args, **kwargs)
 
     def attach_drawer(self, drawer: Drawer):
         self.drawer = drawer
 
-    def draw(self, x=0, y=0, colour: ColorsType = "FFFFFF"):
+    def draw(self, x=0, y=0, colour: "ColorsType" = "FFFFFF"):
         if self.drawer is None:
             logger.error("Cannot draw masked image. Did you forget to attach the drawer?")
             return

@@ -686,7 +686,7 @@ class _PopupWidget(configurable.Configurable):
         dx = (target.offsetx + target.width / 2) - (self.offsetx + self.width / 2)
         dy = (target.offsety + target.height / 2) - (self.offsety + self.height / 2)
 
-        return math.sqrt(dx ** 2 + dy ** 2)
+        return math.sqrt(dx**2 + dy**2)
 
 
 class PopupText(_PopupWidget):
