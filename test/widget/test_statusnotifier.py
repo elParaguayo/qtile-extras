@@ -121,8 +121,13 @@ def test_statusnotifier_menu(manager_nospawn, sni_config):
     [("top", (0, 50)), ("bottom", (0, 502)), ("left", (50, 0)), ("right", (548, 0))],
 )
 @pytest.mark.usefixtures("dbus")
-def test_statusnotifier_menu_positions(manager_nospawn, sni_config, position, coords):
+def test_statusnotifier_menu_positions(
+    manager_nospawn, sni_config, position, coords, backend_name
+):
     """Check menu positioning."""
+    if backend_name == "wayland":
+        pytest.skip("Test is flaky on Wayland!")
+
     screen = libqtile.config.Screen(
         **{position: libqtile.bar.Bar([qtile_extras.widget.StatusNotifier()], 50)}
     )

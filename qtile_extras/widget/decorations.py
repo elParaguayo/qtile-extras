@@ -21,12 +21,15 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Any, List, Tuple
+from typing import TYPE_CHECKING
 
 from cairocffi import Context
 from libqtile.backend.base import Drawer
 from libqtile.log_utils import logger
 from libqtile.widget import base
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class _Decoration(base.PaddingMixin):
@@ -35,7 +38,7 @@ class _Decoration(base.PaddingMixin):
     configs directly.
     """
 
-    defaults = [("padding", 0, "Default padding")]  # type: List[Tuple[str, Any, str]]
+    defaults = [("padding", 0, "Default padding")]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, **config):
         base.PaddingMixin.__init__(self, **config)
@@ -101,7 +104,7 @@ class RectDecoration(_Decoration):
         ("radius", 4, "Corner radius as int or list of ints [TL TR BR BL]. 0 is square"),
         ("colour", "#000000", "Colour for decoration"),
         ("line_width", 2, "Line width for decoration"),
-    ]  # type: List[Tuple[str, Any, str]]
+    ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [
         ("rect_decoration.png", "Single decoration"),
@@ -194,7 +197,7 @@ class BorderDecoration(_Decoration):
     defaults = [
         ("colour", "#000000", "Border colour"),
         ("border_width", 2, "Border width as int or list of ints [N E S W]."),
-    ]  # type: List[Tuple[str, Any, str]]
+    ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [("border_decoration.png", "Stacked borders")]
 

@@ -13,14 +13,14 @@
 
 # Layout is a single string variable which will be looped over by the parser.
 LAYOUT = (
-    u"ESÃORUMAPDUASNT"
-    u"TRESQUATROCINCO"
-    u"SEISGSETEVOITOM"
-    u"NOVEDEZONZEDOZE"
-    u"HORASOEÃMENOSLP"
-    u"UMXQUARTOSRPDEZ"
-    u"VINTEZEJCINCORX"
-    u"ETMEIAEMUPONTOP"
+    "ESÃORUMAPDUASNT"
+    "TRESQUATROCINCO"
+    "SEISGSETEVOITOM"
+    "NOVEDEZONZEDOZE"
+    "HORASOEÃMENOSLP"
+    "UMXQUARTOSRPDEZ"
+    "VINTEZEJCINCORX"
+    "ETMEIAEMUPONTOP"
 )
 
 # Map instructions:

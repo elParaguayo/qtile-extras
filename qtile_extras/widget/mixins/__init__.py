@@ -17,10 +17,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import Any, List, Tuple
+from typing import TYPE_CHECKING
 
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class _BaseMixin:
@@ -50,7 +53,7 @@ class TooltipMixin(_BaseMixin):
         ("tooltip_font", "sans", "Font colour for tooltop"),
         ("tooltip_fontsize", 12, "Font size for tooltop"),
         ("tooltip_padding", 4, "int for all sides or list for [top/bottom, left/right]"),
-    ]  # type: List[Tuple[str, Any, str]]
+    ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [("tooltip_mixin.gif", "")]
 

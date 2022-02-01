@@ -499,7 +499,7 @@ class FootballMatch:
         events = self._grouped_events(events)
 
         raw = []
-        out = u""
+        out = ""
 
         for event in events:
 
@@ -507,13 +507,13 @@ class FootballMatch:
             times = []
 
             if event[0].is_goal and event[0].is_own_goal:
-                name = u"{} (OG)".format(name)
+                name = "{} (OG)".format(name)
 
             for item in event:
                 dt = item.display_time
 
                 if item.is_goal and item.is_penalty:
-                    dt = u"{} pen".format(dt)
+                    dt = "{} pen".format(dt)
 
                 times.append(dt)
 
@@ -522,14 +522,14 @@ class FootballMatch:
         for i, (player, events) in enumerate(raw):
 
             out += player
-            ev = u" ("
-            ev += u", ".join(events)
-            ev += u")"
+            ev = " ("
+            ev += ", ".join(events)
+            ev += ")"
 
             out += ev
 
             if i < len(raw) - 1:
-                out += u", "
+                out += ", "
 
         return out
 
@@ -714,22 +714,22 @@ class FootballMatch:
         me = self.elapsed_time
         et = self.added_time
 
-        miat = u"+{}".format(et) if et else ""
+        miat = "+{}".format(et) if et else ""
 
         if self.is_postponed:
-            return u"P"
+            return "P"
 
         elif self.status == self.STATUS_HALF_TIME:
-            return u"HT"
+            return "HT"
 
         elif self.status == self.STATUS_FULL_TIME:
-            return u"FT"
+            return "FT"
 
         elif self.status == self.STATUS_FIXTURE:
             return self.start_time_uk
 
         elif me is not None:
-            return u"{}{}'".format(me, miat)
+            return "{}{}'".format(me, miat)
 
         else:
             return None
@@ -855,7 +855,7 @@ class FootballMatch:
         """
         if self.match:
 
-            return u"%s %s-%s %s (%s)" % (
+            return "%s %s-%s %s (%s)" % (
                 self.home_team,
                 self.home_score,
                 self.away_score,
@@ -865,7 +865,7 @@ class FootballMatch:
 
         else:
 
-            return u"%s are not playing today." % (self.myteam)
+            return "%s are not playing today." % (self.myteam)
 
     def __str__(self):
         """Returns short formatted summary of match.
