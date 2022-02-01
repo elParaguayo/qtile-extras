@@ -133,6 +133,7 @@ class TooltipMixin(_BaseMixin):
     def _stop_tooltip(self, x, y):
         if self._tooltip_timer and not self._tooltip:
             self._tooltip_timer.cancel()
+            self._tooltip_timer = None
             return
 
         else:
