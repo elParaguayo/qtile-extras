@@ -35,7 +35,7 @@ from libqtile.widget.statusnotifier import StatusNotifierItem, host
 from qtile_extras.popup.menu import PopupMenu
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Any, Callable
 
 
 MENU_INTERFACE = "com.canonical.dbusmenu"
@@ -112,7 +112,7 @@ class DBusMenu:  # noqa: E303
         self.service = service
         self.path = path
         self.bus = bus
-        self._menus = {}
+        self._menus: dict[int, dict[str, int | list[DBusMenuItem]]] = {}
 
     async def start(self):
         """
@@ -246,7 +246,7 @@ class DBusMenu:  # noqa: E303
 
 async def attach_menu(self, display_menu_callback: Callable | None = None):
     self.display_menu_callback = display_menu_callback
-    self.menu: DBusMenu | None = None
+    self.menu = None
 
     # Check if the default action for this item should be to show a context menu
     try:
@@ -268,8 +268,8 @@ def get_menu(self, root: int = 0):
         self.menu.get_menu(self.display_menu_callback, root)
 
 
-StatusNotifierItem.attach_menu = attach_menu
-StatusNotifierItem.get_menu = get_menu
+StatusNotifierItem.attach_menu = attach_menu  # type: ignore
+StatusNotifierItem.get_menu = get_menu  # type: ignore
 
 
 class StatusNotifier(QtileStatusNotifier):
@@ -305,7 +305,7 @@ class StatusNotifier(QtileStatusNotifier):
         ("show_menu_icons", True, "Show icons in context menu"),
         ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
         ("opacity", 1, "Menu opactity"),
-    ]
+    ]  # type: list[tuple[str, Any, str]]
 
     _dependencies = ["dbus-next", "xdg"]
 

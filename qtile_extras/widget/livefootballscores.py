@@ -17,12 +17,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from typing import TYPE_CHECKING
+
 from libqtile import bar, pangocffi
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.widget import base
 
 from qtile_extras.resources.footballscores import FootballMatch, FSConnectionError, League
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 # Massively overkill to use a class here...
@@ -116,7 +121,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         ("popup_opacity", 0.8, "Opacity for popup window."),
         ("popup_padding", 10, "Padding for popup window."),
         ("popup_display_timeout", 10, "Seconds to show recordings."),
-    ]
+    ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [
         (

@@ -17,9 +17,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import annotations
 
 import math
 import os
+from typing import TYPE_CHECKING
 
 import cairocffi
 from libqtile import configurable, hook, pangocffi
@@ -29,6 +31,9 @@ from libqtile.images import Img
 from libqtile.lazy import LazyCall
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class _PopupLayout(configurable.Configurable):
@@ -68,7 +73,7 @@ class _PopupLayout(configurable.Configurable):
         ),
         ("keyboard_navigation", True, "Whether popup controls can be navigated by keys"),
         ("initial_focus", 0, "Index of control to be focused at startup."),
-    ]
+    ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, qtile, **config):
         configurable.Configurable.__init__(self, **config)
@@ -523,7 +528,7 @@ class _PopupWidget(configurable.Configurable):
             {},
             "Dict of mouse button press callback functions. Accepts lazy objects.",
         ),
-    ]
+    ]  # type: list[tuple[str, Any, str]]
 
     offsetx = None
     offsety = None
@@ -771,7 +776,7 @@ class PopupSlider(_PopupWidget):
         ("marker_size", 10, "Size of marker"),
         ("marker_colour", "#bbbbbb", "Colour of marker"),
         ("end_margin", 5, "Gap between edge of control and ends of bar"),
-    ]
+    ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, value=None, **config):
         _PopupWidget.__init__(self, **config)
