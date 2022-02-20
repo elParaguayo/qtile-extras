@@ -22,7 +22,6 @@ There's a :ref:`mixin <tooltip-mixin>` if you want to add tooltips to widgets.
 I've also added some "eye candy" in the form of:
 
   - :ref:`Widget Decorations <widget-decorations>`
-  - :ref:`Bar Borders <bar-borders>`
   - :ref:`Wallpapers <wallpapers>`
 
 Lastly, I've created a new ``ImgMask`` class which, rather than drawing the source image,
@@ -53,7 +52,6 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     manual/install
     manual/how_to/popup
     manual/how_to/decorations
-    manual/how_to/bar
     manual/how_to/img-mask
     manual/how_to/tooltips
 
@@ -65,7 +63,6 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     manual/ref/widgets
     manual/ref/popup
     manual/ref/decorations
-    manual/ref/bar
     manual/ref/imgmask
 
 .. toctree::
