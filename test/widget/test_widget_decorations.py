@@ -65,3 +65,39 @@ def test_decorations(manager_nospawn, minimal_conf_noscreen):
 
     _, decs = manager_nospawn.c.widget["scriptexit"].eval("len(self.decorations)")
     assert int(decs) == 3
+
+
+def test_rect_decoration_using_widget_background(manager_nospawn, minimal_conf_noscreen):
+    config = minimal_conf_noscreen
+    config.screens = [
+        libqtile.config.Screen(
+            top=libqtile.bar.Bar(
+                [
+                    widget.ScriptExit(
+                        name="one",
+                        background="ff0000",
+                        decorations=[RectDecoration(colour="00ff00")],
+                    ),
+                    widget.ScriptExit(
+                        name="two",
+                        background="ff0000",
+                        decorations=[RectDecoration(colour="00ff00", use_widget_background=True)],
+                    ),
+                ],
+                10,
+            )
+        )
+    ]
+
+    manager_nospawn.start(config)
+
+    manager_nospawn.c.bar["top"].eval("self.draw()")
+
+    _, one = manager_nospawn.c.widget["one"].eval("self.decorations[0].fill_colour")
+    _, two = manager_nospawn.c.widget["two"].eval("self.decorations[0].fill_colour")
+
+    # First widget's decoration is drawn using the decoration's colour
+    assert one == "00ff00"
+
+    # Second widget's decoration inherits the colour from the widget
+    assert two == "ff0000"
