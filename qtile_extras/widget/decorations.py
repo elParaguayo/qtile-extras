@@ -104,6 +104,12 @@ class RectDecoration(_Decoration):
         ("radius", 4, "Corner radius as int or list of ints [TL TR BR BL]. 0 is square"),
         ("colour", "#000000", "Colour for decoration"),
         ("line_width", 2, "Line width for decoration"),
+        (
+            "use_widget_background",
+            False,
+            "Paint the decoration using the colour from the widget's `background` property. "
+            "The widget's background will then be the bar's background colour.",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [
@@ -120,7 +126,9 @@ class RectDecoration(_Decoration):
         box_height = self.height - 2 * self.padding_y
         box_width = self.width - 2 * self.padding_x
 
-        self.drawer.set_source_rgb(self.colour)
+        self.fill_colour = self.parent.background if self.use_widget_background else self.colour
+
+        self.drawer.set_source_rgb(self.fill_colour)
 
         if not self.radius:
 
@@ -265,12 +273,15 @@ def inject_decorations(classdef):
 
     def new_clear(self, colour):
         """Draw decorations after clearing background."""
+        if self.use_bar_background:
+            colour = self.bar.background
         self._clear(colour)
 
         for decoration in self.decorations:
             decoration.draw()
 
     def configure_decorations(self):
+        self.use_bar_background = False
         if hasattr(self, "decorations"):
             if not self.configured:
                 # Give each widget a copy of the decoration objects
@@ -279,6 +290,8 @@ def inject_decorations(classdef):
                     cloned_dec = dec.clone()
                     cloned_dec._configure(self)
                     temp_decs.append(cloned_dec)
+                    if isinstance(cloned_dec, RectDecoration) and not self.use_bar_background:
+                        self.use_bar_background = cloned_dec.use_widget_background
                 self.decorations = temp_decs
 
             self._clear = self.drawer.clear
