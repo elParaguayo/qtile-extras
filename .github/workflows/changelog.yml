@@ -1,0 +1,26 @@
+name: changelog
+
+on:
+    pull_request:
+
+jobs:
+    build:
+        runs-on: ubuntu-20.04
+        name: "Check CHANGELOG"
+        steps:
+            - uses: actions/checkout@v2
+            - name: Install dependencies
+              run: |
+                sudo apt update
+                sudo apt install --no-install-recommends jq
+            - uses: lots0logs/gh-action-get-changed-files@2.1.4
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Check changed files
+              run: .github/check_for_changes
+            - uses: ouzi-dev/commit-status-updater@v1.1.0
+              with:
+                status: ${{ env.CHANGELOG_STATUS }}
+                description: ${{ env.CHANGELOG_MESSAGE }}
+                name: "Update changelog"
+            
