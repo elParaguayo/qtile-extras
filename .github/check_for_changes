@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+jq -e 'index("CHANGELOG")' $HOME/files_modified.json >> /dev/null
+if [ $? -eq 0 ]; then
+   echo "CHANGELOG_STATUS=success" >> $GITHUB_ENV
+   echo "CHANGELOG_MESSAGE=CHANGELOG has been updated." >> $GITHUB_ENV
+else
+   echo "CHANGELOG_STATUS=failure" >> $GITHUB_ENV
+   echo "CHANGELOG_MESSAGE=CHANGELOG has NOT been updated." >> $GITHUB_ENV
+fi
