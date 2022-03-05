@@ -370,6 +370,9 @@ class StatusNotifier(QtileStatusNotifier):
         self.selected_item.get_menu()
 
     def display_menu(self, menu_items):
+        if not menu_items:
+            return
+
         self.menu = PopupMenu.from_dbus_menu(self.qtile, menu_items, **self.menu_config)
 
         screen = self.bar.screen

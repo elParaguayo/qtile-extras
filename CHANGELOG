@@ -1,1 +1,2 @@
-2022-01-09: Add SnapCast widget (missing some functionality)
+2022-03-05: [BUGFIX] Better handling of empty menus in StatusNotifier widget
+2022-01-09: [FEATURE] Add SnapCast widget (missing some functionality)
