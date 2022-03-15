@@ -1,2 +1,2 @@
 cairocffi
-git+git://github.com/qtile/qtile@master#egg=qtile
+git+https://github.com/qtile/qtile.git@master#egg=qtile

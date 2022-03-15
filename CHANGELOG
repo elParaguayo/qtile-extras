@@ -1,3 +1,4 @@
+2022-03-15: [DOCS] Fix docs build error (git --> https)
 2022-03-05: [GITHUB] Require PRs to update CHANGELOG
 2022-03-05: [BUGFIX] Fix tooltip only showing once
 2022-03-05: [BUGFIX] Better handling of empty menus in StatusNotifier widget
