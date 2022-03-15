@@ -92,12 +92,15 @@ class _PopupLayout(configurable.Configurable):
 
         # Identify focused control (via mouse of keypress)
         self.focusable_controls = [c for c in self.controls if c.can_focus]
-        if self.initial_focus is None:
+        if self.initial_focus is None or not self.focusable_controls:
             self._focused = None
-        elif self.focusable_controls:
-            self._focused = self.focusable_controls[self.initial_focus]
         else:
-            self._focused = None
+            try:
+                self._focused = self.focusable_controls[self.initial_focus]
+            except IndexError:
+                self._focused = self.focusable_controls[0]
+
+        if not self.focusable_controls:
             self.keyboard_navigation = False
 
         # Identify keysyms for keybaord navigation
