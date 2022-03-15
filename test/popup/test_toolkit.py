@@ -204,3 +204,35 @@ def test_grid_layout(manager):
     assert control["y"] == 0
     assert control["width"] == 150
     assert control["height"] == 100
+
+
+def test_disable_navigation():
+    """Where there are no focusable controls, keyboard navigation is disabled."""
+    controls = [
+        PopupText(
+            text="TEST",
+            row=0,
+            col=0,
+        ),
+    ]
+
+    layout = PopupGridLayout(
+        None, width=500, height=200, controls=controls, keyboard_navigation=True, initial_focus=0
+    )
+
+    assert not layout.keyboard_navigation
+    assert layout._focused is None
+
+
+def test_initial_focus_index_error():
+    """Where there are focusable controls but index is too high, default to first control."""
+    controls = [
+        PopupText(text="TEST", row=0, col=0, mouse_callbacks={"Button1": lambda: None}),
+    ]
+
+    layout = PopupGridLayout(
+        None, width=500, height=200, controls=controls, keyboard_navigation=True, initial_focus=1
+    )
+
+    assert layout._focused == controls[0]
+    assert layout.keyboard_navigation
