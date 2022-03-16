@@ -236,3 +236,92 @@ def test_initial_focus_index_error():
 
     assert layout._focused == controls[0]
     assert layout.keyboard_navigation
+
+
+class TwoScreensConfig(libqtile.confreader.Config):
+    fake_screens = [
+        libqtile.config.Screen(x=0, y=0, width=400, height=600),
+        libqtile.config.Screen(x=400, y=0, width=400, height=600),
+    ]
+
+
+@pytest.mark.parametrize("manager", [TwoScreensConfig], indirect=True)
+def test_multiple_screens(manager):
+    """Check window is positioned correctly on different screens."""
+    layout = textwrap.dedent(
+        """
+        from qtile_extras.popup.toolkit import PopupGridLayout, PopupText
+        self.popup = PopupGridLayout(
+            self,
+            controls=[
+                PopupText(
+                    "Test",
+                    row=0,
+                    col=1,
+                    row_span=2,
+                    col_span=3,
+                )
+            ],
+            margin=0,
+            rows=4,
+            cols=4
+        )
+    """
+    )
+    manager.c.eval(layout)
+
+    # Show popup on screen 0 which is at (0, 0) and has dimensions of (400, 600)
+    manager.c.eval("self.popup.show(centered=True)")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["width"] == 200
+    assert info["height"] == 200
+    assert info["x"] == (400 - 200) / 2
+    assert info["y"] == (600 - 200) / 2
+
+    # Show popup on screen 1 which is at (400, 0) and has dimensions of (400, 600)
+    # Popup should therefore be adjusted for x offset
+    manager.c.eval("self.popup.hide()")
+    manager.c.to_screen(1)
+    manager.c.eval("self.popup.show(centered=True)")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["width"] == 200
+    assert info["height"] == 200
+    assert info["x"] == (400 - 200) / 2 + 400
+    assert info["y"] == (600 - 200) / 2
+
+    # Show popup on screen 0 which is at (0, 0) and has dimensions of (400, 600)
+    # Not centered so popup should be at (0, 0)
+    manager.c.eval("self.popup.hide()")
+    manager.c.to_screen(0)
+    manager.c.eval("self.popup.show()")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["width"] == 200
+    assert info["height"] == 200
+    assert info["x"] == 0
+    assert info["y"] == 0
+
+    # Show popup on screen 1 which is at (400, 0) and has dimensions of (400, 600)
+    # Not centered so popup should be at (400, 0)
+    manager.c.eval("self.popup.hide()")
+    manager.c.to_screen(1)
+    manager.c.eval("self.popup.show()")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["width"] == 200
+    assert info["height"] == 200
+    assert info["x"] == 400
+    assert info["y"] == 0
+
+    # Show popup on screen 1 while screen 0 is focussed
+    manager.c.eval("self.popup.hide()")
+    manager.c.to_screen(0)
+    manager.c.eval("self.popup.show(x=500, y=200)")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["width"] == 200
+    assert info["height"] == 200
+    assert info["x"] == 500
+    assert info["y"] == 200

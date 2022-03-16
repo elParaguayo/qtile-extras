@@ -166,13 +166,26 @@ class _PopupLayout(configurable.Configurable):
             c.drawer.ctx.restore()
         self.popup.draw()
 
-    def show(self, x=0, y=0, centered=False, warp_pointer=False):
+    def show(self, x=None, y=None, centered=False, warp_pointer=False):
         """Display the popup. Can be centered on screen."""
         if not self.configured:
             self._configure()
+        if x is None:
+            x = self.qtile.current_screen.x
+
+        if y is None:
+            y = self.qtile.current_screen.y
+
         if centered:
-            x = int((self.qtile.current_screen.width - self.popup.width) / 2)
-            y = int((self.qtile.current_screen.height - self.popup.height) / 2)
+            x = (
+                int((self.qtile.current_screen.width - self.popup.width) / 2)
+                + self.qtile.current_screen.x
+            )
+            y = (
+                int((self.qtile.current_screen.height - self.popup.height) / 2)
+                + self.qtile.current_screen.y
+            )
+
         self.popup.x = x
         self.popup.y = y
         self.popup.place()
