@@ -26,8 +26,9 @@ import pytest
 from dbus_next.errors import InterfaceNotFoundError, InvalidIntrospectionError
 from libqtile.log_utils import init_log
 
+import qtile_extras.resources.dbusmenu
 import qtile_extras.widget
-from qtile_extras.widget.statusnotifier import DBusMenuItem
+from qtile_extras.resources.dbusmenu import DBusMenuItem
 from test.helpers import Retry  # noqa: I001
 
 
@@ -175,11 +176,9 @@ async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
 
             return Bus()
 
-    monkeypatch.setattr("qtile_extras.widget.statusnotifier.MessageBus", MockBus)
+    monkeypatch.setattr("qtile_extras.resources.dbusmenu.MessageBus", MockBus)
 
-    menu = qtile_extras.widget.statusnotifier.DBusMenu(
-        None, "test.qtile_extras.menu", "/DBusMenu"
-    )
+    menu = qtile_extras.resources.dbusmenu.DBusMenu("test.qtile_extras.menu", "/DBusMenu")
 
     started = await menu.start()
 

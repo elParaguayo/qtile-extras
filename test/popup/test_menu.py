@@ -25,7 +25,7 @@ def test_popup_menu_from_dbus(manager):
         textwrap.dedent(
             """
         from qtile_extras.popup.menu import PopupMenu
-        from qtile_extras.widget.statusnotifier import DBusMenuItem
+        from qtile_extras.resources.dbusmenu import DBusMenuItem
 
         items = [
             DBusMenuItem(
