@@ -318,7 +318,9 @@ class TestManager:
         if not success():
             raise AssertionError("Window could not be killed...")
 
-    def test_window(self, name, floating=False, wm_type="normal", export_sni=False):
+    def test_window(
+        self, name, floating=False, wm_type="normal", export_sni=False, export_global_menu=False
+    ):
         """
         Create a simple window in X or Wayland. If `floating` is True then the wmclass
         is set to "dialog", which triggers auto-floating based on `default_float_rules`.
@@ -337,6 +339,8 @@ class TestManager:
         args = [python, path, "--name", wmclass, name, wm_type]
         if export_sni:
             args.append("export_sni_interface")
+        if export_global_menu:
+            args.append("export_global_menu")
         return self._spawn_window(*args)
 
     def test_notification(self, name="notification"):

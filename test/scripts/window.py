@@ -44,6 +44,104 @@ from dbus_next.service import ServiceInterface, dbus_property, method, signal
 icon_path = Path(__file__).parent / ".." / "resources" / "icons" / "menuitem.png"
 
 
+class GlobalMenu(ServiceInterface):
+    """
+    Simplified GlobalMenu interface.
+    """
+
+    def __init__(self, window, kill, *args):
+        ServiceInterface.__init__(self, *args)
+        self.window = window
+        self.kill = kill
+
+    @signal()
+    def LayoutUpdated(self) -> "ui":
+        return [1, 0]
+
+    @method()
+    def AboutToShow(self, id: "i") -> "b":
+        return True
+
+    @method()
+    def GetLayout(self, parent_id: "i", recursion_depth: "i", properties: "as") -> "u(ia{sv}av)":
+
+        if parent_id == 0:
+            return [
+                1,
+                [
+                    1,
+                    {},
+                    [
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                1,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Qtile"),
+                                    "children-display": Variant("s", "submenu"),
+                                },
+                                [],
+                            ],
+                        ),
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                2,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Test"),
+                                },
+                                [],
+                            ],
+                        ),
+                    ],
+                ],
+            ]
+
+        elif parent_id == 1:
+            return [
+                1,
+                [
+                    1,
+                    {},
+                    [
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                10,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Item 1"),
+                                },
+                                [],
+                            ],
+                        ),
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                11,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Quit"),
+                                },
+                                [],
+                            ],
+                        ),
+                    ],
+                ],
+            ]
+
+    @method()
+    def Event(self, id: "i", event_id: "s", data: "v", timestamp: "u"):
+        if id == 11:
+            self.kill()
+
+
 class SNIMenu(ServiceInterface):
     """
     Simplified DBusMenu interface.
@@ -188,6 +286,8 @@ if __name__ == "__main__":
     # Check if we want to export a StatusNotifierItem interface
     sni = "export_sni_interface" in sys.argv
 
+    global_menu = "export_global_menu" in sys.argv
+
     win = Gtk.Window(title=title)
     win.connect("destroy", Gtk.main_quit)
     win.connect("key-press-event", Gtk.main_quit)
@@ -234,5 +334,31 @@ if __name__ == "__main__":
             )
         )
 
+    if global_menu:
+        bus = MessageBus().connect_sync()
+
+        menu = GlobalMenu(win, Gtk.main_quit, "com.canonical.dbusmenu")
+
+        # Export interfaces on the bus
+        bus.export("/GlobalMenu", menu)
+
+        # Request the service name
+        bus.request_name_sync(f"test.qtile.window-global-menu-{title.replace(' ','-')}")
+
     win.show_all()
+
+    if global_menu:
+        wid = win.get_property("window").get_xid()
+        msg = bus.call_sync(
+            Message(
+                message_type=MessageType.METHOD_CALL,
+                destination="com.canonical.AppMenu.Registrar",
+                interface="com.canonical.AppMenu.Registrar",
+                path="/com/canonical/AppMenu/Registrar",
+                member="RegisterWindow",
+                signature="uo",
+                body=[wid, "/GlobalMenu"],
+            )
+        )
+
     Gtk.main()
