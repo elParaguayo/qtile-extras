@@ -30,6 +30,7 @@ widgets = {
     "ALSAWidget": "alsavolumecontrol",
     "AnalogueClock": "analogueclock",
     "BrightnessControl": "brightnesscontrol",
+    "GlobalMenu": "globalmenu",
     "LiveFootballScores": "livefootballscores",
     "WiFiIcon": "network",
     "ScriptExit": "scriptexit",

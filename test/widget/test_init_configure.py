@@ -56,6 +56,7 @@ no_test = []
 # To test a widget only under one backend, list the widget class here
 exclusive_backend = {
     # widgets.Systray: "x11",
+    extrawidgets.GlobalMenu: "x11"
 }
 
 ################################################################################
