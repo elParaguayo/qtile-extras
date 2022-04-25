@@ -28,6 +28,7 @@ from qtile_extras.widget.decorations import inject_decorations
 
 widgets = {
     "ALSAWidget": "alsavolumecontrol",
+    "AnalogueClock": "analogueclock",
     "BrightnessControl": "brightnesscontrol",
     "LiveFootballScores": "livefootballscores",
     "WiFiIcon": "network",
