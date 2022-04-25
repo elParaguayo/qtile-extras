@@ -24,7 +24,7 @@ import os
 from typing import TYPE_CHECKING
 
 import cairocffi
-from libqtile import configurable, hook, pangocffi
+from libqtile import bar, configurable, hook, pangocffi
 from libqtile.backend.x11.xkeysyms import keysyms
 from libqtile.command import interface
 from libqtile.images import Img
@@ -106,6 +106,8 @@ class _PopupLayout(configurable.Configurable):
         # Identify keysyms for keybaord navigation
         self.keys = {k: [keysyms[key] for key in v] for k, v in self.keymap.items()}
 
+        self.queued_draws = []
+
     def _configure(self):
         """
         This method creates an instances of a Popup window which serves as the
@@ -159,12 +161,12 @@ class _PopupLayout(configurable.Configurable):
         """
         self.popup.clear()
         for c in self.controls:
-            c.drawer.ctx.save()
-            c.drawer.ctx.translate(c.offsetx, c.offsety)
-            c.paint()
-            c.paint_border()
-            c.drawer.ctx.restore()
+            c.draw()
         self.popup.draw()
+
+        while self.queued_draws:
+            func = self.queued_draws.pop()
+            func()
 
     def show(self, x=None, y=None, centered=False, warp_pointer=False):
         """Display the popup. Can be centered on screen."""
@@ -189,8 +191,8 @@ class _PopupLayout(configurable.Configurable):
         self.popup.x = x
         self.popup.y = y
         self.popup.place()
-        self.popup.unhide()
         self.draw()
+        self.popup.unhide()
 
         if warp_pointer:
             self.qtile.core.warp_pointer(
@@ -557,11 +559,13 @@ class _PopupWidget(configurable.Configurable):
         self._highlight = False
         self.placed = False
         self.focused = False
+        self.configured = False
 
     def _configure(self, qtile, container):
         self.qtile = qtile
         self.container = container
         self.drawer = container.popup.drawer
+        self.configured = True
 
     def add_callbacks(self, defaults):
         """
@@ -573,6 +577,13 @@ class _PopupWidget(configurable.Configurable):
 
     def paint(self):
         raise NotImplementedError
+
+    def draw(self):
+        self.drawer.ctx.save()
+        self.drawer.ctx.translate(self.offsetx, self.offsety)
+        self.paint()
+        self.paint_border()
+        self.drawer.ctx.restore()
 
     def paint_border(self):
         if not (self._highlight and self.highlight_method == "border"):
@@ -948,3 +959,131 @@ class PopupImage(_PopupWidget):
         self.drawer.ctx.mask_surface(self.img.surface, 0, 0)
         self.drawer.ctx.fill()
         self.drawer.ctx.restore()
+
+
+class ControlBar:
+    """
+    Widget's rely on various attributes of their parent `Bar`. However,
+    in a popup window there is no `Bar` so we need to create an object
+    which provides the correct attributes but pulls these properties from
+    the popup window instead.
+    """
+
+    def __init__(self, control: _PopupLayout):
+        self.control = control
+        self.horizontal = control.horizontal
+        self.left = control.vertical_left
+
+    @property
+    def width(self):
+        return self.control.width
+
+    @property
+    def height(self):
+        return self.control.height
+
+    @property
+    def window(self):
+        return self.control.container.popup.win
+
+    @property
+    def background(self):
+        return self.control._background or self.control.container.popup.background
+
+    @property
+    def size(self):
+        if self.horizontal:
+            return self.height
+        return self.width
+
+    @property
+    def border_width(self):
+        return (0, 0, 0, 0)
+
+    @property
+    def screen(self):
+        class Obj:
+            def __init__(self, parent):
+                self.parent = parent
+
+            @property
+            def top(self):
+                if self.parent.horizontal:
+                    return self.parent
+
+            @property
+            def bottom(self):
+                return False
+
+            @property
+            def left(self):
+                if not self.parent.horizontal and self.parent.left:
+                    return self.parent
+
+            @property
+            def right(self):
+                if not self.parent.horizontal and not self.parent.left:
+                    return self.parent
+
+        return Obj(self)
+
+    def draw(self):
+        self.control.container.draw()
+
+
+class PopupWidget(_PopupWidget):
+    """
+    Control to display a Qtile widget in a Popup window.
+
+    Mouse clicks are passed on to the widgets.
+
+    Currently, widgets will be sized based on the dimensions of the control.
+    This will override any width/stretching settings in thw widget.
+    """
+
+    defaults = [
+        ("widget", None, "Widget instance."),
+        ("horizontal", True, "Widget is horizontal. False = vertical."),
+        (
+            "vertical_left",
+            True,
+            "If using vertical orientation, mimic bar on left hand side of screen "
+            "(causes text to read from bottom to top).",
+        ),
+    ]
+
+    def __init__(self, **config):
+        _PopupWidget.__init__(self, **config)
+        self.add_defaults(PopupWidget.defaults)
+        self.add_callbacks({"Button1": self.widget.draw})
+
+    def _configure(self, qtile, container):
+        _PopupWidget._configure(self, qtile, container)
+        if self.widget is None:
+            logger.warning("PopupWidget control created with no widget.")
+            return
+
+        # Force the widget's length to be the same as the control
+        self.widget.length_type = bar.STATIC
+        self.widget.length = self.width if self.horizontal else self.height
+
+        # Configure the widget
+        self.widget._configure(qtile, ControlBar(self))
+
+        # Set the correct offsets for positioning the widget in the popup window
+        self.widget.offsetx = self.offsetx
+        self.widget.offsety = self.offsety
+
+    def paint(self):
+        # Not sure why but the widget draw function needs to be called outside of the
+        # popup's draw call... Will/may investigate later...
+        self.qtile.call_soon(self.widget.draw)
+
+    def button_press(self, x, y, button):
+        _PopupWidget.button_press(self, x, y, button)
+        self.widget.button_press(x, y, button)
+
+    def info(self):
+        info = _PopupWidget.info(self)
+        info["widget"] = self.widget.info() if self.widget else dict()
+        return info
