@@ -325,3 +325,101 @@ def test_multiple_screens(manager):
     assert info["height"] == 200
     assert info["x"] == 500
     assert info["y"] == 200
+
+
+def test_popup_widgets(manager):
+    layout = textwrap.dedent(
+        """
+        from libqtile import widget
+        from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupWidget
+        self.popup = PopupRelativeLayout(
+            self,
+            controls=[
+                PopupWidget(
+                    widget=widget.TextBox("TEST"),
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    width=0.4,
+                    height=0.4
+                ),
+                PopupWidget(
+                    widget=widget.CPUGraph(),
+                    pos_x=0.5,
+                    pos_y=0.1,
+                    width=0.4,
+                    height=0.4
+                ),
+                PopupWidget(
+                    widget=widget.Clock(),
+                    pos_x=0.1,
+                    pos_y=0.5,
+                    width=0.8,
+                    height=0.4
+                ),
+            ],
+            margin=0
+        )
+
+        self.popup.show()
+    """
+    )
+    manager.c.eval(layout)
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+
+    for control in info["controls"]:
+        # Check that widget is created (provide its info)
+        assert control["widget"]
+
+        # Check that widget fits the control
+        for key in ["height", "width"]:
+            assert control[key] == control["widget"][key]
+
+        assert control["width"] == control["widget"]["length"]
+
+
+def test_popup_widgets_vertical(manager):
+    layout = textwrap.dedent(
+        """
+        from libqtile import widget
+        from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupWidget
+        self.popup = PopupRelativeLayout(
+            self,
+            controls=[
+                PopupWidget(
+                    widget=widget.TextBox("TEST ONE"),
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    width=0.4,
+                    height=0.8,
+                    horizontal=False
+                ),
+                PopupWidget(
+                    widget=widget.TextBox("TEST TWO"),
+                    pos_x=0.5,
+                    pos_y=0.1,
+                    width=0.4,
+                    height=0.8,
+                    horizontal=False,
+                    vertical_left=False
+                ),
+            ],
+            margin=0
+        )
+
+        self.popup.show()
+    """
+    )
+    manager.c.eval(layout)
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+
+    for control in info["controls"]:
+        # Check that widget is created (provide its info)
+        assert control["widget"]
+
+        # Check that widget fits the control
+        for key in ["height", "width"]:
+            assert control[key] == control["widget"][key]
+
+        assert control["height"] == control["widget"]["length"]

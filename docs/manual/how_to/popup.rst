@@ -35,6 +35,7 @@ Currently, the following controls are provided:
 - ``PopupText``: a simple text display object
 - ``PopupImage``: a control to display an image
 - ``PopupSlider``: a control to draw a line which marks a particular value (e.g. volume level)
+- ``PopupWidget``: a control to display a Qtile widget in the popup
 
 Configuration options for these controls can be found on
 :ref:`the reference page <ref-popup-controls>`.
@@ -140,6 +141,69 @@ Below is an example of creating a power menu in your ``config.py``.
 Now, when you press ``Mod+shift+q`` you should see a menu looking like this:
 
 .. image:: /_static/images/powermenu.png
+
+
+Using widgets in a popup
+========================
+
+It is possible to display widgets in a popup window and not just in the bar. This is possible by using
+the ``PopupWidget`` control.
+
+Below is a quick example for displaying a number of graph widgets in a popup:
+
+.. code:: python
+
+    from libqtile import widget
+    from qtile_extras.popup.toolkit import (
+        PopupRelativeLayout,
+        PopupWidget
+    )
+
+    def show_graphs(qtile)
+        controls = [
+            PopupWidget(
+                widget=widget.CPUGraph(),
+                width=0.45,
+                height=0.45,
+                pos_x=0.05,
+                pos_y=0.05
+            ),
+            tk.PopupWidget(
+                widget=widget.NetGraph(),
+                width=0.45,
+                height=0.45,
+                pos_x=0.5,
+                pos_y=0.05
+            ),
+            tk.PopupWidget(
+                widget=widget.MemoryGraph(),
+                width=0.9,
+                height=0.45,
+                pos_x=0.05,
+                pos_y=0.5
+            )
+        ]
+
+        layout = tk.PopupRelativeLayout(
+            qtile,
+            width=1000,
+            height=200,
+            controls=controls,
+            background="00000060",
+            initial_focus=None,
+            close_on_click=False
+        )
+        layout.show(centered=True)
+
+    keys = [
+        ...
+        Key([mod, "shift"], "g", lazy.function(show_graphs))
+        ...
+    ]
+
+Pressing ``Mod+shift+g`` will present a popup window looking like this:
+
+.. image:: /_static/images/popupgraphs.png
 
 Extending widgets
 =================
