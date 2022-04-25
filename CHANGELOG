@@ -1,3 +1,4 @@
+2022-05-08: [FEATURE] Add AnalogueClock widget
 2022-04-29: [FEATURE] Add ability to display widgets in popup window
 2022-03-16: [BUGFIX] Better positioning of popups on multiscreen setups (#50)
 2022-03-15: [BUGFIX] Ensure toolkit disables naviagation when no focusable controls (#49)
