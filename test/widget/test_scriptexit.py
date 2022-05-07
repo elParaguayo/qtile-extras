@@ -107,7 +107,7 @@ def test_error_handling(caplog, temp_output):
     def no_op(*args, **kwargs):
         pass
 
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
 
     # Adding an extra arg to the script will cause it to raise an error when run
     invalid_script = f"{temp_output} extra_arg"

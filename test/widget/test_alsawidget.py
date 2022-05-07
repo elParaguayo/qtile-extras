@@ -216,7 +216,7 @@ def test_no_amixer(monkeypatch, caplog):
     def which(_):
         return None
 
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.shutil.which", which)
     widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget()
     widget.get_volume()

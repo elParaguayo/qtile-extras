@@ -32,7 +32,7 @@ def bad_importer(*args, **kwargs):
 
 def test_init_import_error(monkeypatch, caplog):
     """Check we get an ImportError widget with missing import?"""
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
     monkeypatch.setattr("qtile_extras.widget.importlib.import_module", bad_importer)
     widget = qtile_extras.widget.WiFiIcon()
     assert isinstance(widget, ImportErrorWidget)
@@ -41,7 +41,7 @@ def test_init_import_error(monkeypatch, caplog):
 
 def test_init_import_error_no_fallback(monkeypatch, caplog):
     """If there's no fallback, we get an ImportError"""
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
     monkeypatch.setattr("qtile_extras.widget.importlib.import_module", bad_importer)
     monkeypatch.setattr("libqtile.widget.import_error.make_error", None)
     reload(qtile_extras.widget)

@@ -272,7 +272,7 @@ def test_brightness_power_saving(bright_manager):
 
 
 def test_brightness_logging_no_max(caplog):
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
     with tempfile.TemporaryDirectory() as tempdir:
         with open(os.path.join(tempdir, "brightness"), "w") as f:
             f.write(str(500))
@@ -294,7 +294,7 @@ def test_brightness_logging_no_max(caplog):
 
 def test_brightness_logging_power_saving(caplog):
     """Test log messages for power saving levels."""
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
     with tempfile.TemporaryDirectory() as tempdir:
         with open(os.path.join(tempdir, "brightness"), "w") as f:
             f.write(str(500))
@@ -331,7 +331,7 @@ def test_brightness_logging_invalid_file(caplog):
     """Test log messages when no brightness device."""
     path = "/non_existent/file"
 
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
 
     widget = qtile_extras.widget.BrightnessControl(
         max_brightness_path=None, max_brightness=100, device=path
@@ -371,7 +371,7 @@ def test_brightness_logging_invalid_file(caplog):
 
 def test_brightness_logging_invalid_value(caplog):
     """Test log messages for invalid brightness value"""
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
     with tempfile.TemporaryDirectory() as tempdir:
         with open(os.path.join(tempdir, "brightness"), "w") as f:
             f.write("INVALID")

@@ -163,7 +163,7 @@ def test_statusnotifier_dbusmenuitem_repr():
 
 @pytest.mark.asyncio
 async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
 
     class MockBus:
         error = InterfaceNotFoundError()

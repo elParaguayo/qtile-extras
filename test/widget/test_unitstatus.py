@@ -79,7 +79,7 @@ def test_unit_status_defaults(unit_manager):
 
 def test_unit_status_invalid_bus(caplog):
     """Check for a valid bus"""
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
 
     widget = qtile_extras.widget.UnitStatus(bus_name="test_bus")
     assert caplog.record_tuples == [
