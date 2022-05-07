@@ -41,7 +41,7 @@ def test_single_or_four():
 
 
 def test_single_or_four_logging(caplog):
-    init_log(logging.INFO, log_path=None, log_color=False)
+    init_log(logging.INFO)
 
     log_message = "TEST should be a single number or a list of 1 or 4 values"
 
