@@ -70,9 +70,9 @@ def test_wifiicon(manager_nospawn, wifi_manager):
     # Icon width is 60 (wifi_width: 30 + 2x padding_x: 3)
     assert manager_nospawn.c.widget["wifiicon"].info()["width"] == 36
 
-    # Click on widget to show text
+    # Click on widget to show text - width should be bigger now
     manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
-    assert manager_nospawn.c.widget["wifiicon"].info()["width"] == 157
+    assert manager_nospawn.c.widget["wifiicon"].info()["width"] > 36
 
     # Hide the text
     manager_nospawn.c.widget["wifiicon"].eval("self.hide()")
