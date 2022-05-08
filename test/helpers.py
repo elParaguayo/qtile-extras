@@ -23,7 +23,7 @@ from libqtile import command, config, ipc, layout
 from libqtile.confreader import Config
 from libqtile.core.manager import Qtile
 from libqtile.lazy import lazy
-from libqtile.log_utils import init_log
+from libqtile.log_utils import init_log, logger
 from libqtile.resources import default_config
 
 # the sizes for outputs
@@ -177,6 +177,8 @@ class TestManager:
                 kore = self.backend.create()
                 os.environ.update(self.backend.env)
                 init_log(self.log_level)
+                if hasattr(self, "log_queue"):
+                    logger.addHandler(logging.handlers.QueueHandler(self.log_queue))
                 Qtile(
                     kore,
                     config_class(),
