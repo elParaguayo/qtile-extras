@@ -42,6 +42,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
+        ("font_colour", "ffffff", "Font colour for information text"),
         ("active_colour", "ffffff", "Colour for wifi strength."),
         ("inactive_colour", "666666", "Colour for wifi background."),
         ("update_interval", 1, "Polling interval in secs."),
@@ -160,7 +161,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         else:
             layout = self.drawer.textlayout(
-                text, "ffffff", self.font, self.fontsize, None, wrap=False
+                text, self.font_colour, self.font, self.fontsize, None, wrap=False
             )
             return layout
 
