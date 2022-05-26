@@ -72,7 +72,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
-        ("font_colour", "ffffff", "Text colour"),
+        ("foreground", "ffffff", "Text colour"),
         ("team", "Liverpool", "Team whose scores you want to display"),
         ("teams", [], "List of other teams you want to display"),
         ("leagues", [], "List of leagues you want to display"),
@@ -143,6 +143,14 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(LiveFootballScores.defaults)
         self.add_defaults(base.MarginMixin.defaults)
+
+        if "font_colour" in config:
+            self.foreground = config["font_colour"]
+            logger.warning(
+                "The use of `font_colour` is deprecated. "
+                "Please update your config to use `foreground` instead."
+            )
+
         self.flags = {}
         self.reset_flags()
 
@@ -387,7 +395,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         # Create a text box
         layout = self.drawer.textlayout(
-            self.text, self.font_colour, self.font, self.fontsize, None, wrap=False
+            self.text, self.foreground, self.font, self.fontsize, None, wrap=False
         )
 
         # We want to centre this vertically

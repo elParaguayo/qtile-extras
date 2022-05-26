@@ -458,3 +458,16 @@ def test_matchevent_module(lfs_match):
     status = MatchEvent(MatchEvent.TYPE_STATUS, che)
     assert status.is_status_change
     assert status.is_finished
+
+
+def test_livefootballscores_deprecated_font_colour(caplog):
+    widget = qtile_extras.widget.LiveFootballScores(font_colour="ffffff")
+
+    assert caplog.record_tuples[0] == (
+        "libqtile",
+        logging.WARNING,
+        "The use of `font_colour` is deprecated. "
+        "Please update your config to use `foreground` instead.",
+    )
+
+    assert widget.foreground == "ffffff"

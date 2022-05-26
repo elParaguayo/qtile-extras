@@ -66,6 +66,14 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(WiFiIcon.defaults)
         self.add_defaults(base.PaddingMixin.defaults)
+
+        if "font_colour" in config:
+            self.foreground = config["font_colour"]
+            logger.warning(
+                "The use of `font_colour` is deprecated. "
+                "Please update your config to use `foreground` instead."
+            )
+
         self.connections = []
         self.wifi_width = 0
         self.show_text = False

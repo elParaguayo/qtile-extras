@@ -400,3 +400,20 @@ def test_brightness_hide_bar(bright_manager):
     assert widget.info()["width"] == 75
 
     widget_hidden(widget)
+
+
+def test_brightness_deprecated_font_colour(caplog):
+    with tempfile.TemporaryDirectory() as tempdir:
+        with open(os.path.join(tempdir, "brightness"), "w") as f:
+            f.write(str(500))
+
+        widget = qtile_extras.widget.BrightnessControl(font_colour="ffffff")
+
+    assert caplog.record_tuples[0] == (
+        "libqtile",
+        logging.WARNING,
+        "The use of `font_colour` is deprecated. "
+        "Please update your config to use `foreground` instead.",
+    )
+
+    assert widget.foreground == "ffffff"
