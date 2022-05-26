@@ -17,6 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import logging
+
 import libqtile.bar
 import libqtile.config
 import libqtile.confreader
@@ -77,3 +79,16 @@ def test_wifiicon(manager_nospawn, wifi_manager):
     # Hide the text
     manager_nospawn.c.widget["wifiicon"].eval("self.hide()")
     assert manager_nospawn.c.widget["wifiicon"].info()["width"] == 36
+
+
+def test_wifiicon_deprecated_font_colour(caplog):
+    widget = qtile_extras.widget.network.WiFiIcon(font_colour="ffffff")
+
+    assert caplog.record_tuples[0] == (
+        "libqtile",
+        logging.WARNING,
+        "The use of `font_colour` is deprecated. "
+        "Please update your config to use `foreground` instead.",
+    )
+
+    assert widget.foreground == "ffffff"

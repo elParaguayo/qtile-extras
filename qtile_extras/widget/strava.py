@@ -89,7 +89,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
-        ("font_colour", "ffffff", "Text colour"),
+        ("foreground", "ffffff", "Text colour"),
         ("text", "{CA:%b} {CD:.1f}km", "Widget text"),
         ("refresh_interval", 1800, "Time to update data"),
         ("startup_delay", 10, "Time before sending first web request"),
@@ -132,6 +132,14 @@ class StravaWidget(base._Widget, base.MarginMixin):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(StravaWidget.defaults)
         self.add_defaults(base.MarginMixin.defaults)
+
+        if "font_colour" in config:
+            self.foreground = config["font_colour"]
+            logger.warning(
+                "The use of `font_colour` is deprecated. "
+                "Please update your config to use `foreground` instead."
+            )
+
         self.data = None
         self.display_text = ""
 
@@ -224,7 +232,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
 
             # Create a text box
             layout = self.drawer.textlayout(
-                self.display_text, self.font_colour, self.font, self.fontsize, None, wrap=False
+                self.display_text, self.foreground, self.font, self.fontsize, None, wrap=False
             )
 
             # We want to centre this vertically

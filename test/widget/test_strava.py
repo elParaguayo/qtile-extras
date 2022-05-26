@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import logging
 from datetime import datetime
 
 import libqtile.bar
@@ -134,3 +135,16 @@ def test_strava_widget_popup(manager_nospawn, strava):
         "\n"
         "TOTAL : 2 runs                  31.1    2:30:00   4:49"
     )
+
+
+def test_strava_deprecated_font_colour(caplog):
+    widget = StravaWidget(font_colour="ffffff")
+
+    assert caplog.record_tuples[0] == (
+        "libqtile",
+        logging.WARNING,
+        "The use of `font_colour` is deprecated. "
+        "Please update your config to use `foreground` instead.",
+    )
+
+    assert widget.foreground == "ffffff"

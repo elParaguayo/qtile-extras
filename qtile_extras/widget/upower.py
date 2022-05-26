@@ -54,7 +54,7 @@ class UPowerWidget(base._Widget):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
-        ("font_colour", "ffffff", "Font colour for information text"),
+        ("foreground", "ffffff", "Font colour for information text"),
         ("battery_height", 10, "Height of battery icon"),
         ("battery_width", 20, "Size of battery icon"),
         ("battery_name", None, "Battery name. None = all batteries"),
@@ -95,6 +95,13 @@ class UPowerWidget(base._Widget):
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(UPowerWidget.defaults)
+
+        if "font_colour" in config:
+            self.foreground = config["font_colour"]
+            logger.warning(
+                "The use of `font_colour` is deprecated. "
+                "Please update your config to use `foreground` instead."
+            )
 
         self.batteries = []
         self.charging = False
@@ -322,7 +329,7 @@ class UPowerWidget(base._Widget):
 
                 # Create a text box
                 layout = self.drawer.textlayout(
-                    text, self.font_colour, self.font, self.fontsize, None, wrap=False
+                    text, self.foreground, self.font, self.fontsize, None, wrap=False
                 )
 
                 # We want to centre this vertically

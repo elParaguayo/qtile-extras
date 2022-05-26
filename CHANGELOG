@@ -1,3 +1,4 @@
+2022-05-26: [CONFIG_BREAK] Use `foreground` to set font colour, rather than `font_colour`
 2022-05-08: [FEATURE] Add GlobalMenu widget (alpha version!)
 2022-05-08: [FEATURE] Add AnalogueClock widget
 2022-04-29: [FEATURE] Add ability to display widgets in popup window

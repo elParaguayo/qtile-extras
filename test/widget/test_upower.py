@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import logging
 import os
 import shutil
 import subprocess
@@ -196,3 +197,16 @@ def test_upower_show_text(manager_nospawn, powerconfig):
 
     # Let the timer hide the text
     text_hidden(manager_nospawn, orig_width)
+
+
+def test_upower_deprecated_font_colour(caplog):
+    widget = UPowerWidget(font_colour="ffffff")
+
+    assert caplog.record_tuples[0] == (
+        "libqtile",
+        logging.WARNING,
+        "The use of `font_colour` is deprecated. "
+        "Please update your config to use `foreground` instead.",
+    )
+
+    assert widget.foreground == "ffffff"

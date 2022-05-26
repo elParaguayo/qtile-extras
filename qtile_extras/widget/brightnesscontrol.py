@@ -63,7 +63,7 @@ class BrightnessControl(base._Widget):
     defaults = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
-        ("font_colour", "ffffff", "Colour of text."),
+        ("foreground", "ffffff", "Colour of text."),
         ("text_format", "{percentage}%", "Text to display."),
         ("bar_colour", "008888", "Colour of bar displaying brightness level."),
         ("error_colour", "880000", "Colour of bar when displaying an error"),
@@ -105,6 +105,13 @@ class BrightnessControl(base._Widget):
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(BrightnessControl.defaults)
+
+        if "font_colour" in config:
+            self.foreground = config["font_colour"]
+            logger.warning(
+                "The use of `font_colour` is deprecated. "
+                "Please update your config to use `foreground` instead."
+            )
 
         self.add_callbacks(
             {"Button4": self.cmd_brightness_up, "Button5": self.cmd_brightness_down}
@@ -251,7 +258,7 @@ class BrightnessControl(base._Widget):
 
         # Create a text box
         layout = self.drawer.textlayout(
-            text, self.font_colour, self.font, self.fontsize, None, wrap=False
+            text, self.foreground, self.font, self.fontsize, None, wrap=False
         )
 
         # We want to centre this vertically
