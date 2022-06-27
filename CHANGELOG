@@ -1,3 +1,4 @@
+2022-06-28: [FEATURE] Add GithubNotifications widget
 2022-06-28: [BUGFIX] Fix keyboard navigation for toolkit (must be on latest git version of qtile)
 2022-05-26: [CONFIG_BREAK] Use `foreground` to set font colour, rather than `font_colour`
 2022-05-08: [FEATURE] Add GlobalMenu widget (alpha version!)
