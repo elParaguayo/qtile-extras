@@ -104,7 +104,7 @@ class _PopupLayout(configurable.Configurable):
             self.keyboard_navigation = False
 
         # Identify keysyms for keybaord navigation
-        self.keys = {k: [keysyms[key] for key in v] for k, v in self.keymap.items()}
+        self.keys = {k: [keysyms[key.lower()] for key in v] for k, v in self.keymap.items()}
 
         self.queued_draws = []
 
