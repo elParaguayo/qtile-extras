@@ -57,7 +57,8 @@ class ImgMask(Img):
         self.drawer.ctx.save()
         self.drawer.set_source_rgb(colour)
         self.drawer.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.drawer.ctx.mask_surface(self.surface, x, y)
+        self.drawer.ctx.translate(x, y)
+        self.drawer.ctx.mask(self.pattern)
         self.drawer.ctx.fill()
         self.drawer.ctx.restore()
 
