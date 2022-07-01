@@ -1,3 +1,4 @@
+cffi<=1.15.0
 setuptools_scm
 sphinx
 sphinx_rtd_theme
