@@ -1,3 +1,4 @@
+2022-07-02: [BUGFIX] Fix WordClock crash at certain times
 2022-07-01: [FEATURE] Add CurrentLayoutIcon widget (with colour icons)
 2022-06-28: [FEATURE] Add GithubNotifications widget
 2022-06-28: [BUGFIX] Fix keyboard navigation for toolkit (must be on latest git version of qtile)

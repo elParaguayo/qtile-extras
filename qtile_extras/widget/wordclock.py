@@ -111,7 +111,7 @@ class WordClock(base._Widget):
         # Is our language one where we need to increment the hour after 30 mins
         # e.g. 9:40 is "Twenty to ten"
         if self.config.HOUR_INCREMENT and (minute > self.config.HOUR_INCREMENT_TIME):
-            hour += 1
+            hour = (hour + 1) % 24
 
         # Use a time object so we can use string formatting for the time.
         tm = time(hour, minute)
