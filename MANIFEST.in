@@ -1,0 +1,19 @@
+include CHANGELOG
+include LICENSE
+include README.md
+include MANIFEST.in
+
+exclude coverage.xml
+exclude tox.ini
+exclude PKGBUILD
+exclude .readthedocs.yaml
+
+graft qtile_extras/resources
+graft test
+
+prune docs
+prune scripts
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude stubs *
