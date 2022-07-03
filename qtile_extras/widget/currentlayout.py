@@ -29,14 +29,18 @@ class CurrentLayoutIcon(LayoutIcon):
     """
     A modified version of Qtile's ``CurrentLayoutIcon``.
 
-    This version sets the colour of the icon via the ``foreground``
-    parameter. This behaviour can be disabled by using setting ``use_mask``
-    to ``False``.
+    The default version behaves the same as the main qtile version of the widget.
+    However, if you set ``use_mask`` to ``True`` then you can set the colour of
+    the icon via the ``foreground`` parameter.
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
-        ("use_mask", True, "Uses the icon file as a mask. Set to False to show original icon.")
+        (
+            "use_mask",
+            False,
+            "Uses the icon file as a mask. Icon colour will be set via the ``foreground`` parameter.",
+        )
     ]
 
     _screenshots = [
@@ -46,6 +50,10 @@ class CurrentLayoutIcon(LayoutIcon):
     def __init__(self, **config):
         LayoutIcon.__init__(self, **config)
         self.add_defaults(CurrentLayoutIcon.defaults)
+
+        # The original widget calculates a new scale value. We don't want to use that with the ImgMask.
+        if self.use_mask:
+            self.scale = config.get("scale", 1)
 
     def _setup_images(self):
         """
@@ -74,7 +82,8 @@ class CurrentLayoutIcon(LayoutIcon):
                 )
                 return
 
-            size = self.bar.height - 1
+            # Resize the image to the bar and adjust for any scaling.
+            size = int((self.bar.height - 1) * self.scale)
             img.resize(size)
 
             if img.width > self.length:
