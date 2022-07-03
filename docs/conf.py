@@ -16,6 +16,8 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+import setuptools_scm
+
 
 class Mock(MagicMock):
     # xcbq does a dir() on objects and pull stuff out of them and tries to sort
@@ -66,8 +68,17 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'qtile-extras'
-copyright = '2021, elParaguayo'
+copyright = '2021-2022, elParaguayo'
 author = 'elParaguayo'
+
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+#
+# The short X.Y version.
+version = setuptools_scm.get_version(root="..")
+# The full version, including alpha/beta/rc tags.
+release = version
 
 
 # -- General configuration ---------------------------------------------------
