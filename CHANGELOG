@@ -1,3 +1,4 @@
+2022-07-03: [BUGFIX] Fix scaling on CurrentLayoutIcon and disable `use_mask=True` default
 2022-07-02: [PACKAGING] Fix missing files in package
 2022-07-02: [BUGFIX] Fix WordClock crash at certain times
 2022-07-01: [FEATURE] Add CurrentLayoutIcon widget (with colour icons)
