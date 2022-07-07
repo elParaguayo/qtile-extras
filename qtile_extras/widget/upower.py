@@ -129,6 +129,8 @@ class UPowerWidget(base._Widget):
             (100, "Normal"),
         ]
         self.borders = {True: self.border_charge_colour, False: self.border_colour}
+        if self.fontsize is None:
+            self.fontsize = self.bar.height - self.bar.height / 5
 
     async def _config_async(self):
         await self._setup_dbus()

@@ -160,7 +160,9 @@ def test_upower_charging(manager_nospawn, powerconfig):
 
 @upower_dbus_servive
 @pytest.mark.parametrize(
-    "powerconfig", [{"battery_name": "BAT1", "text_displaytime": 0.5}], indirect=True
+    "powerconfig",
+    [{"battery_name": "BAT1", "text_displaytime": 0.5, "fontsize": None}],
+    indirect=True,
 )
 def test_upower_show_text(manager_nospawn, powerconfig):
     manager_nospawn.start(powerconfig)
