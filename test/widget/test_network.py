@@ -25,7 +25,13 @@ import libqtile.confreader
 import libqtile.layout
 import pytest
 
-import qtile_extras.widget.network
+try:
+    import qtile_extras.widget.network
+except ImportError as e:
+    if "iwlib" in str(e):
+        pytest.skip("No iwlib installed", allow_module_level=True)
+    else:
+        raise e
 
 
 def get_status(interface):
