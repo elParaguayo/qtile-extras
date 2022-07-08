@@ -61,7 +61,6 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
         # We take a lock here as, otherwise, there's a potential race
         # condition and we only want to start the registrar once.
         async with lock:
-            logger.warning(f"Starting Registrar: {self.started=}")
             if not self.started:
                 self.bus = await MessageBus().connect()
                 self.bus.export(GLOBAL_MENU_PATH, self)
