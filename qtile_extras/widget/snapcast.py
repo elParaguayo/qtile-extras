@@ -126,7 +126,14 @@ class SnapCast(base._Widget):
                     self.current_group = {group["name"]: group["id"]}
 
     def _check_server(self):
-        status = self._send_request(SERVER_STATUS)
+        future = self.qtile.run_in_executor(self._get_data)
+        future.add_done_callback(self._check_response)
+
+    def _get_data(self):
+        return self._send_request(SERVER_STATUS)
+
+    def _check_response(self, reply):
+        status = reply.result()
 
         if not status:
             return
@@ -155,10 +162,6 @@ class SnapCast(base._Widget):
             self._proc = None
 
         self.draw()
-
-    def refresh(self):
-        future = self.qtile.run_in_executor(self._get_data)
-        future.add_done_callback(self._read_data)
 
     def calculate_length(self):
         if self.img is None:
