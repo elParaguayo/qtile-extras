@@ -1,3 +1,4 @@
+2022-07-21: [BUGFIX] Fux CurrentLayoutIcon to work with latest git version
 2022-07-21: [BUGFIX] Fix blocking API calls in Snapcast and GithubNotification widgets
 2022-07-07: [BUGFIX] Fix UPowerWidget not showing text on click when fontsize is None
 2022-07-03: [PACKAGING] Use git versioning details
