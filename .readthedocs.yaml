@@ -13,5 +13,6 @@ formats:
 python:
   version: 3.8
   install:
+  - requirements: docs/requirements-cffi-pin.txt
   - requirements: docs/requirements.txt
   - requirements: docs/rtd_requirements.txt
