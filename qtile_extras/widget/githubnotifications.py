@@ -118,12 +118,18 @@ class GithubNotifications(base._Widget):
             logger.error("No access token provided.")
             return
 
+        future = self.qtile.run_in_executor(self._get_data)
+        future.add_done_callback(self._read_data)
+
+    def _get_data(self):
         headers = {
             "Accept": "application/vnd.github.v3+json",
             "Authorization": f"token {self.token}",
         }
+        return requests.get(NOTIFICATIONS, headers=headers)
 
-        r = requests.get(NOTIFICATIONS, headers=headers)
+    def _read_data(self, reply):
+        r = reply.result()
 
         if r.status_code != 200:
             self.error = True
