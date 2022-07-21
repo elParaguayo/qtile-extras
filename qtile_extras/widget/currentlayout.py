@@ -63,9 +63,18 @@ class CurrentLayoutIcon(LayoutIcon):
             LayoutIcon._setup_images(self)
             return
 
-        for layout_name in self._get_layout_names():
-            icon_file_path = self.find_icon_file_path(layout_name)
-            if icon_file_path is None:
+        for names in self._get_layout_names():
+            layout_name = names[0]
+            # Python doesn't have an ordered set but we can use a dictionary instead
+            # First key is the layout's name (which may have been set by the user),
+            # the second is the class name. If these are the same (i.e. the user hasn't
+            # set a name) then there is only one key in the dictionary.
+            layouts = dict.fromkeys(names)
+            for layout in layouts.keys():
+                icon_file_path = self.find_icon_file_path(layout)
+                if icon_file_path:
+                    break
+            else:
                 logger.warning('No icon found for layout "%s"', layout_name)
                 icon_file_path = self.find_icon_file_path("unknown")
 
