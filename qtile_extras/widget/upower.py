@@ -64,6 +64,7 @@ class UPowerWidget(base._Widget):
         ("fill_normal", "dbdbe0", "Fill when normal"),
         ("fill_low", "aa00aa", "Fill colour when battery low"),
         ("fill_critical", "cc0000", "Fill when critically low"),
+        ("fill_charge", None, "Override fill colour when charging"),
         ("margin", 2, "Margin on sides of widget"),
         ("spacing", 5, "Space between batteries"),
         ("percentage_low", 0.20, "Low level threshold."),
@@ -289,9 +290,12 @@ class UPowerWidget(base._Widget):
             percentage = battery["fraction"]
 
             # Get the appropriate fill colour
-            # This finds the first value in self_colours which is greater than
-            # the current battery level and returns the colour string
-            fill = next(x[1] for x in self.colours if percentage <= x[0])
+            if self.charging and self.fill_charge:
+                fill = self.fill_charge
+            else:
+                # This finds the first value in self_colours which is greater than
+                # the current battery level and returns the colour string
+                fill = next(x[1] for x in self.colours if percentage <= x[0])
 
             # Choose border colour
             if (percentage <= self.percentage_critical) and not self.charging:
