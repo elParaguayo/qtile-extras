@@ -30,13 +30,12 @@ from qtile_extras.popup.menu import PopupMenu
 from qtile_extras.resources.dbusmenu import DBusMenu
 
 if TYPE_CHECKING:
-    from typing import Any, Callable
+    from typing import Any, Callable, Optional
 
 NO_MENU = "/NO_DBUSMENU"
 
 
-async def attach_menu(self, display_menu_callback: Callable | None = None):
-    # self.display_menu_callback = display_menu_callback
+async def attach_menu(self):
     self.menu = None
 
     # Check if the default action for this item should be to show a context menu
@@ -50,15 +49,13 @@ async def attach_menu(self, display_menu_callback: Callable | None = None):
 
     # If there is a menu then create and start the menu object
     if menu_path and menu_path != NO_MENU:
-        self.menu = DBusMenu(
-            self.service, menu_path, self.bus, display_menu_callback=display_menu_callback
-        )
+        self.menu = DBusMenu(self.service, menu_path, self.bus)
         await self.menu.start()
 
 
-def get_menu(self, root: int = 0):
+def get_menu(self, root: int = 0, callback: Optional[Callable] = None):
     if self.menu:
-        self.menu.get_menu(root)
+        self.menu.get_menu(root, callback=callback)
 
 
 StatusNotifierItem.attach_menu = attach_menu  # type: ignore
@@ -135,7 +132,7 @@ class StatusNotifier(QtileStatusNotifier):
             self.bar.draw()
 
         def attach_menu(item):
-            task = asyncio.create_task(item.attach_menu(display_menu_callback=self.display_menu))
+            task = asyncio.create_task(item.attach_menu())
             task.add_done_callback(draw)
 
         await host.start(on_item_added=attach_menu, on_item_removed=draw, on_icon_changed=draw)
@@ -160,7 +157,7 @@ class StatusNotifier(QtileStatusNotifier):
     def show_menu(self):
         if not self.selected_item:
             return
-        self.selected_item.get_menu()
+        self.selected_item.get_menu(callback=self.display_menu)
 
     def display_menu(self, menu_items):
         if not menu_items:
@@ -185,5 +182,9 @@ class StatusNotifier(QtileStatusNotifier):
         else:
             x = screen.width - self.bar.width - self.menu.width
             y = min(self.offsety, screen.height - self.menu.height)
+
+        # Adjust the position by the screen's offset
+        x += screen.x
+        y += screen.y
 
         self.menu.show(x, y)
