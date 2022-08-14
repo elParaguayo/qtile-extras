@@ -24,7 +24,12 @@ import libqtile.config
 from libqtile.log_utils import init_log
 
 from qtile_extras import widget
-from qtile_extras.widget.decorations import BorderDecoration, RectDecoration, _Decoration
+from qtile_extras.widget.decorations import (
+    BorderDecoration,
+    PowerLineDecoration,
+    RectDecoration,
+    _Decoration,
+)
 
 
 def test_single_or_four():
@@ -101,3 +106,69 @@ def test_rect_decoration_using_widget_background(manager_nospawn, minimal_conf_n
 
     # Second widget's decoration inherits the colour from the widget
     assert two == "ff0000"
+
+
+def test_powerline_decoration(manager_nospawn, minimal_conf_noscreen):
+    config = minimal_conf_noscreen
+    config.screens = [
+        libqtile.config.Screen(
+            top=libqtile.bar.Bar(
+                [
+                    widget.Spacer(
+                        length=50,
+                        name="one",
+                        background="ff0000",
+                        decorations=[PowerLineDecoration(size=10, path="arrow_left")],
+                    ),
+                    widget.Spacer(
+                        length=50,
+                        name="two",
+                        background="0000ff",
+                        decorations=[PowerLineDecoration(size=10, shift=5, path="arrow_right")],
+                    ),
+                    widget.Spacer(
+                        length=50,
+                        name="three",
+                        background="00ffff",
+                        decorations=[PowerLineDecoration(size=10, path="rounded_left")],
+                    ),
+                    widget.Spacer(
+                        length=50,
+                        name="four",
+                        background="ff00ff",
+                        decorations=[PowerLineDecoration(size=10, shift=5, path="rounded_right")],
+                    ),
+                    widget.Spacer(
+                        length=50,
+                        name="five",
+                        background="ffffff",
+                        decorations=[PowerLineDecoration(size=10, path="zig_zag")],
+                    ),
+                ],
+                10,
+            )
+        )
+    ]
+
+    manager_nospawn.start(config)
+    manager_nospawn.c.bar["top"].eval("self.draw()")
+
+    # First widget should have a length of 50 (widget) + 10 (decoration) = 60
+    assert manager_nospawn.c.widget["one"].info()["length"] == 60
+
+    # Second widget should have a length of 50 (widget) + 5 (decoration - shift) = 55
+    assert manager_nospawn.c.widget["two"].info()["length"] == 55
+
+    _, fg = manager_nospawn.c.widget["one"].eval("self.decorations[0].fg")
+    _, bg = manager_nospawn.c.widget["one"].eval("self.decorations[0].bg")
+
+    # Widget one has a 'forwards' decoration so the background is the current widget and background is the next
+    assert fg == "ff0000"  # widget one's background
+    assert bg == "0000ff"  # widget two's background
+
+    _, fg = manager_nospawn.c.widget["four"].eval("self.decorations[0].fg")
+    _, bg = manager_nospawn.c.widget["four"].eval("self.decorations[0].bg")
+
+    # Widget four has a 'backwards' decoration so the background is the next widget and background is the current
+    assert fg == "ffffff"  # widget five's background
+    assert bg == "ff00ff"  # widget four's background

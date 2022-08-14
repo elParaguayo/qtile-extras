@@ -21,10 +21,14 @@ from __future__ import annotations
 
 import copy
 import math
+from functools import partial
 from typing import TYPE_CHECKING
 
+import cairocffi
 from cairocffi import Context
+from libqtile import bar
 from libqtile.backend.base import Drawer
+from libqtile.confreader import ConfigError
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
@@ -43,6 +47,7 @@ class _Decoration(base.PaddingMixin):
     def __init__(self, **config):
         base.PaddingMixin.__init__(self, **config)
         self.add_defaults(_Decoration.defaults)
+        self._extrawidth = 0
 
     def _configure(self, parent: base._Widget) -> None:
         self.parent = parent
@@ -266,6 +271,263 @@ class BorderDecoration(_Decoration):
         self.ctx.stroke()
 
 
+class PowerLineDecoration(_Decoration):
+    """
+    Widget decoration that can be used to recreate the PowerLine style.
+
+    The advantages of the decoration are:
+      - No fonts needed
+      - The same decoration definition can be used for all widgets (the decoration
+        works out which background and foreground colours to use)
+      - Different styles can be used by changing a few parameters of the decoration
+
+    The decoration works by adding the shape **after** the current widget. The decoration
+    will also be hidden if a widget has zero width (i.e. is hidden).
+
+    The shape is drawn in area whose size is defined by the ``size`` parameter. This area is
+    drawn after the widget but can be shifted back by using the ``shift`` parameter. Shifting
+    too far will result in widget contents being drawn over the shape.
+
+    The default behavious is to draw an arrow pointing right. To change the shape you can
+    use pre-defined paths: "arrow_left", "arrow_right", "forward_slash", "back_slash" and
+    "zig_zag". Alternatively, you can create a custom shape by defining a path. The format
+    is a list of (x, y) tuples. x and y values should be between 0 and 1 to represent the relative position
+    in the additional space created by the decoration. (0, 0) is the top left corner (on a horizontal widget)
+    and (1, 1) is the bottom right corner. The first point in the list is the starting point and then a line will
+    be drawn to each subsequent point. The path is then closed by returning to the first point.
+    Finally, the shape is filled with the background of the current widget.
+
+    .. note::
+
+        The decoration currently only works on horizontal bars. The ``padding_y`` parameter can be
+        used to adjust the vertical size of the decoration. However, note that this won't change
+        the size of the widget's own background. If you want to do that, you can use the following:
+        (currently) have no effect on this decoration.
+
+        .. code:: python
+
+            powerline = {
+                "decorations": [
+                    RectDecoration(use_widget_background=True, padding_y=5, filled=True, radius=0),
+                    PowerLineDecoration(path="arrow_right", padding_y=5)
+                ]
+            }
+
+        The RectDecoration has the same padding and will use the widget's ``background`` parameter as
+        its own colour.
+
+    Example code:
+
+    .. code:: python
+
+        from qtile_extras import widget
+        from qtile_extras.widget.decorations import PowerLineDecoration
+
+        powerline = {
+            "decorations": [
+                PowerLineDecoration()
+            ]
+        }
+
+        screens = [
+            Screen(
+                top=Bar(
+                    [
+                        widget.CurrentLayoutIcon(background="000000", **powerline),
+                        widget.WindowName(background="222222", **powerline),
+                        widget.Clock(background="444444", **powerline),
+                        widget.QuickExit(background="666666")
+                    ],
+                    30
+                )
+            )
+        ]
+
+    The above code generates the following bar:
+
+    .. image:: /_static/images/powerline_example.png
+
+    |
+
+    """
+
+    defaults = [
+        ("size", 15, "Width of shape"),
+        ("path", "arrow_left", "Shape of decoration. See docstring for more info."),
+        ("shift", 0, "Number of pixels to shift the decoration back by."),
+    ]
+
+    _screenshots = [
+        ("powerline_example2.png", "path='arrow_right'"),
+        ("powerline_example3.png", "path='rounded_left'"),
+        ("powerline_example4.png", "path='rounded_right'"),
+        ("powerline_example5.png", "path='forward_slash'"),
+        ("powerline_example6.png", "path='back_slash'"),
+        ("powerline_example7.png", "path='zig_zag'"),
+        (
+            "powerline_example8.png",
+            "path=[(0, 0), (0.5, 0), (0.5, 0.25), (1, 0.25), (1, 0.75), (0.5, 0.75), (0.5, 1), (0, 1)]",
+        ),
+    ]
+
+    # Pre-defined paths
+    paths = {
+        "arrow_left": [(0, 0), (1, 0.5), (0, 1)],
+        "arrow_right": [(0, 0), (1, 0), (0, 0.5), (1, 1), (0, 1)],
+        "forward_slash": [(0, 0), (1, 0), (0, 1)],
+        "back_slash": [(0, 0), (1, 1), (0, 1)],
+        "zig_zag": [(0, 0), (1, 0.2), (0, 0.4), (1, 0.6), (0, 0.8), (1, 1), (0, 1)],
+    }
+
+    def __init__(self, **config):
+        _Decoration.__init__(self, **config)
+        self.add_defaults(PowerLineDecoration.defaults)
+        self.shift = max(min(self.shift, self.size), 0)
+        self._extrawidth = self.size - self.shift
+
+    @property
+    def parent_length(self):
+        if self.parent.length_type == bar.CALCULATED:
+            return int(self.parent.calculate_length())
+        return self.parent._length
+
+    def _configure(self, parent):
+        _Decoration._configure(self, parent)
+
+        # Add custom shapes
+        self.paths["rounded_left"] = self.draw_rounded
+        self.paths["rounded_right"] = partial(self.draw_rounded, rotate=True)
+
+        if isinstance(self.path, str):
+            shape_path = self.paths.get(self.path, False)
+            if callable(shape_path):
+                self.draw_func = shape_path
+            elif isinstance(shape_path, list):
+                self.draw_func = partial(self.draw_path, path=shape_path)
+            else:
+                raise ConfigError(f"Unknown `path` ({self.path}) for PowerLineDecoration.")
+        elif isinstance(self.path, list):
+            self.draw_func = partial(self.draw_path, path=self.path)
+        else:
+            raise ConfigError(f"Unexpected value for PowerLineDecoration `path`: {self.path}.")
+
+        self.parent_background = self.parent.background or self.parent.bar.background
+        self.set_next_colour()
+
+    def set_next_colour(self):
+        index = self.parent.bar.widgets.index(self.parent)
+        widgets = self.parent.bar.widgets
+
+        try:
+            next_widget = next(
+                w
+                for w in widgets
+                if hasattr(w, "length") and w.length and widgets.index(w) > index
+            )
+            self.next_background = next_widget.background or self.parent.bar.background
+        except (IndexError, StopIteration):
+            self.next_background = self.parent.bar.background
+
+    def paint_background(self, background):
+        if self.parent.qtile.core.name == "x11":
+            # We need to erase some of the background but the x11 drawer
+            # painted the background directly to the XCB surface so we've got
+            # to erase content from that surface
+            ctx = Context(self.drawer._xcb_surface)
+        else:
+            ctx = self.ctx
+
+        # Clear the old content
+        ctx.save()
+        ctx.set_operator(cairocffi.OPERATOR_CLEAR)
+        ctx.rectangle(self.parent_length - self.shift, 0, self.size, self.parent.bar.height)
+        ctx.clip()
+        ctx.paint()
+        ctx.restore()
+
+        # Paint the new background
+        self.ctx.save()
+        ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+        self.drawer.set_source_rgb(self.parent.bar.background)
+        self.ctx.rectangle(self.parent_length - self.shift, 0, self.size, self.parent.bar.height)
+        self.ctx.fill()
+        self.drawer.set_source_rgb(background)
+        self.ctx.rectangle(
+            self.parent_length - self.shift,
+            self.padding_y,
+            self.size,
+            self.parent.bar.height - 2 * self.padding_y,
+        )
+        self.ctx.fill()
+        self.ctx.save()
+
+    def draw_rounded(self, rotate=False):
+        self.fg = self.parent_background if not rotate else self.next_background
+        self.bg = self.next_background if not rotate else self.parent_background
+
+        self.paint_background(self.bg)
+
+        self.ctx.save()
+        self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+
+        # Translate the surface so that the origin is in the middle of the arc
+        start = self.parent_length - self.shift if not rotate else self.parent.length
+        self.ctx.translate(start, self.parent.bar.height // 2)
+
+        # Rotate 180 degrees if drawing curve in the other direction
+        if rotate:
+            self.ctx.rotate(math.pi)
+
+        # We use scaling in order to be able to draw ellipses
+        x_scale = self.parent.length - (self.parent_length - self.shift)
+        y_scale = (self.parent.bar.height / 2) - self.padding_y
+        self.ctx.scale(x_scale, y_scale)
+
+        self.drawer.set_source_rgb(self.fg)
+
+        # Radius is 1 as we've scaled the surface
+        self.ctx.arc(0, 0, 1, -math.pi / 2, math.pi / 2)
+        self.ctx.close_path()
+        self.ctx.fill()
+        self.ctx.restore()
+
+    def draw_path(self, path=list()):
+        if not path:
+            return
+
+        path = path.copy()
+
+        self.fg = self.parent_background
+        self.bg = self.next_background
+
+        self.paint_background(self.bg)
+
+        width = self.size
+        height = self.parent.bar.height - 2 * (self.padding_y)
+
+        self.ctx.save()
+        self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+        self.drawer.set_source_rgb(self.fg)
+        self.ctx.translate(self.parent_length - self.shift, self.padding_y)
+
+        x, y = path.pop(0)
+        self.ctx.move_to(x * width, y * height)
+
+        for x, y in path:
+            self.ctx.line_to(x * width, y * height)
+
+        self.ctx.close_path()
+        self.ctx.fill()
+        self.ctx.restore()
+
+    def draw(self):
+        self.set_next_colour()
+
+        self.ctx.save()
+        self.draw_func()
+        self.ctx.restore()
+
+
 def inject_decorations(classdef):
     """
     Method to inject ability for widgets to display decorations.
@@ -301,12 +563,39 @@ def inject_decorations(classdef):
         self.old_configure(qtile, bar)
         self.configure_decorations()
 
+    def length_get(self):
+        if self.length_type == bar.CALCULATED:
+            length = int(self.calculate_length())
+        else:
+            length = self._length
+
+        if length:
+            # Get the largest extra space required by a decoration
+            # Max needs an iterator so we need some fallbacks:
+            # If the widget doesn't have the decorations attribute then we use an empty list
+            # max will error with an empty list so the `default` value is returned in this scenario
+            extra = max((x._extrawidth for x in getattr(self, "decorations", list())), default=0)
+            return length + extra
+
+        return 0
+
+    def length_set(self, value):
+        # Stretch widgets have their length set by the bar.
+        # We need to deduct any additional width provided by the decorations as this
+        # will be added back when the length of the widget is retrieved.
+        if value and hasattr(self, "decorations") and self.length_type == bar.STRETCH:
+            extra = max(x._extrawidth for x in self.decorations) if self.decorations else 0
+            self._length = value - extra
+        else:
+            self._length = value
+
     if not hasattr(classdef, "_injected_decorations"):
 
         classdef.old_configure = classdef._configure
         classdef.new_clear = new_clear
         classdef.configure_decorations = configure_decorations
         classdef._configure = new_configure
+        classdef.length = property(length_get, length_set)
 
         classdef.defaults.append(("decorations", [], "Decorations for widgets"))
 

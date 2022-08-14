@@ -4,14 +4,6 @@
 Widget Decorations
 ==================
 
-.. note::
-
-    There is an open `PR`_ in the qtile repository to add widget
-    decorations to the official repo. If that request is merged then the
-    decorations may be removed from this repository.
-
-.. _PR: https://github.com/qtile/qtile/pull/2489
-
 Widget decorations are additional content that is drawn to your widget before the main content
 is rendered i.e. you can add drawings behind your widgets.
 
