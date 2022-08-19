@@ -111,6 +111,7 @@ class GlobalMenu(base._TextBox):
 
         registrar.add_callback(self.client_updated)
         self.set_hooks()
+        self.hook_response(startup=True)
 
     def client_updated(self, wid):
         if wid in self.app_menus:
@@ -123,8 +124,8 @@ class GlobalMenu(base._TextBox):
         hook.subscribe.focus_change(self.hook_response)
         hook.subscribe.client_killed(self.client_killed)
 
-    def hook_response(self, *args):
-        if self.bar.screen != self.qtile.current_screen:
+    def hook_response(self, *args, startup=False):
+        if not startup and self.bar.screen != self.qtile.current_screen:
             self.items = []
             self.bar.draw()
             return
@@ -132,7 +133,7 @@ class GlobalMenu(base._TextBox):
         self.current_wid = self.qtile.current_window.wid if self.qtile.current_window else None
         if self.current_wid and self.current_wid in registrar.windows:
             asyncio.create_task(self.get_window_menu(self.current_wid))
-        else:
+        elif not startup:
             self.items = []
             self.bar.draw()
 

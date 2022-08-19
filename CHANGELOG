@@ -1,3 +1,4 @@
+2022-08-19: [BUGFIX] Fix bug where `GlobalMenu` is not shown for current window after restart
 2022-08-19: [BUGFIX] Fix menu position for `StatusNotifier` for multiple monitors
 2022-08-18: [FEATURE] Add `PowerLineDecoration`
 2022-07-27: [FEATURE] Add `fill_charge` to UPower widget
