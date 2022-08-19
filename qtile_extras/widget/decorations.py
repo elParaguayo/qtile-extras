@@ -302,7 +302,6 @@ class PowerLineDecoration(_Decoration):
         The decoration currently only works on horizontal bars. The ``padding_y`` parameter can be
         used to adjust the vertical size of the decoration. However, note that this won't change
         the size of the widget's own background. If you want to do that, you can use the following:
-        (currently) have no effect on this decoration.
 
         .. code:: python
 
