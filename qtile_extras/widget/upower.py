@@ -142,8 +142,8 @@ class UPowerWidget(base._Widget):
         introspection = await self.bus.introspect(UPOWER_SERVICE, UPOWER_PATH)
         object = self.bus.get_proxy_object(UPOWER_SERVICE, UPOWER_PATH, introspection)
 
-        props = object.get_interface("org.freedesktop.DBus.Properties")
-        props.on_properties_changed(self.upower_change)
+        self.props = object.get_interface("org.freedesktop.DBus.Properties")
+        self.props.on_properties_changed(self.upower_change)
 
         self.upower = object.get_interface(UPOWER_INTERFACE)
 
@@ -390,3 +390,9 @@ class UPowerWidget(base._Widget):
         info["charging"] = self.charging
         info["levels"] = self.status
         return info
+
+    def finalize(self):
+        self.props.off_properties_changed(self.upower_change)
+        self.bus.disconnect()
+        self.bus = None
+        base._Widget.finalize(self)
