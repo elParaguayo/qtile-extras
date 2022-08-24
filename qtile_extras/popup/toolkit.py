@@ -79,6 +79,7 @@ class _PopupLayout(configurable.Configurable):
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_PopupLayout.defaults)
         self.configured = False
+        self.finalized = False
         self.qtile = qtile
 
         # Define drawable area
@@ -159,6 +160,9 @@ class _PopupLayout(configurable.Configurable):
         Assuming popup is a fixed size, we can just draw widgets without
         re-positioning them.
         """
+        if not self.configured or self.finalized:
+            return
+
         self.popup.clear()
         for c in self.controls:
             c.draw()
@@ -226,6 +230,12 @@ class _PopupLayout(configurable.Configurable):
         if self.keyboard_navigation:
             self.unset_hooks()
         self.popup.kill()
+        self.finalize()
+        self.finalized = True
+
+    def finalize(self):
+        for control in self.controls:
+            control.finalize()
 
     # The below methods are lifted from `bar`
     def get_control_in_position(self, x, y):
@@ -720,6 +730,9 @@ class _PopupWidget(configurable.Configurable):
 
         return math.sqrt(dx**2 + dy**2)
 
+    def finalize(self):
+        pass
+
 
 class PopupText(_PopupWidget):
     """Simple control to display text."""
@@ -1087,3 +1100,6 @@ class PopupWidget(_PopupWidget):
         info = _PopupWidget.info(self)
         info["widget"] = self.widget.info() if self.widget else dict()
         return info
+
+    def finalize(self):
+        self.widget.finalize()
