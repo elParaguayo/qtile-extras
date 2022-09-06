@@ -49,6 +49,9 @@ class _Decoration(base.PaddingMixin):
         self.add_defaults(_Decoration.defaults)
         self._extrawidth = 0
 
+    def __eq__(self, other):
+        return type(self) == type(other) and self._user_config == other._user_config
+
     def _configure(self, parent: base._Widget) -> None:
         self.parent = parent
 
@@ -100,8 +103,69 @@ class RectDecoration(_Decoration):
     Only one colour can be set but decorations can be layered to achieve
     multi-coloured effects.
 
-    Rectangles can be drawn as just the the outline or filled. Curved corners
-    can be obtained by setting the ``radius`` parameter.
+    Rectangles can be drawn as just the the outline or filled.
+
+    Curved corners can be obtained by setting the ``radius`` parameter.
+
+    To have the effect of multiple widgets using the same decoration (e.g.
+    the curved ends appearing on the first and last widgets) use the
+    ``group=True`` option.
+
+    The advantage of using the ``group`` option is that the group is dynamic
+    meaning that it is drawn according to the widgets that are currently visible
+    in the group. The group will adjust if a window becomes visible or hidden.
+
+    .. code:: python
+
+        decoration_group = {
+            "decorations": [
+                RectDecoration(colour="#004040", radius=10, filled=True, padding_y=4, group=True)
+            ],
+            "padding": 10,
+        }
+
+        screens = [
+            Screen(
+                top=Bar(
+                    [
+                        extrawidgets.CurrentLayout(**decoration_group),
+                        widget.Spacer(),
+                        extrawidgets.StatusNotifier(**decoration_group),
+                        extrawidgets.Mpris2(**decoration_group),
+                        extrawidgets.Clock(format="%H:%M:%S", **decoration_group),
+                        extrawidgets.ScriptExit(
+                            default_text="[X]",
+                            countdown_format="[{}]",
+                            countdown_start=2,
+                            **decoration_group
+                        ),
+                    ]
+                ),
+                28
+            )
+        ]
+
+    There are two groups in this config: Group 1 is the CurrentLayout widget. Group 2 is the StatusNotifier, Mpris2,
+    Clock and ScriptExit widgets. The groups are separated by the Spacer widget.
+
+    When there is no active icon in the StatusNotifier, the bar looks like this:
+
+    .. image:: /_static/images/rect_decoration_group1.png
+
+    When there is an icon, the group is expanded to include the widget:
+
+    .. image:: /_static/images/rect_decoration_group2.png
+
+    Note the group is not broken despite the Mpris2 widget having no contents.
+
+
+    Groups are determined by looking for:
+      - widgets using the identical configuration for the decoration
+      - widgets in a consecutive groups
+
+    Groups can therefore be broken by changing the configuration of the group
+    (e.g. by adding an additional parameter such as ``group_id=1``) or having
+    an undecorated separator between groups.
     """
 
     defaults = [
@@ -115,6 +179,11 @@ class RectDecoration(_Decoration):
             "Paint the decoration using the colour from the widget's `background` property. "
             "The widget's background will then be the bar's background colour.",
         ),
+        (
+            "group",
+            False,
+            "When set to True, the decoration will be applied as if the widgets were grouped. See documentation for more.",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [
@@ -126,6 +195,59 @@ class RectDecoration(_Decoration):
         _Decoration.__init__(self, **config)
         self.add_defaults(RectDecoration.defaults)
         self.corners = self.single_or_four(self.radius, "Corner radius")
+
+    def _get_parent_group(self):
+        """Finds the group of widgets containing the current widget."""
+        widgets = self.parent.bar.widgets
+        grouped = self._get_grouped_widgets()
+
+        groups = []
+        current = [grouped[0]]
+
+        for w in grouped[1:]:
+            # If the next grouped widget is not adjacent to the previous grouped widget...
+            if widgets.index(w) != widgets.index(current[-1]) + 1:
+                # Append the current group to the list of groups and start a new group with widget
+                groups.append(current)
+                current = [w]
+            # Otherwise, append the widget to the current group.
+            else:
+                current.append(w)
+        groups.append(current)
+
+        # Find the group containing the parent widget
+        parent_group = [g for g in groups if self.parent in g]
+
+        return parent_group[0]
+
+    def _get_grouped_widgets(self):
+        def is_grouped(widget):
+            for dec in getattr(widget, "decorations", list()):
+                if dec == self and dec.group:
+                    return True
+
+            return False
+
+        widgets = self.parent.bar.widgets
+        grouped = [w for w in widgets if is_grouped(w)]
+
+        return grouped
+
+    @property
+    def parent_index(self):
+        return self.parent.bar.widgets.index(self.parent)
+
+    @property
+    def is_first(self):
+        grouped = self._get_parent_group()
+        visible = [w for w in grouped if w.length > 0]
+        return visible and self.parent is visible[0]
+
+    @property
+    def is_last(self):
+        grouped = self._get_parent_group()
+        visible = [w for w in grouped if w.length > 0]
+        return visible and self.parent is visible[-1]
 
     def draw(self) -> None:
         box_height = self.height - 2 * self.padding_y
@@ -140,13 +262,26 @@ class RectDecoration(_Decoration):
             self.ctx.rectangle(self.padding_x, self.padding_y, box_width, box_height)
 
         else:
+            if self.group:
+
+                corners = [0, 0, 0, 0]
+
+                if self.is_first:
+                    corners[0] = self.corners[0]
+                    corners[3] = self.corners[3]
+                if self.is_last:
+                    corners[1] = self.corners[1]
+                    corners[2] = self.corners[2]
+
+            else:
+                corners = self.corners
 
             degrees = math.pi / 180.0
 
             self.ctx.new_sub_path()
 
             # Top left
-            radius = self.corners[0]
+            radius = corners[0]
             delta = radius + self.line_width / 2 - 1
             self.ctx.arc(
                 self.padding_x + delta,
@@ -157,7 +292,7 @@ class RectDecoration(_Decoration):
             )
 
             # Top right
-            radius = self.corners[1]
+            radius = corners[1]
             delta = radius + self.line_width / 2 - 1
             self.ctx.arc(
                 self.padding_x + box_width - delta,
@@ -168,7 +303,7 @@ class RectDecoration(_Decoration):
             )
 
             # Bottom right
-            radius = self.corners[2]
+            radius = corners[2]
             delta = radius + self.line_width / 2 - 1
             self.ctx.arc(
                 self.padding_x + box_width - delta,
@@ -179,7 +314,7 @@ class RectDecoration(_Decoration):
             )
 
             # Bottom left
-            radius = self.corners[3]
+            radius = corners[3]
             delta = radius + self.line_width / 2 - 1
             self.ctx.arc(
                 self.padding_x + delta,
