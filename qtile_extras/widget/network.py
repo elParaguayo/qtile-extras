@@ -36,6 +36,8 @@ def to_rads(degrees):
 class WiFiIcon(base._Widget, base.PaddingMixin):
     """
     An simple graphical widget that shows WiFi status.
+
+    Left-clicking the widget will show the name of the network.
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -66,6 +68,8 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(WiFiIcon.defaults)
         self.add_defaults(base.PaddingMixin.defaults)
+
+        self.add_callbacks({"Button1": self.cmd_show_text})
 
         if "font_colour" in config:
             self.foreground = config["font_colour"]
@@ -189,12 +193,10 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         return width
 
-    def button_press(self, x, y, button):
-        # Check if it's a right click and, if so, toggle textt
-        if button == 1:
-            self.show_text = True
-            self.set_hide_timer()
-            self.bar.draw()
+    def cmd_show_text(self):
+        self.show_text = True
+        self.set_hide_timer()
+        self.bar.draw()
 
     def set_hide_timer(self):
         if self.hide_timer:

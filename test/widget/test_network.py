@@ -86,6 +86,10 @@ def test_wifiicon(manager_nospawn, wifi_manager):
     manager_nospawn.c.widget["wifiicon"].eval("self.hide()")
     assert manager_nospawn.c.widget["wifiicon"].info()["width"] == 36
 
+    # Call exposed command to toggle text
+    manager_nospawn.c.widget["wifiicon"].show_text()
+    assert manager_nospawn.c.widget["wifiicon"].info()["width"] > 36
+
 
 def test_wifiicon_deprecated_font_colour(caplog):
     widget = qtile_extras.widget.network.WiFiIcon(font_colour="ffffff")
