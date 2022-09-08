@@ -1,3 +1,4 @@
+2022-09-11: [BUGFIX] Fix mouse callback bug in `WifiIcon` widget
 2022-08-24: [BUGFIX] Better handling of popup finalisation
 2022-08-19: [BUGFIX] Unsubscribe signal callbacks in `Upower` widget on restart
 2022-08-19: [BUGFIX] Fix bug where `GlobalMenu` is not shown for current window after restart
