@@ -126,9 +126,6 @@ def test_statusnotifier_menu_positions(
     manager_nospawn, sni_config, position, coords, backend_name
 ):
     """Check menu positioning."""
-    if backend_name == "wayland":
-        pytest.skip("Test is flaky on Wayland!")
-
     screen = libqtile.config.Screen(
         **{position: libqtile.bar.Bar([qtile_extras.widget.StatusNotifier()], 50)}
     )
@@ -138,13 +135,16 @@ def test_statusnotifier_menu_positions(
     widget = manager_nospawn.c.widget["statusnotifier"]
 
     # Launch window and wait for icon to appear
-    manager_nospawn.test_window("TestSNIMenuPosition", export_sni=True)
-    prop = {"prop": "height"} if position in ["left", "right"] else {}
-    wait_for_icon(widget, hidden=False, **prop)
+    try:
+        manager_nospawn.test_window("TestSNIMenuPosition", export_sni=True)
+        prop = {"prop": "height"} if position in ["left", "right"] else {}
+        wait_for_icon(widget, hidden=False, **prop)
 
-    # Click the button (hacky way of doing it)
-    widget.eval("self.selected_item = self.available_icons[0];self.show_menu()")
-    wait_for_menu(manager_nospawn, hidden=False)
+        # Click the button (hacky way of doing it)
+        widget.eval("self.selected_item = self.available_icons[0];self.show_menu()")
+        wait_for_menu(manager_nospawn, hidden=False)
+    except AssertionError:
+        pytest.xfail("This test is flaky so we allow failures for now.")
 
     # Get menu and check menu positioning is adjusted
     menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][
