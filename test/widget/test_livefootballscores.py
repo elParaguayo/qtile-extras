@@ -50,7 +50,8 @@ def restore_default_screen(manager):
 @Retry(ignore_exceptions=(AssertionError,))
 def check_timer(manager):
     _, output = manager.c.widget["livefootballscores"].eval("self.refresh_timer")
-    assert output == "True"
+    # Ugly but it works!
+    assert output.startswith("<TimerHandle")
 
 
 class MatchRequest:
@@ -261,18 +262,16 @@ def test_widget_popup(lfs_manager, manager_nospawn):
     assert popup == "None"
 
 
-@pytest.mark.skipif(True, reason="Needs a bug fixed in qtile first!")
 def test_widget_refresh(lfs_manager, manager_nospawn, caplog):
-    """Check popup display."""
+    """Check refresh command resets timer."""
     manager_nospawn.start(lfs_manager)
 
     # Wait until matches have loaded
     matches_loaded(manager_nospawn)
 
     manager_nospawn.c.widget["livefootballscores"].eval("self.set_refresh_timer()")
-
-    # manager_nospawn.c.widget["livefootballscores"].eval("self.refresh_timer.cancel()")
-    # manager_nospawn.c.widget["livefootballscores"].eval("self.refresh_timer = None")
+    manager_nospawn.c.widget["livefootballscores"].eval("self.refresh_timer.cancel()")
+    manager_nospawn.c.widget["livefootballscores"].eval("self.refresh_timer = None")
     with caplog.at_level(logging.INFO):
         manager_nospawn.c.widget["livefootballscores"].refresh()
         check_timer(manager_nospawn)
