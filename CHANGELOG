@@ -1,3 +1,4 @@
+2022-10-16: [FEATURE] Add `ContinuousPoll` widget
 2022-10-15: [BUGFIX] Fix `RectDecoration` reload bug with `use_widget_background`
 2022-10-10: [UPSTREAM] Change command syntax to match changes to qtile codebase (needs latest git version of qtile)
 2022-10-05: [BUGFIX] Fix IndexError on grouped `RectDecoration` (issue #126)
