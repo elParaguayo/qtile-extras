@@ -1,3 +1,4 @@
+2022-09-13: [FEATURE] Add clipping to `RectDecoration`
 2022-09-11: [FEATURE] Add grouping to `RectDecoration`
 2022-09-11: [BUGFIX] Fix mouse callback bug in `WifiIcon` widget
 2022-08-24: [BUGFIX] Better handling of popup finalisation
