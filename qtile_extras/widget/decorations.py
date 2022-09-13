@@ -166,6 +166,15 @@ class RectDecoration(_Decoration):
     Groups can therefore be broken by changing the configuration of the group
     (e.g. by adding an additional parameter such as ``group_id=1``) or having
     an undecorated separator between groups.
+
+    Setting ``clip=True`` will result in the widget's contents being restricted to the area covered
+    by the decoration. This may be desirable for widgets like ``ALSAWidget`` and
+    ``BrightnessControl`` which draw their levels in the bar.
+
+    .. image:: /_static/images/rect_decoration_clip.png
+
+    |
+
     """
 
     defaults = [
@@ -184,6 +193,7 @@ class RectDecoration(_Decoration):
             False,
             "When set to True, the decoration will be applied as if the widgets were grouped. See documentation for more.",
         ),
+        ("clip", False, "Clip contents of widget to decoration area."),
     ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [
@@ -325,6 +335,9 @@ class RectDecoration(_Decoration):
             )
 
             self.ctx.close_path()
+
+        if self.clip:
+            self.ctx.clip_preserve()
 
         if self.filled:
             self.ctx.fill()
