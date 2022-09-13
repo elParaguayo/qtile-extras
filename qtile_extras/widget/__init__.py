@@ -30,6 +30,7 @@ widgets = {
     "ALSAWidget": "alsavolumecontrol",
     "AnalogueClock": "analogueclock",
     "BrightnessControl": "brightnesscontrol",
+    "ContinuousPoll": "continuous_poll",
     "CurrentLayoutIcon": "currentlayout",
     "GithubNotifications": "githubnotifications",
     "GlobalMenu": "globalmenu",
