@@ -1,3 +1,4 @@
+2022-09-24: [BUGFIX] Improve icon background rendering in `Systray` with `RectDecoration`
 2022-02-22: [RELEASE] v0.22.1 (skippied v0.22.0)
 2022-09-22: [BUGFIX] Stop multiple visualiser processes being spawned by widget
 2022-09-19: [FEATURE] Add `Visualizer` widget

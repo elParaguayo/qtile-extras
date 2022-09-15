@@ -39,6 +39,7 @@ widgets = {
     "SnapCast": "snapcast",
     "StatusNotifier": "statusnotifier",
     "StravaWidget": "strava",
+    "Systray": "systray",
     "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower",
