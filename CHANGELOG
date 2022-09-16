@@ -1,3 +1,4 @@
+2022-09-16: [BUGFIX] Fix transparency issue in `PowerLineDecoration`
 2022-09-13: [FEATURE] Add clipping to `RectDecoration`
 2022-09-11: [FEATURE] Add grouping to `RectDecoration`
 2022-09-11: [BUGFIX] Fix mouse callback bug in `WifiIcon` widget
