@@ -582,31 +582,45 @@ class PowerLineDecoration(_Decoration):
             # to erase content from that surface
             ctx = Context(self.drawer._xcb_surface)
         else:
-            ctx = self.ctx
+            ctx = Context(self.drawer._source)
 
         # Clear the old content
         ctx.save()
         ctx.set_operator(cairocffi.OPERATOR_CLEAR)
         ctx.rectangle(self.parent_length - self.shift, 0, self.size, self.parent.bar.height)
-        ctx.clip()
-        ctx.paint()
+        ctx.fill()
         ctx.restore()
 
         # Paint the new background
         self.ctx.save()
-        ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.drawer.set_source_rgb(self.parent.bar.background)
-        self.ctx.rectangle(self.parent_length - self.shift, 0, self.size, self.parent.bar.height)
-        self.ctx.fill()
-        self.drawer.set_source_rgb(background)
+
+        # If we have vertical padding then we paint the bar's bacground to the space
+        if self.padding_y:
+            self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+            self.drawer.set_source_rgb(self.parent.bar.background)
+            self.ctx.rectangle(
+                self.parent_length - self.shift, 0, self.size, self.parent.bar.height
+            )
+            self.ctx.fill()
+
+        # Create a rectangle for the space
         self.ctx.rectangle(
             self.parent_length - self.shift,
             self.padding_y,
             self.size,
             self.parent.bar.height - 2 * self.padding_y,
         )
+
+        # If there's vertical padding then we've already painted the bar's background
+        # to this space so we need to clear the part that will have the new backgroun
+        if self.padding_y:
+            self.ctx.set_operator(cairocffi.OPERATOR_CLEAR)
+            self.ctx.fill
+
+        self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+        self.drawer.set_source_rgb(background)
         self.ctx.fill()
-        self.ctx.save()
+        self.ctx.restore()
 
     def draw_rounded(self, rotate=False):
         self.fg = self.parent_background if not rotate else self.next_background
@@ -654,7 +668,7 @@ class PowerLineDecoration(_Decoration):
 
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.drawer.set_source_rgb(self.fg)
+
         self.ctx.translate(self.parent_length - self.shift, self.padding_y)
 
         x, y = path.pop(0)
@@ -664,6 +678,8 @@ class PowerLineDecoration(_Decoration):
             self.ctx.line_to(x * width, y * height)
 
         self.ctx.close_path()
+        self.ctx.clip_preserve()
+        self.drawer.set_source_rgb(self.fg)
         self.ctx.fill()
         self.ctx.restore()
 
