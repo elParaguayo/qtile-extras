@@ -51,7 +51,7 @@ overrides = []
 extras = [(extrawidgets.StatusNotifier, {"widgetname": "StatusNotifier"})]
 
 # To skip a test entirely, list the widget class here
-no_test = []
+no_test = [extrawidgets.Visualiser, extrawidgets.Visualizer]
 
 # To test a widget only under one backend, list the widget class here
 exclusive_backend = {

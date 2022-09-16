@@ -42,6 +42,8 @@ widgets = {
     "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower",
+    "Visualiser": "visualiser",
+    "Visualizer": "visualiser",
     "WordClock": "wordclock",
 }
 
