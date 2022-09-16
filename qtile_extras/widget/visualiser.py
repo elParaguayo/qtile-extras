@@ -1,0 +1,256 @@
+# Copyright (c) 2022, elParaguayo. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+import os
+import shutil
+import signal
+import tempfile
+from contextlib import contextmanager
+from multiprocessing import shared_memory
+from pathlib import Path
+from time import sleep
+
+import cairocffi
+from libqtile.confreader import ConfigError
+from libqtile.widget import base
+
+DEFAULT_LENGTH = 100
+CAVA_DRAW = Path(__file__).parent.parent / "resources" / "visualiser" / "cava_draw.py"
+
+CONFIG = """
+[general]
+bars = {bars}
+framerate = {framerate}
+[output]
+channels = mono
+method = raw
+raw_target = {pipe}
+bit_format = 8bit
+"""
+
+
+class Visualiser(base._Widget):
+    """
+    A widget to draw an audio visualiser in your bar.
+
+    The widget requires `cava <https://github.com/karlstav/cava>`__ to be installed.
+    This may also be packaged by your distro.
+
+    cava is configured through the widget. Currently, you can set the number of bars and
+    the framerate.
+    """
+
+    _experimental = True
+
+    orientations = base.ORIENTATION_HORIZONTAL
+
+    defaults = [
+        ("framerate", 25, "Cava sampling rate."),
+        ("bars", 8, "Number of bars"),
+        ("width", DEFAULT_LENGTH, "Widget width"),
+        ("cava_path", shutil.which("cava"), "Path to cava. Set if file is not in your PATH."),
+        ("spacing", 2, "Space between bars"),
+        ("cava_pipe", "/tmp/cava.pipe", "Pipe for cava's output"),
+        ("bar_height", 20, "Height of visualiser bars"),
+        ("bar_colour", "#ffffff", "Colour of visualiser bars"),
+        ("autostart", True, "Start visualiser automatically"),
+        ("hide", True, "Hide the visualiser when not active"),
+    ]
+
+    _screenshots = [("visualiser.gif", "Default config.")]
+
+    def __init__(self, **config):
+        self._config_length = config.pop("width", DEFAULT_LENGTH)
+        base._Widget.__init__(self, self._config_length, **config)
+        self.add_defaults(Visualiser.defaults)
+        self._procs_started = False
+        self._shm: shared_memory.SharedMemory
+        self._timer = None
+        self._draw_count = 0
+        self._toggling = False
+
+    def _configure(self, qtile, bar):
+        if self.cava_path is None:
+            raise ConfigError("cava cannot be found.")
+
+        base._Widget._configure(self, qtile, bar)
+
+        if not self.configured:
+            config = CONFIG.format(bars=self.bars, framerate=self.framerate, pipe=self.cava_pipe)
+            with tempfile.NamedTemporaryFile(delete=False) as self.config_file:
+                self.config_file.write(config.encode())
+                self.config_file.flush()
+            self._interval = 1 / self.framerate
+            self.y_offset = (self.height - self.bar_height) // 2
+            if self.autostart:
+                self.timeout_add(1, self._start)
+
+        self._set_length()
+
+    def _set_length(self):
+        old = self.length
+
+        if self._procs_started or not self.hide:
+            new = self._config_length
+        else:
+            new = 0
+
+        if old != new:
+            self.bar.draw()
+
+        self.length = new
+
+    def _start(self):
+        self.cava_proc = self.qtile.cmd_spawn([self.cava_path, "-p", self.config_file.name])
+        self.draw_proc = self.qtile.cmd_spawn(
+            [
+                CAVA_DRAW.resolve().as_posix(),
+                "--width",
+                f"{self._config_length}",
+                "--height",
+                f"{self.bar_height}",
+                "--bars",
+                f"{self.bars}",
+                "--spacing",
+                f"{self.spacing}",
+                "--pipe",
+                f"{self.cava_pipe}",
+                "--background",
+                self.bar_colour,
+            ]
+        )
+        self._timer = self.timeout_add(1, self._open_shm)
+
+    def _stop(self):
+        if self._timer:
+            self._timer.cancel()
+
+        if not self._procs_started:
+            return
+
+        # Try to terminate subprocesses
+        if hasattr(self, "cava_proc"):
+            os.kill(self.cava_proc, signal.SIGTERM)
+
+        if hasattr(self, "draw_proc"):
+            os.kill(self.draw_proc, signal.SIGTERM)
+
+        self._procs_started = False
+
+        # Close and delete shared memory objects
+        if hasattr(self, "_shm"):
+            try:
+                self._shm.close()
+                self._shm.unlink()
+            except FileNotFoundError:
+                pass
+
+        if hasattr(self, "_lock"):
+            try:
+                self._lock.close()
+                self._lock.unlink()
+            except FileNotFoundError:
+                pass
+
+        self._set_length()
+
+    def _open_shm(self):
+        self._shm = shared_memory.SharedMemory(name="qte_cava_visualiser")
+        self._lock = shared_memory.SharedMemory(name="qte_cava_lock")
+
+        # Context manager to prevent race conditions when accessing shared memory
+        @contextmanager
+        def lock_shm(buffer):
+            while buffer[0]:
+                sleep(0.001)
+            buffer[0] = 1
+            yield
+            buffer[0] = 0
+
+        self._take_lock = lock_shm
+        self._procs_started = True
+        self._set_length()
+
+    @contextmanager
+    def lock_state(self):
+        """Startup takes a while and involves timers so set a flag when changing state."""
+        self._toggling = True
+        yield
+        self._toggling = False
+
+    def draw(self):
+        # If the processes aren't running, trying to access the shared memory will fail.
+        if not self._procs_started:
+            self.drawer.clear(self.background or self.bar.background)
+            self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+            return
+
+        self._draw_count += 1
+        if self._draw_count == 1:
+            self._draw()
+
+    def _draw(self):
+        with self._take_lock(self._lock.buf):
+            surface = cairocffi.ImageSurface.create_for_data(
+                self._shm.buf, cairocffi.FORMAT_ARGB32, self.width, self.bar_height
+            )
+
+        self.drawer.clear(self.background or self.bar.background)
+        self.drawer.ctx.set_source_surface(surface, 0, self.y_offset)
+        self.drawer.ctx.paint()
+        self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+
+        self._draw_count = 0
+        self._timer = self.timeout_add(self._interval, self.draw)
+
+    def finalize(self):
+        self._stop()
+        Path(self.config_file.name).unlink()
+        base._Widget.finalize(self)
+
+    def cmd_stop(self):
+        """Stop this visualiser."""
+        if self._toggling or not self._procs_started:
+            return
+
+        with self.lock_state():
+            self._stop()
+
+    def cmd_start(self):
+        """Start the visualiser."""
+        if self._procs_started or self._toggling:
+            return
+
+        with self.lock_state():
+            self._start()
+
+    def cmd_toggle(self):
+        """Toggle visualiser state."""
+        if self._toggling:
+            return
+
+        with self.lock_state():
+            if self._procs_started:
+                self._stop()
+            else:
+                self._start()
+
+
+# For the Americans...
+Visualizer = Visualiser
