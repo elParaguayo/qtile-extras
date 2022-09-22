@@ -1,3 +1,4 @@
+2022-09-22: [BUGFIX] Stop multiple visualiser processes being spawned by widget
 2022-09-19: [FEATURE] Add `Visualizer` widget
 2022-09-16: [BUGFIX] Fix transparency issue in `PowerLineDecoration`
 2022-09-13: [FEATURE] Add clipping to `RectDecoration`
