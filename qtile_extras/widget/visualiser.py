@@ -84,6 +84,7 @@ class Visualiser(base._Widget):
         self._timer = None
         self._draw_count = 0
         self._toggling = False
+        self._starting = False
 
     def _configure(self, qtile, bar):
         if self.cava_path is None:
@@ -117,6 +118,7 @@ class Visualiser(base._Widget):
         self.length = new
 
     def _start(self):
+        self._starting = True
         self.cava_proc = self.qtile.cmd_spawn([self.cava_path, "-p", self.config_file.name])
         self.draw_proc = self.qtile.cmd_spawn(
             [
@@ -185,6 +187,7 @@ class Visualiser(base._Widget):
 
         self._take_lock = lock_shm
         self._procs_started = True
+        self._starting = False
         self._set_length()
 
     @contextmanager
@@ -234,7 +237,7 @@ class Visualiser(base._Widget):
 
     def cmd_start(self):
         """Start the visualiser."""
-        if self._procs_started or self._toggling:
+        if self._procs_started or self._toggling or self._starting:
             return
 
         with self.lock_state():
