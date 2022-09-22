@@ -36,14 +36,6 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     maintain certain aspects of this repo if I am no longer using them so, be warned,
     things may break!
 
-.. important::
-
-    This repo is designed to be installed alongside the git version of Qtile. It is
-    highly recommended that you run the latest version to ensure compatibility.
-
-    I will not maintain a version of this repo that is linked to tagged releases of
-    Qtile.
-
 .. toctree::
     :caption: Getting Started
     :maxdepth: 1
