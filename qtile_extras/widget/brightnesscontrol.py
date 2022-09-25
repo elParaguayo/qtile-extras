@@ -20,6 +20,7 @@
 import os
 
 from libqtile import bar
+from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
@@ -113,9 +114,7 @@ class BrightnessControl(base._Widget):
                 "Please update your config to use `foreground` instead."
             )
 
-        self.add_callbacks(
-            {"Button4": self.cmd_brightness_up, "Button5": self.cmd_brightness_down}
-        )
+        self.add_callbacks({"Button4": self.brightness_up, "Button5": self.brightness_down})
 
         # We'll use a timer to hide the widget after a defined period
         self.update_timer = None
@@ -202,11 +201,11 @@ class BrightnessControl(base._Widget):
                 value = self.brightness_on_mains
 
             if type(value) == int:
-                self.cmd_set_brightness_value(value)
+                self.set_brightness_value(value)
             elif type(value) == str and value.endswith("%"):
                 try:
                     percent = int(value[:-1])
-                    self.cmd_set_brightness_percent(percent / 100)
+                    self.set_brightness_percent(percent / 100)
                 except ValueError:
                     err = "Incorrectly formatted brightness: {}".format(value)
                     logger.error(err)
@@ -391,23 +390,28 @@ class BrightnessControl(base._Widget):
 
         return success
 
-    def cmd_brightness_up(self):
+    @expose_command()
+    def brightness_up(self):
         """Increase the brightness level"""
         self.change_brightness(self.step)
 
-    def cmd_brightness_down(self):
+    @expose_command()
+    def brightness_down(self):
         """Decrease the brightness level"""
         self.change_brightness(self.step * -1)
 
-    def cmd_set_brightness_value(self, value):
+    @expose_command()
+    def set_brightness_value(self, value):
         """Set brightess to set value"""
         self._set_brightness(value)
 
-    def cmd_set_brightness_percent(self, percent):
+    @expose_command()
+    def set_brightness_percent(self, percent):
         """Set brightness to percentage (0.0-1.0) of max value"""
         value = int(self.max * percent)
         self._set_brightness(value)
 
+    @expose_command()
     def info(self):
         info = base._Widget.info(self)
         info["brightness"] = self.current
