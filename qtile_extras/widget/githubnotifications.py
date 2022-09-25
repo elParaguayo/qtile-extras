@@ -21,6 +21,7 @@ from pathlib import Path
 
 import requests
 from libqtile import bar
+from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
@@ -154,7 +155,8 @@ class GithubNotifications(base._Widget):
         self.img.draw(colour=self.icon_colour, x=self.padding, y=offsety)
         self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
 
-    def cmd_reload_token(self):
+    @expose_command()
+    def reload_token(self):
         """Force reload of access token."""
         self._load_token()
         if self._timer and not self._timer.cancelled():

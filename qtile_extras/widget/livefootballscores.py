@@ -20,6 +20,7 @@
 from typing import TYPE_CHECKING
 
 from libqtile import bar, pangocffi
+from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.widget import base
@@ -183,6 +184,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         for flag in self.flags:
             self.flags[flag].reset()
 
+    @expose_command()
     def reboot(self):
         """
         Sometimes the widget won't update (and I don't know why).
@@ -202,10 +204,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.timeout_add(1, self.setup)
 
         return True
-
-    def cmd_reboot(self):
-        """Restart the widget. Useful if updates seem to stop."""
-        self.reboot()
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -288,7 +286,9 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
     def set_refresh_timer(self):
         self.refresh_timer = self.timeout_add(self.refresh_interval, self.refresh)
 
+    @expose_command()
     def refresh(self):
+        """Force a poll of match data."""
         self.qtile.run_in_executor(self._refresh)
 
     def _refresh(self):
@@ -492,7 +492,8 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.screen_index = 0
         self.bar.draw()
 
-    def cmd_info(self):
+    @expose_command()
+    def info(self):
         """Show information about all matches"""
         str_team = self.team
         str_teams = ",".join(self.teams)
@@ -519,10 +520,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             "objects": {"team": obj_team, "teams": obj_teams, "leagues": obj_leagues},
             "matches": matches,
         }
-
-    def cmd_refresh(self):
-        """Force a poll of match data"""
-        return self.refresh()
 
     def _format_matches(self):
         lines = []
@@ -569,11 +566,13 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         else:
             self.show_matches()
 
-    def cmd_popup(self):
+    @expose_command()
+    def popup(self):
         """Display popup window"""
         self.toggle_info()
 
-    def cmd_get(self):
+    @expose_command()
+    def get(self):
         """Get displayed text. Removes padding."""
         return self.text.strip()
 

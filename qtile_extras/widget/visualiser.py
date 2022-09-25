@@ -27,6 +27,7 @@ from pathlib import Path
 from time import sleep
 
 import cairocffi
+from libqtile.command.base import expose_command
 from libqtile.confreader import ConfigError
 from libqtile.widget import base
 
@@ -119,8 +120,8 @@ class Visualiser(base._Widget):
 
     def _start(self):
         self._starting = True
-        self.cava_proc = self.qtile.cmd_spawn([self.cava_path, "-p", self.config_file.name])
-        self.draw_proc = self.qtile.cmd_spawn(
+        self.cava_proc = self.qtile.spawn([self.cava_path, "-p", self.config_file.name])
+        self.draw_proc = self.qtile.spawn(
             [
                 CAVA_DRAW.resolve().as_posix(),
                 "--width",
@@ -227,7 +228,8 @@ class Visualiser(base._Widget):
         Path(self.config_file.name).unlink()
         base._Widget.finalize(self)
 
-    def cmd_stop(self):
+    @expose_command()
+    def stop(self):
         """Stop this visualiser."""
         if self._toggling or not self._procs_started:
             return
@@ -235,7 +237,8 @@ class Visualiser(base._Widget):
         with self.lock_state():
             self._stop()
 
-    def cmd_start(self):
+    @expose_command()
+    def start(self):
         """Start the visualiser."""
         if self._procs_started or self._toggling or self._starting:
             return
@@ -243,7 +246,8 @@ class Visualiser(base._Widget):
         with self.lock_state():
             self._start()
 
-    def cmd_toggle(self):
+    @expose_command()
+    def toggle(self):
         """Toggle visualiser state."""
         if self._toggling:
             return

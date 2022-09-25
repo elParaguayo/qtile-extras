@@ -121,7 +121,7 @@ def test_error_handling(caplog, temp_output):
     QuickExit.update = no_op
 
     # Start the timer
-    widget.cmd_trigger()
+    widget.trigger()
 
     # Check the output
     assert caplog.record_tuples == [

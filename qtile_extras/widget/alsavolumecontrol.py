@@ -24,6 +24,7 @@ import shutil
 import subprocess
 
 from libqtile import bar, confreader, images
+from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
@@ -81,9 +82,9 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         self.add_callbacks(
             {
-                "Button1": self.cmd_toggle_mute,
-                "Button4": self.cmd_volume_up,
-                "Button5": self.cmd_volume_down,
+                "Button1": self.toggle_mute,
+                "Button4": self.volume_up,
+                "Button5": self.volume_down,
             }
         )
 
@@ -318,21 +319,25 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         cmd = "amixer get {}".format(self.device)
         self._run(cmd)
 
-    def cmd_volume_up(self, *args, **kwargs):
+    @expose_command()
+    def volume_up(self, *args, **kwargs):
         """Increase volume"""
         cmd = "amixer set {} {}%+".format(self.device, self.step)
         self._run(cmd)
 
-    def cmd_volume_down(self, *args, **kwargs):
+    @expose_command()
+    def volume_down(self, *args, **kwargs):
         """Decrease volume"""
         cmd = "amixer set {} {}%-".format(self.device, self.step)
         self._run(cmd)
 
-    def cmd_toggle_mute(self, *args, **kwargs):
+    @expose_command()
+    def toggle_mute(self, *args, **kwargs):
         """Mute audio output"""
         cmd = "amixer set {} toggle".format(self.device)
         self._run(cmd)
 
+    @expose_command()
     def info(self):
         info = base._Widget.info(self)
         info["volume"] = self.volume

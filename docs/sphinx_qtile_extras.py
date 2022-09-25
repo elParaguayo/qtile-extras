@@ -21,6 +21,7 @@
 import importlib
 import inspect
 import pprint
+from unittest.mock import MagicMock
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
@@ -34,21 +35,25 @@ from sphinx.util.nodes import nested_parse_with_titles
 from qtile_extras.resources import wallpapers
 from qtile_extras.widget import widgets
 
-
-qtile_module_template = Template('''
+qtile_module_template = Template(
+    """
 .. qtile_class:: {{ module }}.{{ class_name }}
     {% if no_config %}:no-config:{% endif %}
     {% if no_commands %}:no-commands:{% endif %}
     {% if show_config %}:show-config:{% endif %}
-''')
+"""
+)
 
-list_objects_template = Template('''
+list_objects_template = Template(
+    """
 {% for obj in objects %}
   - :ref:`{{ obj }} <{{ obj.lower() }}>`
 {% endfor %}
-''')
+"""
+)
 
-list_wallpapers_template = Template('''
+list_wallpapers_template = Template(
+    """
 {% for name, path in wallpapers %}
 {{ name }}
 
@@ -56,9 +61,11 @@ list_wallpapers_template = Template('''
         :alt: {{ name }}
 
 {% endfor %}
-''')
+"""
+)
 
-qtile_class_template = Template('''
+qtile_class_template = Template(
+    """
 {{ class_name }}
 {{ class_underline }}
 
@@ -131,11 +138,14 @@ qtile_class_template = Template('''
     .. automethod:: {{ module }}.{{ class_name }}.{{ cmd }}
     {% endfor %}
     {% endif %}
-''')
+"""
+)
 
-qtile_hooks_template = Template('''
+qtile_hooks_template = Template(
+    """
 .. automethod:: libqtile.hook.subscribe.{{ method }}
-''')
+"""
+)
 
 
 def is_widget(obj):
@@ -154,7 +164,7 @@ class SimpleDirectiveMixin:
         node.document = self.state.document
         result = ViewList()
         for line in self.make_rst():
-            result.append(line, '<{0}>'.format(self.__class__.__name__))
+            result.append(line, "<{0}>".format(self.__class__.__name__))
         nested_parse_with_titles(self.state, result, node)
         return node.children
 
@@ -168,14 +178,14 @@ class QtileClass(SimpleDirectiveMixin, Directive):
     option_spec = {
         "show-config": directives.flag,
         "no-commands": directives.flag,
-        "exclude-base": directives.flag
+        "exclude-base": directives.flag,
     }
 
     def make_rst(self):
-        module, class_name = self.arguments[0].rsplit('.', 1)
+        module, class_name = self.arguments[0].rsplit(".", 1)
         obj = import_class(module, class_name)
-        is_configurable = 'show-config' in self.options
-        is_commandable = 'no-commands' in self.options
+        is_configurable = "show-config" in self.options
+        is_commandable = "no-commands" in self.options
 
         # build up a dict of defaults using reverse MRO
         defaults = {}
@@ -185,9 +195,7 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             if not hasattr(klass, "defaults"):
                 continue
             klass_defaults = getattr(klass, "defaults")
-            defaults.update({
-                d[0]: d[1:] for d in klass_defaults
-            })
+            defaults.update({d[0]: d[1:] for d in klass_defaults})
         # turn the dict into a list of ("value", "default", "description") tuples
         defaults = [
             (k, sphinx_escape(v[0]), sphinx_escape(v[1])) for k, v in sorted(defaults.items())
@@ -199,22 +207,26 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         dependencies = ", ".join(deps)
 
         context = {
-            'module': module,
-            'class_name': class_name,
-            'class_underline': "=" * len(class_name),
-            'obj': obj,
-            'defaults': defaults,
-            'configurable': is_configurable and issubclass(obj, configurable.Configurable),
-            'commandable': is_commandable and issubclass(obj, command.base.CommandObject),
-            'is_widget': issubclass(obj, widget.base._Widget),
-            'experimental': getattr(obj, "_experimental", False),
-            'inactive': getattr(obj, "_inactive", False),
-            'screenshots': getattr(obj, "_screenshots", list()),
-            'dependencies': dependencies
+            "module": module,
+            "class_name": class_name,
+            "class_underline": "=" * len(class_name),
+            "obj": obj,
+            "defaults": defaults,
+            "configurable": is_configurable and issubclass(obj, configurable.Configurable),
+            "commandable": is_commandable and issubclass(obj, command.base.CommandObject),
+            "is_widget": issubclass(obj, widget.base._Widget),
+            "experimental": getattr(obj, "_experimental", False),
+            "inactive": getattr(obj, "_inactive", False),
+            "screenshots": getattr(obj, "_screenshots", list()),
+            "dependencies": dependencies,
         }
-        if context['commandable']:
-            context['commands'] = [
-                attr for attr in dir(obj) if attr.startswith('cmd_')
+        if context["commandable"]:
+            context["commands"] = [
+                # Command methods have the "_cmd" attribute so we check for this
+                # However, some modules are Mocked so we need to exclude them
+                attr.__name__
+                for _, attr in inspect.getmembers(obj)
+                if hasattr(attr, "_cmd") and not isinstance(attr, MagicMock)
             ]
 
         rst = qtile_class_template.render(**context)
@@ -231,37 +243,32 @@ class QtileModule(SimpleDirectiveMixin, Directive):
         "baseclass": directives.unchanged,
         "no-commands": directives.flag,
         "exclude-base": directives.flag,
-        "show-config": directives.flag
+        "show-config": directives.flag,
     }
 
     def make_rst(self):
         module = importlib.import_module(self.arguments[0])
-        exclude_base = 'exclude-base' in self.options
+        exclude_base = "exclude-base" in self.options
 
         BaseClass = None
-        if 'baseclass' in self.options:
-            BaseClass = import_class(*self.options["baseclass"].rsplit('.', 1))
+        if "baseclass" in self.options:
+            BaseClass = import_class(*self.options["baseclass"].rsplit(".", 1))
 
         for item in dir(module):
             obj = import_class(self.arguments[0], item)
             if (
-                (
-                    not inspect.isclass(obj)
-                ) or (
-                    BaseClass and not issubclass(obj, BaseClass)
-                ) or (
-                    exclude_base and obj == BaseClass
-                ) or (
-                    is_widget(obj) and item not in widgets
-                )
+                (not inspect.isclass(obj))
+                or (BaseClass and not issubclass(obj, BaseClass))
+                or (exclude_base and obj == BaseClass)
+                or (is_widget(obj) and item not in widgets)
             ):
                 continue
 
             context = {
-                'module': self.arguments[0],
-                'class_name': item,
-                'no_commands': 'no-commands' in self.options,
-                'show_config': 'show-config' in self.options,
+                "module": self.arguments[0],
+                "class_name": item,
+                "no_commands": "no-commands" in self.options,
+                "show_config": "show-config" in self.options,
             }
 
             rst = qtile_module_template.render(**context)
@@ -281,21 +288,16 @@ class ListObjects(SimpleDirectiveMixin, Directive):
         module = importlib.import_module(self.arguments[0])
 
         BaseClass = None
-        if 'baseclass' in self.options:
-            BaseClass = import_class(*self.options["baseclass"].rsplit('.', 1))
+        if "baseclass" in self.options:
+            BaseClass = import_class(*self.options["baseclass"].rsplit(".", 1))
         objects = []
         for item in dir(module):
             obj = import_class(self.arguments[0], item)
             if (
-                (
-                    not inspect.isclass(obj)
-                ) or (
-                    BaseClass and not issubclass(obj, BaseClass)
-                ) or (
-                    obj == BaseClass
-                ) or (
-                    is_widget(obj) and item not in widgets
-                )
+                (not inspect.isclass(obj))
+                or (BaseClass and not issubclass(obj, BaseClass))
+                or (obj == BaseClass)
+                or (is_widget(obj) and item not in widgets)
             ):
                 continue
 
@@ -307,7 +309,7 @@ class ListObjects(SimpleDirectiveMixin, Directive):
         for line in rst.splitlines():
             if not line.strip():
                 continue
-            yield line        
+            yield line
 
 
 class ListWallpapers(SimpleDirectiveMixin, Directive):
@@ -324,11 +326,11 @@ class ListWallpapers(SimpleDirectiveMixin, Directive):
         for line in rst.splitlines():
             if not line.strip():
                 continue
-            yield line      
+            yield line
 
-    
+
 def setup(app):
-    app.add_directive('qtile_class', QtileClass)
-    app.add_directive('qtile_module', QtileModule)
-    app.add_directive('list_objects', ListObjects)
-    app.add_directive('qte_wallpapers', ListWallpapers)
+    app.add_directive("qtile_class", QtileClass)
+    app.add_directive("qtile_module", QtileModule)
+    app.add_directive("list_objects", ListObjects)
+    app.add_directive("qte_wallpapers", ListWallpapers)

@@ -20,6 +20,7 @@
 import math
 
 from libqtile import bar
+from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 from libqtile.widget.wlan import get_status
@@ -69,7 +70,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         self.add_defaults(WiFiIcon.defaults)
         self.add_defaults(base.PaddingMixin.defaults)
 
-        self.add_callbacks({"Button1": self.cmd_show_text})
+        self.add_callbacks({"Button1": self.show_text})
 
         if "font_colour" in config:
             self.foreground = config["font_colour"]
@@ -80,7 +81,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         self.connections = []
         self.wifi_width = 0
-        self.show_text = False
+        self._show_text = False
         self.hide_timer = None
         self.essid = ""
         self.percent = 0
@@ -144,7 +145,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         offset += self.wifi_width + self.padding_x
 
-        if self.show_text:
+        if self._show_text:
             layout = self.get_wifi_text()
             layout.draw(offset, int((self.bar.height - layout.height) / 2))
 
@@ -186,15 +187,16 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         width += self.padding_x
 
         width += self.wifi_width
-        if self.show_text:
+        if self._show_text:
             width += self.padding_x + self.get_wifi_text(size_only=True)
 
         width += self.padding_x
 
         return width
 
-    def cmd_show_text(self):
-        self.show_text = True
+    @expose_command
+    def show_text(self):
+        self._show_text = True
         self.set_hide_timer()
         self.bar.draw()
 
@@ -205,5 +207,5 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         self.hide_timer = self.timeout_add(self.expanded_timeout, self.hide)
 
     def hide(self):
-        self.show_text = False
+        self._show_text = False
         self.bar.draw()
