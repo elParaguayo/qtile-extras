@@ -42,12 +42,15 @@ class _Decoration(base.PaddingMixin):
     configs directly.
     """
 
-    defaults = [("padding", 0, "Default padding")]  # type: list[tuple[str, Any, str]]
+    defaults = [
+        ("padding", 0, "Default padding"),
+        ("extrawidth", 0, "Add additional width to the end of the decoration"),
+    ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, **config):
         base.PaddingMixin.__init__(self, **config)
         self.add_defaults(_Decoration.defaults)
-        self._extrawidth = 0
+        self._extrawidth = self.extrawidth
 
     def __eq__(self, other):
         return type(self) == type(other) and self._user_config == other._user_config
@@ -530,7 +533,7 @@ class PowerLineDecoration(_Decoration):
         _Decoration.__init__(self, **config)
         self.add_defaults(PowerLineDecoration.defaults)
         self.shift = max(min(self.shift, self.size), 0)
-        self._extrawidth = self.size - self.shift
+        self._extrawidth += self.size - self.shift
 
     @property
     def parent_length(self):

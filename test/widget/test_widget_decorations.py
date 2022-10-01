@@ -172,3 +172,39 @@ def test_powerline_decoration(manager_nospawn, minimal_conf_noscreen):
     # Widget four has a 'backwards' decoration so the background is the next widget and background is the current
     assert fg == "ffffff"  # widget five's background
     assert bg == "ff00ff"  # widget four's background
+
+
+def test_decoration_extrawidth(manager_nospawn, minimal_conf_noscreen):
+    config = minimal_conf_noscreen
+    config.screens = [
+        libqtile.config.Screen(
+            top=libqtile.bar.Bar(
+                [
+                    widget.Spacer(
+                        length=50,
+                        name="one",
+                        decorations=[PowerLineDecoration(size=10, extrawidth=10)],
+                    ),
+                    widget.Spacer(
+                        length=50,
+                        name="two",
+                        decorations=[RectDecoration(extrawidth=20)],
+                    ),
+                    widget.Spacer(
+                        length=50,
+                        name="three",
+                        background="00ffff",
+                        decorations=[BorderDecoration(extrawidth=30)],
+                    ),
+                ],
+                10,
+            )
+        )
+    ]
+
+    manager_nospawn.start(config)
+    manager_nospawn.c.bar["top"].eval("self.draw()")
+
+    assert manager_nospawn.c.widget["one"].info()["length"] == 70
+    assert manager_nospawn.c.widget["two"].info()["length"] == 70
+    assert manager_nospawn.c.widget["three"].info()["length"] == 80
