@@ -662,33 +662,33 @@ class FootballMatch:
         if callable(func):
             self._on_new_match = func
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def home_team(self):
         """Returns string of the home team's name"""
         return self.match.homeTeam.name.full
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def away_team(self):
         """Returns string of the away team's name"""
         return self.match.awayTeam.name.full
 
-    @property  # type: ignore
+    @property
     @_no_match(int())
     @_override_none(0)
     def home_score(self):
         """Returns the number of goals scored by the home team"""
         return self.match.homeTeam.scores.score
 
-    @property  # type: ignore
+    @property
     @_no_match(int())
     @_override_none(0)
     def away_score(self):
         """Returns the number of goals scored by the away team"""
         return self.match.awayTeam.scores.score
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def competition(self):
         """Returns the name of the competition to which the match belongs
@@ -698,7 +698,7 @@ class FootballMatch:
         """
         return self.match.tournamentName.full
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def status(self):
         """Returns the status of the match
@@ -708,13 +708,13 @@ class FootballMatch:
         """
         return self.match.eventProgress.period
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def long_status(self):
 
         return self.match.eventStatusNote
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def display_time(self):
         me = self.elapsed_time
@@ -740,113 +740,113 @@ class FootballMatch:
         else:
             return None
 
-    @property  # type: ignore
+    @property
     @_no_match(int())
     @_override_none(0)
     def elapsed_time(self):
         return self.match.minutesElapsed
 
-    @property  # type: ignore
+    @property
     @_no_match(int())
     @_override_none(0)
     def added_time(self):
         return self.match.minutesIntoAddedTime
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def venue(self):
         return self.match.venue.name.full
 
-    @property  # type: ignore
+    @property
     @_no_match(False)
     def is_fixture(self):
         return self.match.eventStatus == "pre-event"
 
-    @property  # type: ignore
+    @property
     @_no_match(False)
     def is_live(self):
         return self.match.eventStatus == "mid-event" and not self.status == self.STATUS_HALF_TIME
 
-    @property  # type: ignore
+    @property
     @_no_match(False)
     def is_half_time(self):
         return self.status == self.STATUS_HALF_TIME
 
-    @property  # type: ignore
+    @property
     @_no_match(False)
     def is_finished(self):
         return self.match.eventStatus == "post-event"
 
-    @property  # type: ignore
+    @property
     @_no_match(False)
     def is_in_added_time(self):
         return self.match.minutesIntoAddedTime > 0
 
-    @property  # type: ignore
+    @property
     @_no_match(False)
     def is_postponed(self):
         return self.match.eventStatus == "postponed"
 
-    @property  # type: ignore
+    @property
     @_no_match(list())
     def home_scorers(self):
         """Returns list of goalscorers for home team"""
         return self._get_goals(self.match.homeTeam)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def home_scorer_text(self):
         return self._format_events(self.home_scorers)
 
-    @property  # type: ignore
+    @property
     @_no_match(list())
     def away_scorers(self):
         """Returns list of goalscorers for away team"""
         return self._get_goals(self.match.awayTeam)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def away_scorer_text(self):
         return self._format_events(self.away_scorers)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def last_goal(self):
         return self._last_event(self.ACTION_GOAL)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def last_home_goal(self):
         return self._last_event(self.ACTION_GOAL, just_home=True)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def last_away_goal(self):
         return self._last_event(self.ACTION_GOAL, just_away=True)
 
-    @property  # type: ignore
+    @property
     @_no_match(list())
     def home_red_cards(self):
         """Returns list of players sent off for home team"""
         return self._get_reds(self.match.homeTeam)
 
-    @property  # type: ignore
+    @property
     @_no_match(list())
     def away_red_cards(self):
         """Returns list of players sent off for away team"""
         return self._get_reds(self.match.awayTeam)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def last_home_red_card(self):
         return self._last_reds(just_home=True)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def last_away_red_card(self):
         return self._last_reds(just_away=True)
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def last_red_card(self):
         return self._last_reds()
@@ -881,13 +881,13 @@ class FootballMatch:
         """
         return self.__unicode__()
 
-    @property  # type: ignore
+    @property
     @_no_match(str())
     def start_time_uk(self):
 
         return self.match.startTimeInUKHHMM
 
-    @property  # type: ignore
+    @property
     @_no_match(None)
     def start_time_datetime(self):
 
@@ -903,13 +903,13 @@ class FootballMatch:
         else:
             return None
 
-    @property  # type: ignore
+    @property
     @_no_match(None)
     def start_time(self):
 
         return self.match.startTime
 
-    @property  # type: ignore
+    @property
     @_no_match(None)
     def time_to_kick_off(self):
         """Returns a timedelta object for the time until the match kicks off.
