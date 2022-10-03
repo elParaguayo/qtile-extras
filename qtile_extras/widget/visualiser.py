@@ -211,7 +211,7 @@ class Visualiser(base._Widget):
     def _draw(self):
         with self._take_lock(self._lock.buf):
             surface = cairocffi.ImageSurface.create_for_data(
-                self._shm.buf, cairocffi.FORMAT_ARGB32, self.width, self.bar_height
+                self._shm.buf, cairocffi.FORMAT_ARGB32, self._config_length, self.bar_height
             )
 
         self.drawer.clear(self.background or self.bar.background)

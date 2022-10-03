@@ -1,3 +1,4 @@
+2022-10-04: [BUGFIX] Fix `Visualizer` image size bug
 2022-10-04: [TESTS] Pin `pytest-cov` to 3.0.0 to retain `multiprocessing` support
 2022-09-24: [BUGFIX] Improve icon background rendering in `Systray` with `RectDecoration`
 2022-02-22: [RELEASE] v0.22.1 (skipped v0.22.0)
