@@ -590,7 +590,12 @@ class PowerLineDecoration(_Decoration):
         # Clear the old content
         ctx.save()
         ctx.set_operator(cairocffi.OPERATOR_CLEAR)
-        ctx.rectangle(self.parent_length - self.shift, 0, self.size, self.parent.bar.height)
+        ctx.rectangle(
+            self.parent_length - self.shift + self.extrawidth,
+            0,
+            self.size,
+            self.parent.bar.height,
+        )
         ctx.fill()
         ctx.restore()
 
@@ -602,13 +607,16 @@ class PowerLineDecoration(_Decoration):
             self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
             self.drawer.set_source_rgb(self.parent.bar.background)
             self.ctx.rectangle(
-                self.parent_length - self.shift, 0, self.size, self.parent.bar.height
+                self.parent_length - self.shift + self.extrawidth,
+                0,
+                self.size,
+                self.parent.bar.height,
             )
             self.ctx.fill()
 
         # Create a rectangle for the space
         self.ctx.rectangle(
-            self.parent_length - self.shift,
+            self.parent_length - self.shift + self.extrawidth,
             self.padding_y,
             self.size,
             self.parent.bar.height - 2 * self.padding_y,
@@ -635,7 +643,11 @@ class PowerLineDecoration(_Decoration):
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
         # Translate the surface so that the origin is in the middle of the arc
-        start = self.parent_length - self.shift if not rotate else self.parent.length
+        start = (
+            self.parent_length - self.shift + self.extrawidth
+            if not rotate
+            else self.parent.length
+        )
         self.ctx.translate(start, self.parent.bar.height // 2)
 
         # Rotate 180 degrees if drawing curve in the other direction
@@ -643,7 +655,7 @@ class PowerLineDecoration(_Decoration):
             self.ctx.rotate(math.pi)
 
         # We use scaling in order to be able to draw ellipses
-        x_scale = self.parent.length - (self.parent_length - self.shift)
+        x_scale = self.parent.length - (self.parent_length - self.shift) - self.extrawidth
         y_scale = (self.parent.bar.height / 2) - self.padding_y
         self.ctx.scale(x_scale, y_scale)
 
@@ -672,7 +684,7 @@ class PowerLineDecoration(_Decoration):
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
-        self.ctx.translate(self.parent_length - self.shift, self.padding_y)
+        self.ctx.translate(self.parent_length - self.shift + self.extrawidth, self.padding_y)
 
         x, y = path.pop(0)
         self.ctx.move_to(x * width, y * height)
@@ -687,6 +699,9 @@ class PowerLineDecoration(_Decoration):
         self.ctx.restore()
 
     def draw(self):
+        if self.width == 0:
+            return
+
         self.set_next_colour()
 
         self.ctx.save()
