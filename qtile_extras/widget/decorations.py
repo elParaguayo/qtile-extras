@@ -275,7 +275,7 @@ class RectDecoration(_Decoration):
             self.ctx.rectangle(self.padding_x, self.padding_y, box_width, box_height)
 
         else:
-            if self.group:
+            if self.group and self.parent in self.parent.bar.widgets:
 
                 corners = [0, 0, 0, 0]
 

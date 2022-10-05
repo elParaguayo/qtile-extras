@@ -1,3 +1,4 @@
+2022-10-05: [BUGFIX] Fix IndexError on grouped `RectDecoration` (issue #126)
 2022-10-04: [BUGFIX] Fix `extrawidth` with `PowerlineDecoration`
 2022-10-04: [FEATURE] Allow users to add extra width at the end of a decoration.
 2022-10-04: [BUGFIX] Fix `Visualizer` image size bug
