@@ -724,7 +724,8 @@ def inject_decorations(classdef):
             decoration.draw()
 
     def configure_decorations(self):
-        self.use_bar_background = False
+        if not hasattr(self, "use_bar_background"):
+            self.use_bar_background = False
         if hasattr(self, "decorations"):
             if not self.configured:
                 # Give each widget a copy of the decoration objects
