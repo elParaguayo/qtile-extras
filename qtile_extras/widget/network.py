@@ -79,6 +79,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         ("internet_check_host", "8.8.8.8", "IP adddress to check for internet connection"),
         ("internet_check_port", 53, "Port to check for internet connection"),
         ("internet_check_timeout", 5, "Period before internet check times out"),
+        ("show_ssid", False, "Show SSID and signal strength."),
     ]
 
     _screenshots = [
@@ -104,7 +105,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         self.connections = []
         self.wifi_width = 0
-        self._show_text = False
+        self._show_text = self.show_ssid
         self.hide_timer = None
         self.essid = ""
         self.percent = 0
@@ -149,7 +150,10 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
             quality = quality if essid else 0
             self.percent = quality / 70
 
-            self.draw()
+            if self._show_text:
+                self.bar.draw()
+            else:
+                self.draw()
 
         except Exception as e:
             logger.warning(f"Couldn't get wifi info. {e}")
@@ -240,6 +244,9 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
     @expose_command
     def show_text(self):
+        if self._show_text:
+            return
+
         self._show_text = True
         self.set_hide_timer()
         self.bar.draw()
@@ -250,6 +257,10 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
         self.hide_timer = self.timeout_add(self.expanded_timeout, self.hide)
 
+    @expose_command
     def hide(self):
+        if not self._show_text:
+            return
+
         self._show_text = False
         self.bar.draw()

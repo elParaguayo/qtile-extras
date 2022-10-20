@@ -1,3 +1,4 @@
+2022-10-20: [FEATURE] `WiFiIcon`: Add ability to always show SSID
 2022-10-20: [FEATURE] `WiFiIcon`: Add test to check whether device is connected to the internet
 2022-10-16: [FEATURE] Add `ContinuousPoll` widget
 2022-10-15: [BUGFIX] Fix `RectDecoration` reload bug with `use_widget_background`
