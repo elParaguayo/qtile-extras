@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import math
+import socket
+from contextlib import contextmanager
 
 from libqtile import bar
 from libqtile.command.base import expose_command
@@ -34,11 +36,23 @@ def to_rads(degrees):
     return degrees * PI / 180.0
 
 
+@contextmanager
+def socket_context(*args, **kwargs):
+    s = socket.socket(*args, **kwargs)
+    try:
+        yield s
+    finally:
+        s.close()
+
+
 class WiFiIcon(base._Widget, base.PaddingMixin):
     """
     An simple graphical widget that shows WiFi status.
 
     Left-clicking the widget will show the name of the network.
+
+    The widget will periodically poll an external IP address to check whether
+    the device is connected to the internet.
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -56,6 +70,15 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
             5,
             "Time in secs for expanded information to display when clicking on icon.",
         ),
+        (
+            "check_connection_interval",
+            10,
+            "Interval to check if device connected to internet (0 to disable)",
+        ),
+        ("disconnected_colour", "aa0000", "Colour when device has no internet connection"),
+        ("internet_check_host", "8.8.8.8", "IP adddress to check for internet connection"),
+        ("internet_check_port", 53, "Port to check for internet connection"),
+        ("internet_check_timeout", 5, "Period before internet check times out"),
     ]
 
     _screenshots = [
@@ -85,15 +108,34 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         self.hide_timer = None
         self.essid = ""
         self.percent = 0
+        self.is_connected = False
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
 
         self.set_sizes()
-        # self.prepare_images()
 
         if self.update_interval:
             self.timeout_add(self.update_interval, self.loop)
+
+        if self.check_connection_interval:
+            self.timeout_add(self.update_interval, self.check_connection)
+
+    def check_connection(self):
+        self.qtile.run_in_executor(self._check_internet).add_done_callback(self._check_connected)
+
+    def _check_internet(self):
+        with socket_context(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(self.internet_check_timeout)
+            try:
+                s.connect((self.internet_check_host, self.internet_check_port))
+                return True
+            except TimeoutError:
+                return False
+
+    def _check_connected(self, result):
+        self.is_connected = result.result()
+        self.timeout_add(self.check_connection_interval, self.check_connection)
 
     def loop(self):
         self.timeout_add(self.update_interval, self.loop)
@@ -140,7 +182,9 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
             to_rads(270 - half_arc),
             to_rads(270 + half_arc),
         )
-        self.drawer.set_source_rgb(self.active_colour)
+        self.drawer.set_source_rgb(
+            self.active_colour if self.is_connected else self.disconnected_colour
+        )
         self.drawer.ctx.fill()
 
         offset += self.wifi_width + self.padding_x
