@@ -51,8 +51,9 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
 
     Left-clicking the widget will show the name of the network.
 
-    The widget will periodically poll an external IP address to check whether
-    the device is connected to the internet.
+    The widget can also periodically poll an external IP address to
+    check whether the device is connected to the internet. To enable
+    this, you need to set the `check_connection_interval`.
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -72,13 +73,17 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         ),
         (
             "check_connection_interval",
-            10,
+            0,
             "Interval to check if device connected to internet (0 to disable)",
         ),
         ("disconnected_colour", "aa0000", "Colour when device has no internet connection"),
         ("internet_check_host", "8.8.8.8", "IP adddress to check for internet connection"),
         ("internet_check_port", 53, "Port to check for internet connection"),
-        ("internet_check_timeout", 5, "Period before internet check times out"),
+        (
+            "internet_check_timeout",
+            5,
+            "Period before internet check times out and widget reports no internet connection.",
+        ),
         ("show_ssid", False, "Show SSID and signal strength."),
     ]
 
@@ -109,7 +114,10 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
         self.hide_timer = None
         self.essid = ""
         self.percent = 0
-        self.is_connected = False
+
+        # If we're checking the internet connection then we assume we're disconnected
+        # until we've verified the connection
+        self.is_connected = not bool(self.check_connection_interval)
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
