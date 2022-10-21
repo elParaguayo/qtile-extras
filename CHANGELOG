@@ -1,3 +1,4 @@
+2022-10-26: [FEATURE] `WiFiIcon`: Disable background internet check by default
 2022-10-25: [BUGFIX] Fix padding in `TooltipMixin`
 2022-10-25: [FEATURE] Allow overriding of colours for `PowerLineDecoration`
 2022-10-20: [FEATURE] `WiFiIcon`: Add ability to always show SSID
