@@ -71,7 +71,14 @@ class TooltipMixin(_BaseMixin):
             if isinstance(self.tooltip_padding, int):
                 self._tooltip_padding = [self.tooltip_padding] * 2
 
-            elif not (isinstance(self.tooltip_padding, list) and len(self.tooltip_padding) >= 2):
+            elif (
+                isinstance(self.tooltip_padding, list)
+                and len(self.tooltip_padding) == 2
+                and all(isinstance(m, int) for m in self.tooltip_padding)
+            ):
+                self._tooltip_padding = self.tooltip_padding
+
+            else:
                 logger.warning("Invalid tooltip padding. Defaulting to [4, 4]")
                 self._tooltip_padding = [4, 4]
 
