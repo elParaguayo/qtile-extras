@@ -439,6 +439,12 @@ class PowerLineDecoration(_Decoration):
     drawn after the widget but can be shifted back by using the ``shift`` parameter. Shifting
     too far will result in widget contents being drawn over the shape.
 
+    By default, the decoration will set colours based on the backgrounds of the adjoining widgets.
+    The left-hand portion of the decoration is determined by the decorated widget, the right-hand portion
+    comes from the next visible widget in the bar (or the bar background if the decorated widget is the
+    last widget in the bar). Both colours can be overriden by using the `override_colour` and
+    `override_next_colour` parameters.
+
     The default behavious is to draw an arrow pointing right. To change the shape you can
     use pre-defined paths: "arrow_left", "arrow_right", "forward_slash", "back_slash" and
     "zig_zag". Alternatively, you can create a custom shape by defining a path. The format
@@ -505,6 +511,12 @@ class PowerLineDecoration(_Decoration):
         ("size", 15, "Width of shape"),
         ("path", "arrow_left", "Shape of decoration. See docstring for more info."),
         ("shift", 0, "Number of pixels to shift the decoration back by."),
+        ("override_colour", None, "Force background colour."),
+        (
+            "override_next_colour",
+            None,
+            "Force background colour for the next part of the decoration.",
+        ),
     ]
 
     _screenshots = [
@@ -561,8 +573,10 @@ class PowerLineDecoration(_Decoration):
         else:
             raise ConfigError(f"Unexpected value for PowerLineDecoration `path`: {self.path}.")
 
-        self.parent_background = self.parent.background or self.parent.bar.background
-        self.set_next_colour()
+        self.parent_background = (
+            self.override_colour or self.parent.background or self.parent.bar.background
+        )
+        self.next_background = self.override_next_colour or self.set_next_colour()
 
     def set_next_colour(self):
         index = self.parent.bar.widgets.index(self.parent)
@@ -574,9 +588,9 @@ class PowerLineDecoration(_Decoration):
                 for w in widgets
                 if hasattr(w, "length") and w.length and widgets.index(w) > index
             )
-            self.next_background = next_widget.background or self.parent.bar.background
+            return next_widget.background or self.parent.bar.background
         except (IndexError, StopIteration):
-            self.next_background = self.parent.bar.background
+            return self.parent.bar.background
 
     def paint_background(self, background):
         if self.parent.qtile.core.name == "x11":
