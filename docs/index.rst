@@ -64,6 +64,13 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
 
     extra/wallpapers
 
+.. toctree::
+    :caption: Development
+    :maxdepth: 1
+    :hidden:
+
+    dev/changelog
+
 Indices and tables
 ==================
 
