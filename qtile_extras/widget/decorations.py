@@ -716,7 +716,7 @@ class PowerLineDecoration(_Decoration):
         if self.width == 0:
             return
 
-        self.set_next_colour()
+        self.next_background = self.override_next_colour or self.set_next_colour()
 
         self.ctx.save()
         self.draw_func()
