@@ -25,7 +25,6 @@ import pytest
 from libqtile.widget.import_error import ImportErrorWidget
 
 import qtile_extras.widget as extrawidgets
-from qtile_extras.widget import qtile_widgets
 
 # This file runs a very simple test to check that widgets can be initialised
 # and that keyword arguments are added to default values.
@@ -54,21 +53,14 @@ extras = [(extrawidgets.StatusNotifier, {"widgetname": "StatusNotifier"})]
 no_test = [extrawidgets.Visualiser, extrawidgets.Visualizer]
 
 # To test a widget only under one backend, list the widget class here
-exclusive_backend = {
-    # widgets.Systray: "x11",
-    extrawidgets.GlobalMenu: "x11"
-}
+exclusive_backend = {extrawidgets.Systray: "x11", extrawidgets.GlobalMenu: "x11"}
 
 ################################################################################
 # Do not edit below this line
 ################################################################################
 
 # Build default list of all widgets and assign simple keyword argument
-parameters = [
-    (getattr(extrawidgets, w), {"widgetname": w})
-    for w in extrawidgets.__all__
-    if w not in qtile_widgets
-]
+parameters = [(getattr(extrawidgets, w), {"widgetname": w}) for w in extrawidgets.widgets]
 
 # Replace items in default list with overrides
 for ovr in overrides:
