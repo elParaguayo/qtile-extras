@@ -30,7 +30,7 @@ from libqtile import bar
 from libqtile.backend.base import Drawer
 from libqtile.confreader import ConfigError
 from libqtile.log_utils import logger
-from libqtile.widget import base
+from libqtile.widget import Systray, base
 
 if TYPE_CHECKING:
     from typing import Any
@@ -51,11 +51,13 @@ class _Decoration(base.PaddingMixin):
         base.PaddingMixin.__init__(self, **config)
         self.add_defaults(_Decoration.defaults)
         self._extrawidth = self.extrawidth
+        self._ctx: Context | None = None
 
     def __eq__(self, other):
         return type(self) == type(other) and self._user_config == other._user_config
 
     def _configure(self, parent: base._Widget) -> None:
+        self._ctx = None
         self.parent = parent
 
     def single_or_four(self, value, name: str):
@@ -96,7 +98,23 @@ class _Decoration(base.PaddingMixin):
 
     @property
     def ctx(self) -> Context:
-        return self.parent.drawer.ctx
+        if self._ctx:
+            return self._ctx
+
+        if self.parent.qtile.core.name == "x11":
+            # We need to erase some of the background but the x11 drawer
+            # painted the background directly to the XCB surface so we've got
+            # to erase content from that surface
+            ctx = Context(self.drawer._xcb_surface)  # type: ignore
+        else:
+            ctx = Context(self.drawer._source)  # type: ignore
+
+        self._ctx = ctx
+
+        return self._ctx
+
+    def set_source_rgb(self, colour):
+        self.drawer.set_source_rgb(colour, ctx=self.ctx)
 
 
 class RectDecoration(_Decoration):
@@ -268,7 +286,7 @@ class RectDecoration(_Decoration):
 
         self.fill_colour = self.parent.background if self.use_widget_background else self.colour
 
-        self.drawer.set_source_rgb(self.fill_colour)
+        self.set_source_rgb(self.fill_colour)
 
         if not self.radius:
 
@@ -373,7 +391,7 @@ class BorderDecoration(_Decoration):
     def draw(self) -> None:
         top, right, bottom, left = self.borders
 
-        self.drawer.set_source_rgb(self.colour)
+        self.set_source_rgb(self.colour)
 
         if top:
             offset = top / 2
@@ -593,25 +611,17 @@ class PowerLineDecoration(_Decoration):
             return self.parent.bar.background
 
     def paint_background(self, background):
-        if self.parent.qtile.core.name == "x11":
-            # We need to erase some of the background but the x11 drawer
-            # painted the background directly to the XCB surface so we've got
-            # to erase content from that surface
-            ctx = Context(self.drawer._xcb_surface)
-        else:
-            ctx = Context(self.drawer._source)
-
         # Clear the old content
-        ctx.save()
-        ctx.set_operator(cairocffi.OPERATOR_CLEAR)
-        ctx.rectangle(
+        self.ctx.save()
+        self.ctx.set_operator(cairocffi.OPERATOR_CLEAR)
+        self.ctx.rectangle(
             self.parent_length - self.shift + self.extrawidth,
             0,
             self.size,
             self.parent.bar.height,
         )
-        ctx.fill()
-        ctx.restore()
+        self.ctx.fill()
+        self.ctx.restore()
 
         # Paint the new background
         self.ctx.save()
@@ -619,7 +629,7 @@ class PowerLineDecoration(_Decoration):
         # If we have vertical padding then we paint the bar's bacground to the space
         if self.padding_y:
             self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-            self.drawer.set_source_rgb(self.parent.bar.background)
+            self.set_source_rgb(self.parent.bar.background)
             self.ctx.rectangle(
                 self.parent_length - self.shift + self.extrawidth,
                 0,
@@ -643,7 +653,7 @@ class PowerLineDecoration(_Decoration):
             self.ctx.fill
 
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.drawer.set_source_rgb(background)
+        self.set_source_rgb(background)
         self.ctx.fill()
         self.ctx.restore()
 
@@ -673,7 +683,7 @@ class PowerLineDecoration(_Decoration):
         y_scale = (self.parent.bar.height / 2) - self.padding_y
         self.ctx.scale(x_scale, y_scale)
 
-        self.drawer.set_source_rgb(self.fg)
+        self.set_source_rgb(self.fg)
 
         # Radius is 1 as we've scaled the surface
         self.ctx.arc(0, 0, 1, -math.pi / 2, math.pi / 2)
@@ -708,7 +718,7 @@ class PowerLineDecoration(_Decoration):
 
         self.ctx.close_path()
         self.ctx.clip_preserve()
-        self.drawer.set_source_rgb(self.fg)
+        self.set_source_rgb(self.fg)
         self.ctx.fill()
         self.ctx.restore()
 
@@ -746,11 +756,13 @@ def inject_decorations(classdef):
                 temp_decs = []
                 for i, dec in enumerate(self.decorations):
                     cloned_dec = dec.clone()
-                    cloned_dec._configure(self)
                     temp_decs.append(cloned_dec)
                     if isinstance(cloned_dec, RectDecoration) and not self.use_bar_background:
                         self.use_bar_background = cloned_dec.use_widget_background
                 self.decorations = temp_decs
+
+            for dec in self.decorations:
+                dec._configure(self)
 
             self._clear = self.drawer.clear
             self.drawer.clear = self.new_clear
@@ -785,12 +797,21 @@ def inject_decorations(classdef):
         else:
             self._length = value
 
+    def create_mirror(self):
+        if isinstance(self, Systray):
+            return super().create_mirror()
+
+        from qtile_extras.widget import modify
+
+        return modify(base.Mirror, self, background=self.background, initialise=True)
+
     if not hasattr(classdef, "_injected_decorations"):
 
         classdef.old_configure = classdef._configure
         classdef.new_clear = new_clear
         classdef.configure_decorations = configure_decorations
         classdef._configure = new_configure
+        classdef.create_mirror = create_mirror
         classdef.length = property(length_get, length_set)
 
         classdef.defaults.append(("decorations", [], "Decorations for widgets"))
