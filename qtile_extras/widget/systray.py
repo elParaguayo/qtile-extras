@@ -36,6 +36,8 @@ class Systray(widget.Systray):
     background when displaying on a (semi-)transparent bar.
     """
 
+    _qte_compatibility = True
+
     def draw(self):
         offset = self.padding
         self.drawer.clear(self.background or self.bar.background)
