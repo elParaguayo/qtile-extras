@@ -30,6 +30,8 @@ __all__ = [
 
 
 class _Graph(_graph._Graph):
+    _qte_compatibility = True
+
     @property
     def graphwidth(self):
         """Amended property to ensure graph doesn't draw over the decoration."""

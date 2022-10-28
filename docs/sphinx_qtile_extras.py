@@ -91,8 +91,18 @@ qtile_class_template = Template(
 
 {% endif %}
 
+{% if compatibility %}
+.. note::
+
+    This class has just been modified to enable compatibility with features
+    provided by qtile-extras. No new functionality has been added.
+
+{% endif %}
+
 .. autoclass:: {{ module }}.{{ class_name }}{% for arg in extra_arguments %}
     {{ arg }}{% endfor %}
+
+    {% if not compatibility %}
 
     {% if dependencies %}
     .. admonition:: Required Dependencies
@@ -137,6 +147,7 @@ qtile_class_template = Template(
     {% for cmd in commands %}
     .. automethod:: {{ module }}.{{ class_name }}.{{ cmd }}
     {% endfor %}
+    {% endif %}
     {% endif %}
 """
 )
@@ -219,6 +230,7 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             "inactive": getattr(obj, "_inactive", False),
             "screenshots": getattr(obj, "_screenshots", list()),
             "dependencies": dependencies,
+            "compatibility": getattr(obj, "_qte_compatibility", False)
         }
         if context["commandable"]:
             context["commands"] = [
@@ -298,6 +310,7 @@ class ListObjects(SimpleDirectiveMixin, Directive):
                 or (BaseClass and not issubclass(obj, BaseClass))
                 or (obj == BaseClass)
                 or (is_widget(obj) and item not in widgets)
+                or getattr(obj, "_qte_compatibility", False)
             ):
                 continue
 
