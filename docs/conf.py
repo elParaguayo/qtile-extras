@@ -18,6 +18,10 @@ from unittest.mock import MagicMock
 
 import setuptools_scm
 
+sys.path.insert(0, os.path.abspath('..'))
+
+from qtile_extras.widget import widgets
+
 
 class Mock(MagicMock):
     # xcbq does a dir() on objects and pull stuff out of them and tries to sort
@@ -90,6 +94,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.linkcode',
     'sphinx_qtile_extras'
 ]
 
@@ -119,3 +124,16 @@ html_static_path = ['_static']
 def setup(app):
     app.add_css_file("noscroll.css")
     app.add_css_file("admonitions.css")
+
+
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not info['module']:
+        return None
+    if "." in info["fullname"]:
+        return None
+    filename = info['module'].replace('.', '/')
+    if filename.endswith("widget"):
+        filename += f"/{widgets[info['fullname']]}"
+    return "https://github.com/elparaguayo/qtile-extras/tree/main/%s.py" % filename
