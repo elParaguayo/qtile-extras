@@ -76,6 +76,7 @@ class StatusNotifier(QtileStatusNotifier):
         ("menu_font", "sans", "Font for menu text"),
         ("menu_fontsize", 12, "Font size for menu text"),
         ("menu_foreground", "ffffff", "Font colour for menu text"),
+        ("menu_foreground_disabled", "aaaaaa", "Font colour for disabled menu items"),
         ("menu_background", "333333", "Background colour for menu"),
         ("separator_colour", "555555", "Colour of menu separator"),
         (
@@ -111,6 +112,7 @@ class StatusNotifier(QtileStatusNotifier):
             "font": self.menu_font,
             "fontsize": self.menu_fontsize,
             "foreground": self.menu_foreground,
+            "foreground_disabled": self.menu_foreground_disabled,
             "highlight": self.highlight_colour,
             "show_menu_icons": self.show_menu_icons,
             "hide_after": self.hide_after,

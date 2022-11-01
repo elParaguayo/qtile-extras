@@ -53,6 +53,8 @@ class DBusMenuItem:  # noqa: E303
         toggle_type: str = "",
         toggle_state: int = 0,
         children_display: str = "",
+        show_menu_callback: Callable | None = None,
+        **kwargs,
     ):
         self.menu = menu
         self.id = id
@@ -66,6 +68,7 @@ class DBusMenuItem:  # noqa: E303
         self.toggle_state = toggle_state
         self.children_display = children_display
         self.label = label
+        self.show_menu_callback = show_menu_callback
 
     # TODO: Need a method to update properties based on a "PropertiesChanged" event
 
@@ -78,7 +81,7 @@ class DBusMenuItem:  # noqa: E303
 
     def click(self):
         if self.children_display == "submenu":
-            self.menu.get_menu(self.id)
+            self.menu.get_menu(self.id, self.show_menu_callback)
         else:
             asyncio.create_task(self.menu.click(self.id))
 
@@ -235,7 +238,9 @@ class DBusMenu:  # noqa: E303
                 # and a list for submenus
                 id, menudict, _ = item.value
 
-                menu_item = DBusMenuItem(self, id, **self._fix_menu_keys(menudict))
+                menu_item = DBusMenuItem(
+                    self, id, **self._fix_menu_keys(menudict), show_menu_callback=callback
+                )
                 menu.append(menu_item)
 
             # Store this menu in case we need to draw it again
