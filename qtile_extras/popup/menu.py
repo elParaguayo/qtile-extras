@@ -46,6 +46,8 @@ class PopupMenuItem(PopupText):
         ("toggle_box", False, "Whether to show a toggle box"),
         ("toggled", False, "Whether toggle box is toggled"),
         ("row_span", 2, "Text item is twice size of separator"),
+        ("has_submenu", False, "Whether the items leads to a submenu"),
+        ("enabled", True, "Whether the menu item is enabled"),
     ]
 
     def __init__(self, text="", **config):
@@ -59,6 +61,11 @@ class PopupMenuItem(PopupText):
     def _configure(self, qtile, container):
         PopupText._configure(self, qtile, container)
         self.layout.width = self.width - self.icon_size - self.icon_gap
+        if self.has_submenu and self.enabled:
+            self.layout.width -= self.icon_size + self.icon_gap
+        if not self.enabled:
+            self.foreground = self.foreground_disabled
+            self.layout.colour = self.foreground
 
     def load_icon(self, icon):
         if isinstance(icon, bytes):
@@ -110,6 +117,20 @@ class PopupMenuItem(PopupText):
         self.drawer.ctx.translate(offset, int((self.height - self.layout.height) / 2))
         self.layout.draw(0, 0)
         self.drawer.ctx.restore()
+
+        if self.has_submenu and self.enabled:
+            self.drawer.ctx.save()
+            self.drawer.ctx.translate(
+                self.layout.width + self.icon_gap, int((self.height - self.layout.height) / 2)
+            )
+            self.drawer.ctx.scale(self.icon_size, self.layout.height)
+            self.drawer.ctx.move_to(0, 0)
+            self.drawer.ctx.line_to(1, 0.5)
+            self.drawer.ctx.line_to(0, 1)
+            self.drawer.ctx.close_path()
+            self.drawer.set_source_rgb(self.foreground)
+            self.drawer.ctx.fill()
+            self.drawer.ctx.restore()
 
 
 class PopupMenuSeparator(PopupSlider):
@@ -170,16 +191,25 @@ class PopupMenu(PopupGridLayout):
                 continue
 
             if sep:
-                menuitems.append(PopupMenuSeparator(bar_size=1, **config))
+                menuitems.append(PopupMenuSeparator(bar_size=1, can_focus=False, **config))
             else:
+                if dbmitem.enabled:
+                    callbacks = {
+                        "mouse_callbacks": {"Button1": lambda dbmitem=dbmitem: dbmitem.click()}
+                    }
+                else:
+                    callbacks = {}
+
                 menuitems.append(
                     PopupMenuItem(
                         text=dbmitem.label.replace("_", ""),
                         menu_icon=dbmitem.icon_data,
-                        hover=True,
-                        mouse_callbacks={"Button1": lambda dbmitem=dbmitem: dbmitem.click()},
+                        can_focus=dbmitem.enabled,
                         toggle_box=True if dbmitem.toggle_type else False,
                         toggled=True if dbmitem.toggle_state else False,
+                        has_submenu=dbmitem.children_display == "submenu",
+                        enabled=dbmitem.enabled,
+                        **callbacks,
                         **config
                     )
                 )
