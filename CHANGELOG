@@ -1,4 +1,5 @@
-2022-11-07: [BUGFIX] `WiFiIcon` internet check handles other exceptions
+2022-11-07: [FEATURE] Add ability to resize icons in `ALSAWidget` 
+2022-11-06: [BUGFIX] `WiFiIcon` internet check handles other exceptions
 2022-11-05: [BUGFIX] Hide `LiveFootballScores` widget when no match
 2022-11-01: [BUGFIX] Fix `StatusNotifier` menu bug where submenus do not appear
 2022-10-27: [BUGFIX] Fix Graph widgets to work with decorations

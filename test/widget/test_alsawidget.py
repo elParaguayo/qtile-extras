@@ -185,7 +185,7 @@ def test_step(alsa_manager):
 
 
 @pytest.mark.parametrize(
-    "alsa_manager", [{"theme_path": ICON_FOLDER, "mode": "icon"}], indirect=True
+    "alsa_manager", [{"theme_path": ICON_FOLDER, "mode": "icon", "padding": 0}], indirect=True
 )
 def test_icons(alsa_manager):
     """Check widget reads and parses volume"""
