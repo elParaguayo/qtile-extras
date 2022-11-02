@@ -31,7 +31,7 @@ from libqtile.widget import base
 RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\].*\[(on|off)\]")
 
 
-class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
+class ALSAWidget(base._Widget):
     """
     The widget is very simple and, so far, just allows controls for
     volume up, down and mute.
@@ -66,6 +66,8 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
         ("theme_path", None, "Path to theme icons."),
         ("step", 5, "Amount to increase volume by"),
         ("device", "Master", "Name of ALSA device"),
+        ("icon_size", None, "Size of the volume icon"),
+        ("padding", 0, "Padding before icon"),
     ]
 
     _screenshots = [
@@ -77,8 +79,6 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(ALSAWidget.defaults)
-        self.add_defaults(base.PaddingMixin.defaults)
-        self.add_defaults(base.MarginMixin.defaults)
 
         self.add_callbacks(
             {
@@ -159,7 +159,7 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         # Showing icons?
         if self.show_icon:
-            width += self.iconsize
+            width += self._icon_size + self.padding
 
         # Showing bar?
         if self.show_bar and not self.hidden:
@@ -197,10 +197,12 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         d_images = images.Loader(self.theme_path)(*names)
 
+        self._icon_size = self.icon_size if self.icon_size is not None else self.bar.height - 1
+        self._icon_padding = (self.bar.height - self._icon_size) // 2
+
         for name, img in d_images.items():
-            new_height = self.bar.height - 1
-            img.resize(height=new_height)
-            self.iconsize = img.width
+            img.resize(height=self._icon_size)
+            self.icon_width = img.width
             self.surfaces[name] = img.pattern
 
     def draw(self):
@@ -212,6 +214,8 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         # Which icon do we need?
         if self.show_icon:
+            x_offset += self.padding
+
             if self.muted or self.volume == 0:
                 img_name = "audio-volume-muted"
             elif self.volume <= 35:
@@ -222,11 +226,14 @@ class ALSAWidget(base._Widget, base.PaddingMixin, base.MarginMixin):
                 img_name = "audio-volume-high"
 
             # Draw icon
+            self.drawer.ctx.save()
+            self.drawer.ctx.translate(x_offset, self._icon_padding)
             self.drawer.ctx.set_source(self.surfaces[img_name])
             self.drawer.ctx.paint()
+            self.drawer.ctx.restore()
 
             # Increase offset
-            x_offset += self.iconsize
+            x_offset += self.icon_width
 
         # Does bar need to be displayed
         if self.show_bar and not self.hidden:
