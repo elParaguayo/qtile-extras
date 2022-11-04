@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='qtile-extras',
-    packages=find_packages(),
+    packages=find_packages(exclude=["test*"]),
     include_package_data=True,
     setup_requires=["setuptools_scm"],
     use_scm_version=True,
