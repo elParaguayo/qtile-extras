@@ -60,9 +60,9 @@ class PopupMenuItem(PopupText):
 
     def _configure(self, qtile, container):
         PopupText._configure(self, qtile, container)
-        self.layout.width = self.width - self.icon_size - self.icon_gap
+        self.layout.width = self.width - self.icon_size - self.icon_gap * 3
         if self.has_submenu and self.enabled:
-            self.layout.width -= self.icon_size + self.icon_gap
+            self.layout.width -= self.icon_size + self.icon_gap * 3
         if not self.enabled:
             self.foreground = self.foreground_disabled
             self.layout.colour = self.foreground
@@ -90,14 +90,15 @@ class PopupMenuItem(PopupText):
         self.icon = img
 
     def paint(self):
+        self._set_layout_colour()
         self.clear(self._background)
 
-        offset = 0
+        offset = self.icon_gap * 2
 
         if self.toggle_box:
             self.drawer.ctx.save()
-            self.drawer.ctx.translate(0, int((self.height - self.icon_size) / 2) - 1)
-            self.drawer.set_source_rgb(self.foreground)
+            self.drawer.ctx.translate(offset, int((self.height - self.icon_size) / 2) - 1)
+            self.drawer.set_source_rgb(self.layout.colour)
             self.drawer.rectangle(0, 0, self.icon_size, self.icon_size, 1)
             if self.toggled:
                 self.drawer.fillrect(3, 3, self.icon_size - 6, self.icon_size - 6)
@@ -105,13 +106,13 @@ class PopupMenuItem(PopupText):
 
         if self.icon and self.show_icon:
             self.drawer.ctx.save()
-            self.drawer.ctx.translate(0, int((self.height - self.icon.height) / 2))
+            self.drawer.ctx.translate(offset, int((self.height - self.icon.height) / 2))
             self.drawer.ctx.set_source(self.icon.pattern)
             self.drawer.ctx.paint()
             self.drawer.ctx.restore()
 
         if self.show_icon or self.toggle_box:
-            offset = self.icon_size + self.icon_gap
+            offset += self.icon_size + self.icon_gap
 
         self.drawer.ctx.save()
         self.drawer.ctx.translate(offset, int((self.height - self.layout.height) / 2))
@@ -121,14 +122,15 @@ class PopupMenuItem(PopupText):
         if self.has_submenu and self.enabled:
             self.drawer.ctx.save()
             self.drawer.ctx.translate(
-                self.layout.width + self.icon_gap, int((self.height - self.layout.height) / 2)
+                offset + self.layout.width + self.icon_gap,
+                int((self.height - self.icon_size) / 2),
             )
-            self.drawer.ctx.scale(self.icon_size, self.layout.height)
+            self.drawer.ctx.scale(self.icon_size, self.icon_size)
             self.drawer.ctx.move_to(0, 0)
             self.drawer.ctx.line_to(1, 0.5)
             self.drawer.ctx.line_to(0, 1)
             self.drawer.ctx.close_path()
-            self.drawer.set_source_rgb(self.foreground)
+            self.drawer.set_source_rgb(self.layout.colour)
             self.drawer.ctx.fill()
             self.drawer.ctx.restore()
 
@@ -166,6 +168,7 @@ class PopupMenu(PopupGridLayout):
     def __init__(self, qtile, controls, **config):
         PopupGridLayout.__init__(self, qtile, controls=controls, **config)
         self._hide_timer = None
+        self._killed = False
 
     def process_pointer_enter(self, x, y):
         PopupGridLayout.process_pointer_enter(self, x, y)
@@ -173,9 +176,13 @@ class PopupMenu(PopupGridLayout):
             self._hide_timer.cancel()
             self._hide_timer = None
 
+    def _kill(self):
+        self._killed = True
+        self.kill()
+
     def process_pointer_leave(self, x, y):
         PopupGridLayout.process_pointer_leave(self, x, y)
-        self._hide_timer = self.qtile.call_later(0.5, self.kill)
+        self._hide_timer = self.qtile.call_later(0.5, self._kill)
 
     @classmethod
     def from_dbus_menu(cls, qtile, dbusmenuitems, **config):

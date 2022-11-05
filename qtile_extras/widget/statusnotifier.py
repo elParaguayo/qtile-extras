@@ -23,6 +23,7 @@ import asyncio
 import os
 from typing import TYPE_CHECKING
 
+from libqtile.log_utils import logger
 from libqtile.widget.statusnotifier import StatusNotifier as QtileStatusNotifier
 from libqtile.widget.statusnotifier import StatusNotifierItem, host
 
@@ -77,13 +78,24 @@ class StatusNotifier(QtileStatusNotifier):
         ("menu_fontsize", 12, "Font size for menu text"),
         ("menu_foreground", "ffffff", "Font colour for menu text"),
         ("menu_foreground_disabled", "aaaaaa", "Font colour for disabled menu items"),
+        (
+            "menu_foreground_highlighted",
+            None,
+            "Font colour for highlighted item (None to use menu_foreground value",
+        ),
         ("menu_background", "333333", "Background colour for menu"),
+        ("menu_border", "111111", "Menu border colour"),
+        ("menu_border_width", 0, "Width of menu border"),
+        ("menu_icon_size", 12, "Size of icons in menu (where available)"),
+        ("menu_offset_x", 0, "Fine tune x position of menu"),
+        ("menu_offset_y", 0, "Fine tune y position of menu"),
         ("separator_colour", "555555", "Colour of menu separator"),
         (
             "highlight_colour",
             "0060A0",
             "Colour of highlight for menu items (None for no highlight)",
         ),
+        ("highlight_radius", 0, "Radius for menu highlight"),
         (
             "menu_row_height",
             None,
@@ -113,6 +125,7 @@ class StatusNotifier(QtileStatusNotifier):
             "fontsize": self.menu_fontsize,
             "foreground": self.menu_foreground,
             "foreground_disabled": self.menu_foreground_disabled,
+            "foreground_highlighted": self.menu_foreground_highlighted,
             "highlight": self.highlight_colour,
             "show_menu_icons": self.show_menu_icons,
             "hide_after": self.hide_after,
@@ -120,14 +133,23 @@ class StatusNotifier(QtileStatusNotifier):
             "opacity": self.opacity,
             "row_height": self.menu_row_height,
             "menu_width": self.menu_width,
+            "icon_size": self.menu_icon_size,
+            "highlight_radius": self.highlight_radius,
+            "border": self.menu_border,
+            "border_width": self.menu_border_width,
         }
 
         self.session = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
         self.host = host
+        self.menu = None
 
     def _configure(self, qtile, bar):
         host.display_menu_callback = self.display_menu
         QtileStatusNotifier._configure(self, qtile, bar)
+
+        if qtile.core.name == "wayland" and self.menu_border_width:
+            logger.warning("Menu border is currently unavailable on Wayland.")
+            self.menu_config["border_width"] = 0
 
     async def _config_async(self):
         def draw(x=None):
@@ -165,28 +187,35 @@ class StatusNotifier(QtileStatusNotifier):
         if not menu_items:
             return
 
+        if self.menu and not self.menu._killed:
+            self.menu.kill()
+
         self.menu = PopupMenu.from_dbus_menu(self.qtile, menu_items, **self.menu_config)
 
         screen = self.bar.screen
 
         if screen.top == self.bar:
-            x = min(self.offsetx, self.bar.width - self.menu.width)
+            x = min(self.offsetx, self.bar.width - self.menu.width - 2 * self.menu_border_width)
             y = self.bar.height
 
         elif screen.bottom == self.bar:
-            x = min(self.offsetx, self.bar.width - self.menu.width)
-            y = screen.height - self.bar.height - self.menu.height
+            x = min(self.offsetx, self.bar.width - self.menu.width - 2 * self.menu_border_width)
+            y = screen.height - self.bar.height - self.menu.height - 2 * self.menu_border_width
 
         elif screen.left == self.bar:
             x = self.bar.width
-            y = min(self.offsety, screen.height - self.menu.height)
+            y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
 
         else:
-            x = screen.width - self.bar.width - self.menu.width
-            y = min(self.offsety, screen.height - self.menu.height)
+            x = screen.width - self.bar.width - self.menu.width - 2 * self.menu_border_width
+            y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
 
         # Adjust the position by the screen's offset
         x += screen.x
         y += screen.y
+
+        # Adjust the position for any user-defined settings
+        x += self.menu_offset_x
+        y += self.menu_offset_y
 
         self.menu.show(x, y)

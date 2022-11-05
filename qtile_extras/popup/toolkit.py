@@ -54,6 +54,8 @@ class _PopupLayout(configurable.Configurable):
         ("controls", [], "Controls to display"),
         ("margin", 5, "Margin around edge of tooltip"),
         ("background", "000000", "Popup background colour"),
+        ("border", "111111", "Border colour for popup"),
+        ("border_width", 0, "Popup border width"),
         ("opacity", 1, "Popup window opacity. 'None' inherits bar opacity"),
         ("close_on_click", True, "Hide the popup when control is clicked"),
         (
@@ -123,8 +125,9 @@ class _PopupLayout(configurable.Configurable):
             height=self.height,
             background=self.background,
             opacity=self.opacity,
+            border=self.border,
+            border_width=self.border_width,
         )
-
         self.popup.win.info = self.info
 
         self.popup.win.process_button_click = self.process_button_click
@@ -544,6 +547,7 @@ class _PopupWidget(configurable.Configurable):
             "How to highlight focused control. Options are 'border' and 'block'.",
         ),
         ("highlight_border", 2, "Border width for focused controls"),
+        ("highlight_radius", 5, "Corner radius for highlight"),
         (
             "can_focus",
             "auto",
@@ -588,6 +592,52 @@ class _PopupWidget(configurable.Configurable):
     def paint(self):
         raise NotImplementedError
 
+    def rectangle(self):
+        degrees = math.pi / 180.0
+        radius = self.highlight_radius
+        delta = radius + self.highlight_border / 2 - 1
+        ctx = self.drawer.ctx
+
+        ctx.new_sub_path()
+
+        # Top left
+        ctx.arc(
+            delta,
+            delta,
+            radius,
+            180 * degrees,
+            270 * degrees,
+        )
+
+        # Top right
+        ctx.arc(
+            self.width - delta,
+            delta,
+            radius,
+            -90 * degrees,
+            0 * degrees,
+        )
+
+        # Bottom right
+        ctx.arc(
+            self.width - delta,
+            self.height - delta,
+            radius,
+            0 * degrees,
+            90 * degrees,
+        )
+
+        # Bottom left
+        ctx.arc(
+            delta,
+            self.height - delta,
+            radius,
+            90 * degrees,
+            180 * degrees,
+        )
+
+        ctx.close_path()
+
     def draw(self):
         self.drawer.ctx.save()
         self.drawer.ctx.translate(self.offsetx, self.offsety)
@@ -598,16 +648,10 @@ class _PopupWidget(configurable.Configurable):
     def paint_border(self):
         if not (self._highlight and self.highlight_method == "border"):
             return
-        offset = self.highlight_border // 2
         self.drawer.set_source_rgb(self.highlight)
         self.drawer.ctx.save()
-        self.drawer.rectangle(
-            offset,
-            offset,
-            self.width - offset,
-            self.height - offset,
-            linewidth=self.highlight_border,
-        )
+        self.rectangle()
+        self.drawer.ctx.stroke()
         self.drawer.ctx.restore()
 
     def clear(self, colour):
@@ -619,7 +663,7 @@ class _PopupWidget(configurable.Configurable):
         # Consider whether OVERLAY is more appropriate (particularly with
         # transparency)
         self.drawer.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.drawer.ctx.rectangle(0, 0, self.width, self.height)
+        self.rectangle()
         self.drawer.ctx.fill()
         self.drawer.ctx.restore()
 
@@ -741,6 +785,11 @@ class PopupText(_PopupWidget):
         ("font", "sans", "Font name"),
         ("fontsize", 12, "Font size"),
         ("foreground", "#ffffff", "Font colour"),
+        (
+            "foreground_highlighted",
+            None,
+            "Font colour when highlighted via `block` (None to use foreground value)",
+        ),
         ("highlight_method", "block", "Available options: 'border', 'block' or 'text'."),
         ("h_align", "left", "Text alignment: left, center or right."),
         ("v_align", "middle", "Vertical alignment: top, middle or bottom."),
@@ -766,11 +815,20 @@ class PopupText(_PopupWidget):
         self.layout.layout.set_alignment(pangocffi.ALIGNMENTS[self.h_align])
         self.layout.width = self.width
 
-    def paint(self):
+    def _set_layout_colour(self):
         if self.highlight_method == "text" and self._highlight:
             self.layout.colour = self.highlight
+        elif (
+            self.highlight_method == "block"
+            and self.foreground_highlighted is not None
+            and self._highlight
+        ):
+            self.layout.colour = self.foreground_highlighted
         else:
             self.layout.colour = self.foreground
+
+    def paint(self):
+        self._set_layout_colour()
 
         if self.v_align == "top":
             y = 0
