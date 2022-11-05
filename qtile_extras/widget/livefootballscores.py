@@ -445,7 +445,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
     def draw_underline(self, m):
         offset = 2
-        width = self.width - 2
+        width = self.calculate_length() - 2
 
         if m.is_fixture:
             fill = self.status_fixture
