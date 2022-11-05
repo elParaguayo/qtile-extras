@@ -175,15 +175,14 @@ class _PopupLayout(configurable.Configurable):
             func = self.queued_draws.pop()
             func()
 
-    def show(self, x=None, y=None, centered=False, warp_pointer=False):
-        """Display the popup. Can be centered on screen."""
+    def show(self, x=0, y=0, centered=False, warp_pointer=False):
+        """
+        Display the popup. Can be centered on screen.
+
+        x and y coordinates are relative to the current screen.
+        """
         if not self.configured:
             self._configure()
-        if x is None:
-            x = self.qtile.current_screen.x
-
-        if y is None:
-            y = self.qtile.current_screen.y
 
         if centered:
             x = (
@@ -194,6 +193,9 @@ class _PopupLayout(configurable.Configurable):
                 int((self.qtile.current_screen.height - self.popup.height) / 2)
                 + self.qtile.current_screen.y
             )
+        else:
+            x += self.qtile.current_screen.x
+            y += self.qtile.current_screen.y
 
         self.popup.x = x
         self.popup.y = y
