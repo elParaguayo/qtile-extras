@@ -1,3 +1,4 @@
+2022-11-05: [BUGFIX] Hide `LiveFootballScores` widget when no match
 2022-11-01: [BUGFIX] Fix `StatusNotifier` menu bug where submenus do not appear
 2022-10-27: [BUGFIX] Fix Graph widgets to work with decorations
 2022-10-26: [FEATURE] `WiFiIcon`: Disable background internet check by default

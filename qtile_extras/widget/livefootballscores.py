@@ -379,7 +379,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
         width, _ = self.drawer.max_layout_size([text], self.font, self.fontsize)
 
-        return width + 2 * self.margin
+        return width + 2 * self.margin if width else 0
 
     def draw(self):
         # Remove background
