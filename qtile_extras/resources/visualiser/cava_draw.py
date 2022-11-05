@@ -20,84 +20,95 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import argparse
-import signal
+import mmap
 from contextlib import contextmanager
-from multiprocessing import shared_memory
 from pathlib import Path
 from time import sleep
 
 import cairocffi
 from libqtile.utils import rgb
 
+SHM = "/tmp/shm.mmap"
+LOCK = "/tmp/lock.mmap"
+
 
 def draw_cava(width, height, num_bars, pad, bar_width, spacing, pipe, background):
     mem_size = width * height * 4
-    shm = shared_memory.SharedMemory(name="qte_cava_visualiser", create=True, size=mem_size)
-    lock = shared_memory.SharedMemory(name="qte_cava_lock", create=True, size=1)
+    init = bytearray(b"\00") * mem_size
 
+    # Both files are opened in write mode so original contents is deleted
+    with open(SHM, "wb+") as shm_file, open(LOCK, "wb+") as lock_file:
+        # Image file is filled with zeroes
+        shm_file.write(init)
+        shm_file.flush()
+
+        # Lock file is set to zero (unlocked)
+        lock_file.write(b"\00")
+        lock_file.flush()
+
+        with mmap.mmap(
+            shm_file.fileno(), length=mem_size, access=mmap.ACCESS_DEFAULT
+        ) as shm, mmap.mmap(lock_file.fileno(), length=1) as lock:
+            draw_bars(
+                shm,
+                lock,
+                width,
+                height,
+                num_bars,
+                pad,
+                bar_width,
+                spacing,
+                pipe,
+                background,
+                mem_size,
+            )
+
+        # Files and mmaps are closed when draw_bars exits
+
+
+def draw_bars(
+    shm, lock, width, height, num_bars, pad, bar_width, spacing, pipe, background, mem_size
+):
     # Create a context manager to lock access to shared memory to prevent race conditions
     @contextmanager
-    def lock_memory(buf):
-        while buf[0]:
+    def lock_memory():
+        while lock[0]:
             sleep(0.001)
-        buf[0] = 1
+        lock[0] = 1
         yield
-        buf[0] = 0
-
-    # Handler to tidy up shared memory objects if script is terminated
-    def kill_shm():
-        try:
-            shm.close()
-            shm.unlink()
-        except FileNotFoundError:
-            pass
-
-        try:
-            lock.close()
-            lock.unlink()
-        except FileNotFoundError:
-            pass
-
-    signal.signal(signal.SIGTERM, kill_shm)
+        lock[0] = 0
 
     surface = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, width, height)
     ctx = cairocffi.Context(surface)
-    buffer = shm.buf
-    lock_buffer = lock.buf
-    lock_buffer[0] = 0
 
     with open(pipe, "rb") as reader:
 
-        while True:
+        out = reader.read(num_bars)
+
+        while out:
+            ctx.set_operator(cairocffi.OPERATOR_CLEAR)
+            ctx.rectangle(0, 0, width, height)
+            ctx.fill()
+            ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+            x = pad
+            for bar in out:
+                ctx.move_to(x, height)
+                h = int(bar * height / 255)
+                ctx.line_to(x, height - h)
+                x += bar_width
+                ctx.line_to(x, height - h)
+                ctx.line_to(x, height)
+                x += spacing
+
+            ctx.close_path()
+
+            ctx.set_source_rgba(*background)
+            ctx.fill()
+
+            with lock_memory():
+                shm[:mem_size] = bytearray(surface.get_data())
+
             out = reader.read(num_bars)
-
-            while out:
-                ctx.set_operator(cairocffi.OPERATOR_CLEAR)
-                ctx.rectangle(0, 0, width, height)
-                # ctx.set_source_rgb(0, 0, 0)
-                ctx.fill()
-                ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-                x = pad
-                for bar in out:
-                    ctx.move_to(x, height)
-                    h = int(bar * height / 255)
-                    ctx.line_to(x, height - h)
-                    x += bar_width
-                    ctx.line_to(x, height - h)
-                    ctx.line_to(x, height)
-                    x += spacing
-
-                ctx.close_path()
-
-                ctx.set_source_rgba(*background)
-                ctx.fill()
-
-                with lock_memory(lock_buffer):
-                    buffer[:] = bytearray(surface.get_data())
-
-                out = reader.read(num_bars)
-
-            break
 
 
 if __name__ == "__main__":

@@ -17,9 +17,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import mmap
 import os
 import shutil
 import signal
+import sys
 import tempfile
 from contextlib import contextmanager
 from multiprocessing import shared_memory
@@ -31,15 +33,19 @@ from libqtile.command.base import expose_command
 from libqtile.confreader import ConfigError
 from libqtile.widget import base
 
+SHM = "/tmp/shm.mmap"
+LOCK = "/tmp/lock.mmap"
+
 DEFAULT_LENGTH = 100
 CAVA_DRAW = Path(__file__).parent.parent / "resources" / "visualiser" / "cava_draw.py"
+PYTHON = sys.executable if sys.executable is not None else "python"
 
 CONFIG = """
 [general]
 bars = {bars}
 framerate = {framerate}
 [output]
-channels = mono
+channels = {channels}
 method = raw
 raw_target = {pipe}
 bit_format = 8bit
@@ -72,6 +78,7 @@ class Visualiser(base._Widget):
         ("bar_colour", "#ffffff", "Colour of visualiser bars"),
         ("autostart", True, "Start visualiser automatically"),
         ("hide", True, "Hide the visualiser when not active"),
+        ("channels", "mono", "Visual channels. 'mono' or 'stereo'."),
     ]
 
     _screenshots = [("visualiser.gif", "Default config.")]
@@ -94,7 +101,12 @@ class Visualiser(base._Widget):
         base._Widget._configure(self, qtile, bar)
 
         if not self.configured:
-            config = CONFIG.format(bars=self.bars, framerate=self.framerate, pipe=self.cava_pipe)
+            config = CONFIG.format(
+                bars=self.bars,
+                framerate=self.framerate,
+                pipe=self.cava_pipe,
+                channels=self.channels,
+            )
             with tempfile.NamedTemporaryFile(delete=False) as self.config_file:
                 self.config_file.write(config.encode())
                 self.config_file.flush()
@@ -123,6 +135,7 @@ class Visualiser(base._Widget):
         self.cava_proc = self.qtile.spawn([self.cava_path, "-p", self.config_file.name])
         self.draw_proc = self.qtile.spawn(
             [
+                PYTHON,
                 CAVA_DRAW.resolve().as_posix(),
                 "--width",
                 f"{self._config_length}",
@@ -156,35 +169,32 @@ class Visualiser(base._Widget):
 
         self._procs_started = False
 
-        # Close and delete shared memory objects
-        if hasattr(self, "_shm"):
-            try:
-                self._shm.close()
-                self._shm.unlink()
-            except FileNotFoundError:
-                pass
-
-        if hasattr(self, "_lock"):
-            try:
-                self._lock.close()
-                self._lock.unlink()
-            except FileNotFoundError:
-                pass
+        # Close shared memory objects
+        self._shm.close()
+        self._shmfile.close()
+        self._lock.close()
+        self._lockfile.close()
 
         self._set_length()
 
     def _open_shm(self):
-        self._shm = shared_memory.SharedMemory(name="qte_cava_visualiser")
-        self._lock = shared_memory.SharedMemory(name="qte_cava_lock")
+        self._lockfile = open(LOCK, "rb+")
+        self._shmfile = open(SHM, "rb")
+        self._lock = mmap.mmap(self._lockfile.fileno(), length=1, access=mmap.ACCESS_WRITE)
+        self._shm_size = self.bar_height * self._config_length * 4
+        self._shm = mmap.mmap(
+            self._shmfile.fileno(), length=self._shm_size, access=mmap.ACCESS_READ
+        )
 
         # Context manager to prevent race conditions when accessing shared memory
         @contextmanager
-        def lock_shm(buffer):
-            while buffer[0]:
+        def lock_shm():
+            while self._lock[0]:
                 sleep(0.001)
-            buffer[0] = 1
+
+            self._lock[0] = 1
             yield
-            buffer[0] = 0
+            self._lock[0] = 0
 
         self._take_lock = lock_shm
         self._procs_started = True
@@ -210,9 +220,12 @@ class Visualiser(base._Widget):
             self._draw()
 
     def _draw(self):
-        with self._take_lock(self._lock.buf):
+        with self._take_lock():
             surface = cairocffi.ImageSurface.create_for_data(
-                self._shm.buf, cairocffi.FORMAT_ARGB32, self._config_length, self.bar_height
+                bytearray(self._shm[: self._shm_size]),
+                cairocffi.FORMAT_ARGB32,
+                self._config_length,
+                self.bar_height,
             )
 
         self.drawer.clear(self.background or self.bar.background)
