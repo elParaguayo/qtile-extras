@@ -139,7 +139,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
             try:
                 s.connect((self.internet_check_host, self.internet_check_port))
                 return True
-            except TimeoutError:
+            except (TimeoutError, OSError):
                 return False
 
     def _check_connected(self, result):
