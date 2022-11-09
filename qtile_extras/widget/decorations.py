@@ -774,8 +774,25 @@ def inject_decorations(classdef):
             self.drawer.clear = self.new_clear
 
     def new_configure(self, qtile, bar):
+        # We can get into an infinite recursion loop if the widget
+        # inherits a class which also has had decoration code injected
+        # To fix this, we remove the injected _configure function for
+        # any subclasses.
+        base_classes = {}
+        for c in self.__class__.__mro__[1:]:
+            if getattr(c, "old_configure", False):
+                base_classes[c] = c._configure
+                c._configure = c.old_configure
+
         self.old_configure(qtile, bar)
-        self.configure_decorations()
+
+        # Replace the injected code for subclasses
+        for c, func in base_classes.items():
+            c._configure = func
+
+        if not getattr(self, "_decorations_configured", False):
+            self._decorations_configured = True
+            self.configure_decorations()
 
     def length_get(self):
         if self.length_type == bar.CALCULATED:
@@ -812,7 +829,6 @@ def inject_decorations(classdef):
         return modify(base.Mirror, self, background=self.background, initialise=True)
 
     if not hasattr(classdef, "_injected_decorations"):
-
         classdef.old_configure = classdef._configure
         classdef.new_clear = new_clear
         classdef.configure_decorations = configure_decorations
