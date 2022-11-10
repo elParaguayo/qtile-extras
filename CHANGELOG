@@ -1,3 +1,4 @@
+2022-11-11: [BUGFIX] Fix `RectDecoration` clipping when widget is resized
 2022-11-11: [BUGFIX] Fix menu position for `StatusNotifier` and `GlobalMenu` widgets
 2022-11-10: [BUGFIX] Better handling of decorations on mirrored widgets
 2022-11-10: [BUGFIX] Fix `Visualiser` segfault
