@@ -248,10 +248,6 @@ class GlobalMenu(base._TextBox):
             x = min(self.offsetx + self.item_pos, self.bar.width - self.menu.width)
             y = self.bar.screen.height - self.bar.height - self.menu.height
 
-        # Adjust the position by the screen's offset
-        x += self.bar.screen.x
-        y += self.bar.screen.y
-
         self.menu.show(x, y)
 
     def finalize(self):

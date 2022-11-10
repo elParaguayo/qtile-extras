@@ -210,10 +210,6 @@ class StatusNotifier(QtileStatusNotifier):
             x = screen.width - self.bar.width - self.menu.width - 2 * self.menu_border_width
             y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
 
-        # Adjust the position by the screen's offset
-        x += screen.x
-        y += screen.y
-
         # Adjust the position for any user-defined settings
         x += self.menu_offset_x
         y += self.menu_offset_y
