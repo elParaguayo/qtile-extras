@@ -284,6 +284,9 @@ class RectDecoration(_Decoration):
         box_height = self.height - 2 * self.padding_y
         box_width = self.width - 2 * self.padding_x
 
+        # The widget may have resized itsef so we should reset any existing clip area
+        self.ctx.reset_clip()
+
         self.fill_colour = self.parent.background if self.use_widget_background else self.colour
 
         self.set_source_rgb(self.fill_colour)
@@ -725,6 +728,9 @@ class PowerLineDecoration(_Decoration):
     def draw(self):
         if self.width == 0:
             return
+
+        # The widget may have resized itsef so we should reset any existing clip area
+        self.ctx.reset_clip()
 
         self.next_background = self.override_next_colour or self.set_next_colour()
 
