@@ -81,7 +81,7 @@ class StatusNotifier(QtileStatusNotifier):
         (
             "menu_foreground_highlighted",
             None,
-            "Font colour for highlighted item (None to use menu_foreground value",
+            "Font colour for highlighted item (None to use menu_foreground value)",
         ),
         ("menu_background", "333333", "Background colour for menu"),
         ("menu_border", "111111", "Menu border colour"),
