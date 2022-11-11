@@ -51,6 +51,12 @@ class GlobalMenu(base._TextBox):
         ("menu_font", "sans", "Font for menu text"),
         ("menu_fontsize", 12, "Font size for menu text"),
         ("menu_foreground", "ffffff", "Font colour for menu text"),
+        ("menu_foreground_disabled", "aaaaaa", "Font colour for disabled menu items"),
+        (
+            "menu_foreground_highlighted",
+            None,
+            "Font colour for highlighted item (None to use menu_foreground value)",
+        ),
         ("menu_background", "333333", "Background colour for menu"),
         ("separator_colour", "555555", "Colour of menu separator"),
         (
@@ -58,6 +64,8 @@ class GlobalMenu(base._TextBox):
             "0060A0",
             "Colour of highlight for menu items (None for no highlight)",
         ),
+        ("separator_colour", "555555", "Colour of menu separator"),
+        ("highlight_radius", 0, "Radius for menu highlight"),
         (
             "menu_row_height",
             None,
@@ -71,6 +79,9 @@ class GlobalMenu(base._TextBox):
         ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
         ("opacity", 1, "Menu opactity"),
         ("padding", 3, "Padding between items in menu bar"),
+        ("menu_border", "111111", "Menu border colour"),
+        ("menu_border_width", 0, "Width of menu border"),
+        ("menu_icon_size", 12, "Size of icons in menu (where available)"),
     ]  # type: list[tuple[str, Any, str]]
 
     _dependencies = ["dbus-next"]
@@ -96,6 +107,8 @@ class GlobalMenu(base._TextBox):
             "font": self.menu_font,
             "fontsize": self.menu_fontsize,
             "foreground": self.menu_foreground,
+            "foreground_disabled": self.menu_foreground_disabled,
+            "foreground_highlighted": self.menu_foreground_highlighted,
             "highlight": self.highlight_colour,
             "show_menu_icons": self.show_menu_icons,
             "hide_after": self.hide_after,
@@ -103,6 +116,10 @@ class GlobalMenu(base._TextBox):
             "opacity": self.opacity,
             "row_height": self.menu_row_height,
             "menu_width": self.menu_width,
+            "icon_size": self.menu_icon_size,
+            "highlight_radius": self.highlight_radius,
+            "border": self.menu_border,
+            "border_width": self.menu_border_width,
         }
 
     async def _config_async(self):
