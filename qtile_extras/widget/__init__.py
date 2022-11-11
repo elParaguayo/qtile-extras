@@ -40,7 +40,7 @@ widgets = {
     "LiveFootballScores": "livefootballscores",
     "MemoryGraph": "graph",
     "NetGraph": "graph",
-    "WiFiIcon": "network",
+    "QTEMirror": "mirror",
     "ScriptExit": "scriptexit",
     "SnapCast": "snapcast",
     "StatusNotifier": "statusnotifier",
@@ -52,6 +52,7 @@ widgets = {
     "UPowerWidget": "upower",
     "Visualiser": "visualiser",
     "Visualizer": "visualiser",
+    "WiFiIcon": "network",
     "WordClock": "wordclock",
 }
 
