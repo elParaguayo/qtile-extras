@@ -175,27 +175,116 @@ class _PopupLayout(configurable.Configurable):
             func = self.queued_draws.pop()
             func()
 
-    def show(self, x=0, y=0, centered=False, warp_pointer=False):
+    def show(
+        self,
+        x: int | float = 0,
+        y: int | float = 0,
+        centered: bool = False,
+        warp_pointer: bool = False,
+        relative_to: int = 1,
+        relative_to_bar: bool = False,
+    ):
         """
         Display the popup. Can be centered on screen.
 
-        x and y coordinates are relative to the current screen.
+        x and y coordinates are relative to the current screen. By default, the coordinates
+        are relative to the top left corner but this can be adjusted by setting the
+        `relative_to` parameter. The parameter is an integer from 1 to 9 representing the
+        screen broken into a 3x3 grid:
+
+        .. ::
+
+             1      2      3
+
+             4      5      6
+
+             7      8      9
+
+        The number also represents the point on the popup corresponding to the relative
+        coordinates i.e. for ``relative_to=7`` an x, y value of 0, 0 would place the
+        bottom left corner of the popup in the bottom left corner of the screen. The
+        x, y values can be integers representing the number of pixels to move, or a float
+        representing the percentage of the screen's dimensions to move. In all cases, a
+        positive x value will shift the popup to the right and a positive y value will shift
+        the popup down.
+
+        Setting ``relative_to_bar=True`` will automatically adjust the offset by the width of
+        the bar or gap (including any margin) nearest the point on the above grid
+        i.e. if ``relative_to=1`` then the y coordinate would be adjusted for any bar on the
+        top of the screen and the x would be adjusted for any bar on the left. NB If you set
+        ``relative_to-bar=True`` and you use a float value for x and/or y, the float value is
+        still calculated by reference to the whole screen's dimensions (i.e. including the space
+        occupied by the bar).
         """
         if not self.configured:
             self._configure()
 
+        scr = self.qtile.current_screen
+
         if centered:
-            x = (
-                int((self.qtile.current_screen.width - self.popup.width) / 2)
-                + self.qtile.current_screen.x
-            )
-            y = (
-                int((self.qtile.current_screen.height - self.popup.height) / 2)
-                + self.qtile.current_screen.y
-            )
+            x = int((scr.width - self.popup.width) / 2) + scr.x
+            y = int((scr.height - self.popup.height) / 2) + scr.y
         else:
-            x += self.qtile.current_screen.x
-            y += self.qtile.current_screen.y
+            # If x and y are floats then we calculate the percentage of screen dimensions
+            if isinstance(x, float):
+                x = int(scr.width * x)
+
+            if isinstance(y, float):
+                y = int(scr.height * y)
+
+            if relative_to == 1:
+                x += scr.x
+                y += scr.y
+
+            elif relative_to == 2:
+                x += scr.x + (scr.width - self.popup.width) // 2
+                y += scr.y
+
+            elif relative_to == 3:
+                x += scr.x + scr.width - self.popup.width
+                y += scr.y
+
+            elif relative_to == 4:
+                x += scr.x
+                y += scr.y + (scr.height - self.popup.height) // 2
+
+            elif relative_to == 5:
+                x += scr.x + (scr.width - self.popup.width) // 2
+                y += scr.y + (scr.height - self.popup.height) // 2
+
+            elif relative_to == 6:
+                x += scr.x + scr.width - self.popup.width
+                y += scr.y + (scr.height - self.popup.height) // 2
+
+            elif relative_to == 7:
+                x += scr.x
+                y += scr.y + scr.height - self.popup.height
+
+            elif relative_to == 8:
+                x += scr.x + (scr.width - self.popup.width) // 2
+                y += scr.y + scr.height - self.popup.height
+
+            elif relative_to == 9:
+                x += scr.x + scr.width - self.popup.width
+                y += scr.y + scr.height - self.popup.height
+
+            else:
+                logger.warning(f"Unexpected value for 'relative_to': {relative_to}.")
+                x += scr.x
+                y += scr.y
+
+            if relative_to_bar:
+                if relative_to in [1, 2, 3] and scr.top:
+                    y += scr.top.size
+
+                if relative_to in [3, 6, 9] and scr.right:
+                    x -= scr.right.size
+
+                if relative_to in [7, 8, 9] and scr.bottom:
+                    y -= scr.bottom.size
+
+                if relative_to in [1, 4, 7] and scr.left:
+                    x += scr.left.size
 
         self.popup.x = x
         self.popup.y = y

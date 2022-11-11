@@ -423,3 +423,111 @@ def test_popup_widgets_vertical(manager):
             assert control[key] == control["widget"][key]
 
         assert control["height"] == control["widget"]["length"]
+
+
+@pytest.mark.parametrize(
+    "position,opts,expected",
+    [
+        # Testing absolute pixel adjustments - no bar offset
+        ("top", (0, 0, 1, False), (0, 0)),
+        ("top", (10, 10, 1, False), (10, 10)),
+        ("top", (0, 0, 2, False), (300, 0)),
+        ("top", (10, 10, 2, False), (310, 10)),
+        ("top", (0, 0, 3, False), (600, 0)),
+        ("top", (10, 10, 3, False), (610, 10)),
+        ("top", (0, 0, 4, False), (0, 200)),
+        ("top", (10, 10, 4, False), (10, 210)),
+        ("top", (0, 0, 5, False), (300, 200)),
+        ("top", (10, 10, 5, False), (310, 210)),
+        ("top", (0, 0, 6, False), (600, 200)),
+        ("top", (10, 10, 6, False), (610, 210)),
+        ("top", (0, 0, 7, False), (0, 400)),
+        ("top", (10, 10, 7, False), (10, 410)),
+        ("top", (0, 0, 8, False), (300, 400)),
+        ("top", (10, 10, 8, False), (310, 410)),
+        ("top", (0, 0, 9, False), (600, 400)),
+        ("top", (10, 10, 9, False), (610, 410)),
+        # Testing absolute pixel adjustments - bar offset
+        ("top", (0, 0, 1, True), (0, 60)),
+        ("top", (0, 0, 2, True), (300, 60)),
+        ("top", (0, 0, 3, True), (600, 60)),
+        ("right", (0, 0, 3, True), (540, 0)),
+        ("right", (0, 0, 6, True), (540, 200)),
+        ("right", (0, 0, 9, True), (540, 400)),
+        ("bottom", (0, 0, 7, True), (0, 340)),
+        ("bottom", (0, 0, 8, True), (300, 340)),
+        ("bottom", (0, 0, 9, True), (600, 340)),
+        ("left", (0, 0, 1, True), (60, 0)),
+        ("left", (0, 0, 4, True), (60, 200)),
+        ("left", (0, 0, 7, True), (60, 400)),
+        # Testing float value
+        ("top", (0.5, 0.5, 1, False), (400, 300)),
+        ("top", (10, 0.5, 1, False), (10, 300)),
+        ("top", (0.5, 10, 1, False), (400, 10)),
+        ("top", (0.5, 0.5, 1, True), (400, 360)),
+    ],
+)
+def test_popup_positioning_relative(manager_nospawn, position, opts, expected):
+    """
+    Tests relative positioning of popups. The `opts` are a tuple of
+    (x, y, relative_to) arguments for the `popup.show` call.
+    """
+
+    class PositionConfig(libqtile.confreader.Config):
+        auto_fullscreen = True
+        groups = [
+            libqtile.config.Group("a"),
+        ]
+        layouts = [libqtile.layout.Max()]
+        floating_layout = libqtile.resources.default_config.floating_layout
+        screens = [
+            libqtile.config.Screen(
+                **{position: libqtile.bar.Bar([], 50, margin=5)},
+            )
+        ]
+
+    manager_nospawn.start(PositionConfig)
+
+    layout = textwrap.dedent(
+        """
+        from libqtile import widget
+        from qtile_extras.popup.toolkit import PopupRelativeLayout
+        self.popup = PopupRelativeLayout(
+            self,
+            controls=[],
+            margin=0
+        )
+
+        self.popup.show(x={0}, y={1}, relative_to={2}, relative_to_bar={3})
+    """.format(
+            *opts
+        )
+    )
+
+    manager_nospawn.c.eval(layout)
+    _, info = manager_nospawn.c.eval("self.popup.info()")
+    info = eval(info)
+
+    assert (info["x"], info["y"]) == expected
+
+
+def test_popup_positioning_centered(manager):
+    """Tests centering popup in screen."""
+    layout = textwrap.dedent(
+        """
+        from libqtile import widget
+        from qtile_extras.popup.toolkit import PopupRelativeLayout
+        self.popup = PopupRelativeLayout(
+            self,
+            controls=[],
+            margin=0
+        )
+
+        self.popup.show(centered=True)
+    """
+    )
+    manager.c.eval(layout)
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+
+    assert (info["x"], info["y"]) == (300, 200)
