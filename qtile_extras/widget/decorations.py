@@ -830,9 +830,9 @@ def inject_decorations(classdef):
         if isinstance(self, Systray):
             return super().create_mirror()
 
-        from qtile_extras.widget import modify
+        from qtile_extras.widget import QTEMirror
 
-        return modify(base.Mirror, self, background=self.background, initialise=True)
+        return QTEMirror(self, background=self.background)
 
     if not hasattr(classdef, "_injected_decorations"):
         classdef.old_configure = classdef._configure
