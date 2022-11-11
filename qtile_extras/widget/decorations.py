@@ -113,7 +113,7 @@ class _Decoration(base.PaddingMixin):
 
         return self._ctx
 
-    def set_source_rgb(self, colour):
+    def set_source_rgb(self, colour) -> None:
         self.drawer.set_source_rgb(colour, ctx=self.ctx)
 
 
@@ -285,7 +285,7 @@ class RectDecoration(_Decoration):
         box_width = self.width - 2 * self.padding_x
 
         # The widget may have resized itsef so we should reset any existing clip area
-        self.ctx.reset_clip()
+        self.drawer.ctx.reset_clip()
 
         self.fill_colour = self.parent.background if self.use_widget_background else self.colour
 
@@ -312,62 +312,72 @@ class RectDecoration(_Decoration):
 
             degrees = math.pi / 180.0
 
-            self.ctx.new_sub_path()
+            # We may need to draw this path to multiple contexts
+            contexts = [self.ctx]
 
-            # Top left
-            radius = corners[0]
-            delta = radius + self.line_width / 2 - 1
-            self.ctx.arc(
-                self.padding_x + delta,
-                self.padding_y + delta,
-                radius,
-                180 * degrees,
-                270 * degrees,
-            )
+            # If we're clipping then draw the path to the widget's drawer
+            if self.clip:
+                contexts.append(self.drawer.ctx)
 
-            # Top right
-            radius = corners[1]
-            delta = radius + self.line_width / 2 - 1
-            self.ctx.arc(
-                self.padding_x + box_width - delta,
-                self.padding_y + delta,
-                radius,
-                -90 * degrees,
-                0 * degrees,
-            )
+            for ctx in contexts:
+                ctx.new_sub_path()
 
-            # Bottom right
-            radius = corners[2]
-            delta = radius + self.line_width / 2 - 1
-            self.ctx.arc(
-                self.padding_x + box_width - delta,
-                self.padding_y + box_height - delta,
-                radius,
-                0 * degrees,
-                90 * degrees,
-            )
+                # Top left
+                radius = corners[0]
+                delta = radius + self.line_width / 2 - 1
+                ctx.arc(
+                    self.padding_x + delta,
+                    self.padding_y + delta,
+                    radius,
+                    180 * degrees,
+                    270 * degrees,
+                )
 
-            # Bottom left
-            radius = corners[3]
-            delta = radius + self.line_width / 2 - 1
-            self.ctx.arc(
-                self.padding_x + delta,
-                self.padding_y + box_height - delta,
-                radius,
-                90 * degrees,
-                180 * degrees,
-            )
+                # Top right
+                radius = corners[1]
+                delta = radius + self.line_width / 2 - 1
+                ctx.arc(
+                    self.padding_x + box_width - delta,
+                    self.padding_y + delta,
+                    radius,
+                    -90 * degrees,
+                    0 * degrees,
+                )
 
-            self.ctx.close_path()
+                # Bottom right
+                radius = corners[2]
+                delta = radius + self.line_width / 2 - 1
+                ctx.arc(
+                    self.padding_x + box_width - delta,
+                    self.padding_y + box_height - delta,
+                    radius,
+                    0 * degrees,
+                    90 * degrees,
+                )
 
-        if self.clip:
-            self.ctx.clip_preserve()
+                # Bottom left
+                radius = corners[3]
+                delta = radius + self.line_width / 2 - 1
+                ctx.arc(
+                    self.padding_x + delta,
+                    self.padding_y + box_height - delta,
+                    radius,
+                    90 * degrees,
+                    180 * degrees,
+                )
+
+                ctx.close_path()
 
         if self.filled:
             self.ctx.fill()
         else:
             self.ctx.set_line_width(self.line_width)
             self.ctx.stroke()
+
+        # Clip the widget's drawer so that the contents is limited to the
+        # area defined by the decoration
+        if self.clip:
+            self.drawer.ctx.clip()
 
 
 class BorderDecoration(_Decoration):
@@ -720,7 +730,6 @@ class PowerLineDecoration(_Decoration):
             self.ctx.line_to(x * width, y * height)
 
         self.ctx.close_path()
-        self.ctx.clip_preserve()
         self.set_source_rgb(self.fg)
         self.ctx.fill()
         self.ctx.restore()
@@ -728,9 +737,6 @@ class PowerLineDecoration(_Decoration):
     def draw(self):
         if self.width == 0:
             return
-
-        # The widget may have resized itsef so we should reset any existing clip area
-        self.ctx.reset_clip()
 
         self.next_background = self.override_next_colour or self.set_next_colour()
 

@@ -1,3 +1,4 @@
+2022-11-12: [BUGFIX] More `RectDecoration` clipping fixes
 2022-11-12: [FEATURE] Add ability to set position of popup relative to corners, midpoints and centre of screen
 2022-11-11: [DOCS] Update Arch installation instructions
 2022-11-11: [BUGFIX] Fix infinite recursion error with decorated widget configuration
