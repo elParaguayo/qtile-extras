@@ -428,7 +428,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def draw_goal(self, home):
-        offset = 0 if home else (self.width - 2)
+        offset = 0 if home else (self.calculate_length() - 2)
 
         self.drawer.set_source_rgb(self.goal_indicator)
 
@@ -436,7 +436,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.drawer.fillrect(offset, 0, 2, self.height, 2)
 
     def draw_red(self, home):
-        offset = 0 if home else (self.width - 2)
+        offset = 0 if home else (self.calculate_length() - 2)
 
         self.drawer.set_source_rgb(self.red_card_indicator)
 
