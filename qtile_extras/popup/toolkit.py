@@ -75,6 +75,8 @@ class _PopupLayout(configurable.Configurable):
         ),
         ("keyboard_navigation", True, "Whether popup controls can be navigated by keys"),
         ("initial_focus", 0, "Index of control to be focused at startup."),
+        ("hide_interval", 0.5, "Timeout after mouse leaves popup before popup is lilled"),
+        ("hide_on_mouse_leave", False, "Hide the popup if the mouse pointer leaves the popup"),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, qtile, **config):
@@ -110,6 +112,9 @@ class _PopupLayout(configurable.Configurable):
         self.keys = {k: [keysyms[key.lower()] for key in v] for k, v in self.keymap.items()}
 
         self.queued_draws = []
+
+        self._hide_timer = None
+        self._killed = False
 
     def _configure(self):
         """
@@ -326,6 +331,7 @@ class _PopupLayout(configurable.Configurable):
         self.popup.kill()
         self.finalize()
         self.finalized = True
+        self._killed = True
 
     def finalize(self):
         for control in self.controls:
@@ -358,6 +364,9 @@ class _PopupLayout(configurable.Configurable):
                 y - control.offsety,
             )
         self.cursor_in = control
+        if self._hide_timer is not None:
+            self._hide_timer.cancel()
+            self._hide_timer = None
 
     def process_pointer_leave(self, x, y):  # noqa: N802
         if self.cursor_in:
@@ -366,6 +375,8 @@ class _PopupLayout(configurable.Configurable):
                 y - self.cursor_in.offsety,
             )
             self.cursor_in = None
+        if self.hide_on_mouse_leave:
+            self._hide_timer = self.qtile.call_later(self.hide_interval, self.kill)
 
     def process_pointer_motion(self, x, y):  # noqa: N802
         control = self.get_control_in_position(x, y)

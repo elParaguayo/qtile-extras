@@ -165,24 +165,13 @@ class PopupMenu(PopupGridLayout):
     the height of a separator.
     """
 
+    defaults = [
+        ("hide_on_mouse_leave", True, "Hide the menu if the mouse pointer leaves the menu")
+    ]
+
     def __init__(self, qtile, controls, **config):
         PopupGridLayout.__init__(self, qtile, controls=controls, **config)
-        self._hide_timer = None
-        self._killed = False
-
-    def process_pointer_enter(self, x, y):
-        PopupGridLayout.process_pointer_enter(self, x, y)
-        if self._hide_timer is not None:
-            self._hide_timer.cancel()
-            self._hide_timer = None
-
-    def _kill(self):
-        self._killed = True
-        self.kill()
-
-    def process_pointer_leave(self, x, y):
-        PopupGridLayout.process_pointer_leave(self, x, y)
-        self._hide_timer = self.qtile.call_later(0.5, self._kill)
+        self.add_defaults(PopupMenu.defaults)
 
     @classmethod
     def from_dbus_menu(cls, qtile, dbusmenuitems, **config):
