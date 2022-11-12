@@ -1,3 +1,4 @@
+2022-11-12: [BUGFIX] Fix away goal and red card indicator locations when using `PowerLineDecoration`
 2022-11-12: [BUGFIX] More fixes to decorations on mirrored widgets
 2022-11-12: [BUGFIX] More `RectDecoration` clipping fixes
 2022-11-12: [FEATURE] Add ability to set position of popup relative to corners, midpoints and centre of screen
