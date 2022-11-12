@@ -1,3 +1,4 @@
+2022-11-12: [FEATURE] `PopupImage` can display an alternative image as a highlight
 2022-11-12: [BUGFIX] Fix away goal and red card indicator locations when using `PowerLineDecoration`
 2022-11-12: [BUGFIX] More fixes to decorations on mirrored widgets
 2022-11-12: [BUGFIX] More `RectDecoration` clipping fixes

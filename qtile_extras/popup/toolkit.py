@@ -768,7 +768,11 @@ class _PopupWidget(configurable.Configurable):
         This property changes based on whether the `_highlight` variable has been
         set.
         """
-        if self._highlight and self.highlight and self.highlight_method not in ["border", "text"]:
+        if (
+            self._highlight
+            and self.highlight
+            and self.highlight_method not in ["border", "text", "image"]
+        ):
             return self.highlight
         else:
             return self.background
@@ -1061,9 +1065,14 @@ class PopupImage(_PopupWidget):
     defaults = [
         ("filename", None, "path to image file."),
         (
+            "highlight_filename",
+            None,
+            "path to image to be displayed when highlight method is 'image'",
+        ),
+        (
             "highlight_method",
             "block",
-            "How to highlight focused control. Options are 'border', 'block' and 'mask'. "
+            "How to highlight focused control. Options are 'image', 'border', 'block' and 'mask'. "
             "'mask' is experimental and will replace the image with the 'highlight' colour "
             "masked by the image. Works best with solid icons on a transparent background.",
         ),
@@ -1076,22 +1085,35 @@ class PopupImage(_PopupWidget):
     def _configure(self, qtile, container):
         _PopupWidget._configure(self, qtile, container)
         self.img = None
-        self.load_image()
 
-    def load_image(self):
-        self.filename = os.path.expanduser(self.filename)
+        if self.highlight_method == "image" and self.highlight_filename is None:
+            logger.warning("No highlight image provided.")
+            self.highlight_method == "block"
 
-        if not os.path.exists(self.filename):
-            logger.warning("Image does not exist: {}".format(self.filename))
+        self.highlight_img = None
+        self.load_images()
+
+    def load_images(self):
+        self.img = self._load_image(self.filename)
+
+        if self.highlight_filename is not None:
+            self.highlight_img = self._load_image(self.highlight_filename)
+
+    def _load_image(self, filename):
+        filename = os.path.expanduser(filename)
+
+        if not os.path.exists(filename):
+            logger.warning("Image does not exist: {}".format(filename))
             return
 
-        img = Img.from_path(self.filename)
-        self.img = img
+        img = Img.from_path(filename)
 
         if (img.width / img.height) >= (self.width / self.height):
-            self.img.scale(width_factor=(self.width / img.width), lock_aspect_ratio=True)
+            img.scale(width_factor=(self.width / img.width), lock_aspect_ratio=True)
         else:
-            self.img.scale(height_factor=(self.height / img.height), lock_aspect_ratio=True)
+            img.scale(height_factor=(self.height / img.height), lock_aspect_ratio=True)
+
+        return img
 
     def paint(self):
         self.clear(self._background)
@@ -1101,7 +1123,11 @@ class PopupImage(_PopupWidget):
         self.drawer.ctx.translate(
             int((self.width - self.img.width) / 2), int((self.height - self.img.height) / 2)
         )
-        self.drawer.ctx.set_source(self.img.pattern)
+        if self._highlight and self.highlight_method == "image":
+            pattern = self.highlight_img.pattern
+        else:
+            pattern = self.img.pattern
+        self.drawer.ctx.set_source(pattern)
         self.drawer.ctx.paint()
         self.drawer.ctx.restore()
 
