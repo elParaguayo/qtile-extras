@@ -531,3 +531,54 @@ def test_popup_positioning_centered(manager):
     info = eval(info)
 
     assert (info["x"], info["y"]) == (300, 200)
+
+
+def test_popup_update_controls(manager):
+    layout = textwrap.dedent(
+        """
+        from libqtile import widget
+        from qtile_extras.popup.toolkit import (
+            PopupRelativeLayout,
+            PopupText,
+            PopupSlider
+        )
+        self.popup = PopupRelativeLayout(
+            self,
+            controls=[
+                PopupText(
+                    text="Original Text",
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    width=0.4,
+                    height=0.8,
+                    horizontal=False,
+                    name="textbox1"
+                ),
+                PopupSlider(
+                    pos_x=0.5,
+                    pos_y=0.1,
+                    width=0.4,
+                    height=0.8,
+                    value=0.5,
+                    name="slider1"
+                ),
+            ],
+            margin=0
+        )
+
+        self.popup.show()
+        """
+    )
+
+    manager.c.eval(layout)
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["controls"][0]["text"] == "Original Text"
+    assert info["controls"][1]["value"] == 0.5
+
+    # Update controls
+    _, out = manager.c.eval("self.popup.update_controls(textbox1='New Text', slider1=0.8)")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["controls"][0]["text"] == "New Text"
+    assert info["controls"][1]["value"] == 0.8
