@@ -205,6 +205,47 @@ Pressing ``Mod+shift+g`` will present a popup window looking like this:
 
 .. image:: /_static/images/popupgraphs.png
 
+Updating controls
+=================
+
+There may be times when you wish to update the contents of the popup without
+having to rebuild the whole popup. This is possible by using the
+``popup.update_controls`` method. The method works by taking the name of the
+control (as set by the ``name`` parameter) as a keyword. Multiple controls can
+be updated in the same call.
+
+.. code:: python
+
+    text_popup = None
+
+    def create_text_popup(qtile):
+        global text_popup
+        text_popup = tk.PopupRelativeLayout(
+            qtile,
+            width=400,
+            height=200,
+            controls=[
+                tk.PopupText(
+                    text="Original Text",
+                    width=0.9,
+                    height=0.9,
+                    pos_x=0.05,
+                    pos_y=0.05,
+                    v_align="middle",
+                    h_align="center",
+                    fontsize=20,
+                    name="textbox1"
+                ),
+            ],
+            inital_focus=None,
+            close_on_click=False,
+        )
+
+        text_popup.show(centered=True)
+
+    def update_text_popup(qtile):
+        text_popup.update_controls(textbox1="Updated Text")
+
 Extending widgets
 =================
 
