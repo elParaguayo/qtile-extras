@@ -111,6 +111,9 @@ class _PopupLayout(configurable.Configurable):
         # Identify keysyms for keybaord navigation
         self.keys = {k: [keysyms[key.lower()] for key in v] for k, v in self.keymap.items()}
 
+        # Build dict of updateable controls
+        self._set_updateable_controls()
+
         self.queued_draws = []
 
         self._hide_timer = None
@@ -148,6 +151,23 @@ class _PopupLayout(configurable.Configurable):
             self._focused.focus()
 
         self.configured = True
+
+    def _set_updateable_controls(self):
+        controls = {}
+        for c in self.controls:
+            if c.name is None:
+                continue
+
+            if c.name in controls:
+                logger.warning(
+                    f"There is an existing control named {c.name}. "
+                    f"If you wish to update controls then they must have unique names."
+                )
+                continue
+
+            controls[c.name] = c
+
+        self._updateable_controls = controls
 
     def place_controls(self):
         for c in self.controls:
@@ -469,6 +489,49 @@ class _PopupLayout(configurable.Configurable):
         for c in self.controls:
             c.unfocus()
 
+    def update_controls(self, **updates):
+        """
+        Update the value of controls in the popup, values are set by using keyword arguments
+        e.g. to update the control named ``textbox1`` you need to call
+        ``popup.update_controls(textbox1="New text")``. Multiple controls can be updated in the
+        same call by adding more ``name=value`` pairs.
+
+        If the control is a PopupImage instance, passing a string will set the primary image
+        filename while passing a tuple of two strings will set the primary and highlight image
+        filenames. You should use a value of ``None`` if you wish a value to be unchanged.
+
+        The popup will be redrawn automatically after updating the relevant controls.
+        """
+        for name, value in updates.items():
+            if name not in self._updateable_controls:
+                logger.warning("Unknown control: %s. Skipping.", name)
+                continue
+
+            control = self._updateable_controls[name]
+
+            if isinstance(control, PopupText):
+                control.text = value
+
+            elif isinstance(control, PopupImage):
+                if isinstance(value, str):
+                    control.filename = value
+
+                elif isinstance(value, tuple) and len(value) == 2:
+                    filename, highlight = value
+
+                    if filename is not None:
+                        control.filename = filename
+
+                    if highlight is not None:
+                        control.highlight_filename = highlight
+
+                    control.load_images()
+
+            elif isinstance(control, PopupSlider):
+                control.value = value
+
+        self.draw()
+
     def info(self):
         return {
             "name": self.__class__.__name__.lower(),
@@ -662,6 +725,11 @@ class _PopupWidget(configurable.Configurable):
             {},
             "Dict of mouse button press callback functions. Accepts lazy objects.",
         ),
+        (
+            "name",
+            None,
+            "A unique name for the control. Is only necessary if you wish to update the control's value via ``popup.update_controls()``.",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     offsetx = None
@@ -827,7 +895,7 @@ class _PopupWidget(configurable.Configurable):
 
     def info(self):
         return {
-            "name": self.__class__.__name__.lower(),
+            "name": self.name or self.__class__.__name__.lower(),
             "x": self.offsetx,
             "y": self.offsety,
             "width": self.width,
