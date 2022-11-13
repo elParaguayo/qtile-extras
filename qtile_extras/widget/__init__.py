@@ -37,6 +37,7 @@ widgets = {
     "GlobalMenu": "globalmenu",
     "HDDGraph": "graph",
     "HDDBusyGraph": "graph",
+    "Image": "image",
     "LiveFootballScores": "livefootballscores",
     "MemoryGraph": "graph",
     "NetGraph": "graph",

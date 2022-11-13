@@ -27,11 +27,12 @@ import cairocffi
 from libqtile import bar, configurable, hook, pangocffi
 from libqtile.backend.x11.xkeysyms import keysyms
 from libqtile.command import interface
-from libqtile.images import Img
 from libqtile.lazy import LazyCall
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.utils import QtileError
+
+from qtile_extras.images import Img
 
 if TYPE_CHECKING:
     from typing import Any
@@ -1207,13 +1208,16 @@ class PopupImage(_PopupWidget):
             self.highlight_img = self._load_image(self.highlight_filename)
 
     def _load_image(self, filename):
-        filename = os.path.expanduser(filename)
+        if filename.startswith("http"):
+            img = Img.from_url(filename)
 
-        if not os.path.exists(filename):
-            logger.warning("Image does not exist: {}".format(filename))
-            return
+        else:
+            filename = os.path.expanduser(filename)
+            if not os.path.exists(filename):
+                logger.warning("Image does not exist: %s", filename)
+                return
 
-        img = Img.from_path(filename)
+            img = Img.from_path(filename)
 
         if (img.width / img.height) >= (self.width / self.height):
             img.scale(width_factor=(self.width / img.width), lock_aspect_ratio=True)

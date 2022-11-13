@@ -20,11 +20,14 @@
 from __future__ import annotations
 
 import os
+from io import BytesIO
 from typing import TYPE_CHECKING
+from urllib.error import URLError
+from urllib.request import urlopen
 
 import cairocffi
 from libqtile.backend.base import Drawer
-from libqtile.images import Img
+from libqtile.images import Img as QtileImg
 from libqtile.images import Loader as QtileLoader
 from libqtile.images import LoadingError
 from libqtile.log_utils import logger
@@ -34,7 +37,19 @@ if TYPE_CHECKING:
     from libqtile.utils import ColorsType
 
 
-class ImgMask(Img):
+class Img(QtileImg):
+    @classmethod
+    def from_url(cls, url):
+        try:
+            raw = urlopen(url)
+        except URLError:
+            logger.error("Could not open image file: %s", url)
+            return
+
+        return cls(BytesIO(raw.read()).read(), path=url)
+
+
+class ImgMask(QtileImg):
     """
     Image object that uses the image source as a mask to paint the background.
 
@@ -44,7 +59,7 @@ class ImgMask(Img):
 
     def __init__(self, *args, drawer: Drawer | None = None, **kwargs):
         self.drawer = drawer
-        Img.__init__(self, *args, **kwargs)
+        QtileImg.__init__(self, *args, **kwargs)
 
     def attach_drawer(self, drawer: Drawer):
         self.drawer = drawer
