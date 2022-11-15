@@ -117,8 +117,6 @@ class _PopupLayout(configurable.Configurable):
         # Build dict of updateable controls
         self._set_updateable_controls()
 
-        self.queued_draws = []
-
         self._hide_timer = None
         self._killed = False
 
@@ -204,10 +202,6 @@ class _PopupLayout(configurable.Configurable):
         for c in self.controls:
             c.draw()
         self.popup.draw()
-
-        while self.queued_draws:
-            func = self.queued_draws.pop()
-            func()
 
     def show(
         self,
@@ -333,7 +327,8 @@ class _PopupLayout(configurable.Configurable):
 
         if warp_pointer:
             self.qtile.core.warp_pointer(
-                self.popup.x + self.popup.width // 2, self.popup.y + self.popup.height // 2
+                int(self.popup.x + self.popup.width // 2),
+                int(self.popup.y + self.popup.height // 2),
             )
 
         if self.keyboard_navigation:
