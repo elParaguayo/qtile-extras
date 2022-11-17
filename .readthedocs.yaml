@@ -3,6 +3,11 @@
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 # Required
 version: 2
+# Set python version
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.10"
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
@@ -11,7 +16,6 @@ formats:
 - pdf
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: 3.8
   install:
   - requirements: docs/requirements-cffi-pin.txt
   - requirements: docs/requirements.txt
