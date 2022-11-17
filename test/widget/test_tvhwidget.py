@@ -24,7 +24,7 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
-from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 import qtile_extras.widget.tvheadend
 
@@ -154,7 +154,11 @@ def test_tvh_widget_popup(tvh_manager):
     assert result == "True"
 
 
-def test_tvh_widget_auth(monkeypatch):
+@pytest.mark.parametrize(
+    "authtype,expected",
+    [("digest", HTTPDigestAuth), ("basic", HTTPBasicAuth), ("other", HTTPBasicAuth)],
+)
+def test_tvh_widget_auth(monkeypatch, authtype, expected):
     """Simple test to check auth parameters are handled correctly."""
 
     def no_op(*args, **kwargs):
@@ -169,8 +173,10 @@ def test_tvh_widget_auth(monkeypatch):
     monkeypatch.setattr("qtile_extras.widget.tvheadend.TVHWidget.setup_images", no_op)
     monkeypatch.setattr("qtile_extras.widget.tvheadend.TVHWidget.configure_decorations", no_op)
 
-    tvh = qtile_extras.widget.tvheadend.TVHWidget(auth=("TESTUSER", "PASSWORD"))
+    tvh = qtile_extras.widget.tvheadend.TVHWidget(
+        auth=("TESTUSER", "PASSWORD"), auth_type=authtype
+    )
     tvh.drawer = Drawer()
     tvh._configure(None, None)
     assert tvh.auth
-    assert isinstance(tvh.auth, HTTPBasicAuth)
+    assert isinstance(tvh.auth, expected)

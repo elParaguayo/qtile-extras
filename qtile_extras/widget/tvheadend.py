@@ -27,7 +27,7 @@ from libqtile import bar, images, pangocffi
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.widget import base
-from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 
 def icon_path():
@@ -103,6 +103,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
             None,
             "Auth details for accessing tvh. " "Can be None, tuple of (username, password).",
         ),
+        ("auth_type", "basic", "HTTP authentication type: 'digest' or 'basic'"),
         ("tvh_timeout", 5, "Seconds before timeout for timeout request"),
         (
             "hide_duplicates",
@@ -146,7 +147,8 @@ class TVHWidget(base._Widget, base.MarginMixin):
         self.setup_images()
 
         if type(self.auth) == tuple:
-            self.auth = HTTPBasicAuth(*self.auth)
+            auth = HTTPDigestAuth if self.auth_type == "digest" else HTTPBasicAuth
+            self.auth = auth(*self.auth)
 
         self.tvh = TVHJobServer(host=self.host, auth=self.auth, timeout=self.tvh_timeout)
 
