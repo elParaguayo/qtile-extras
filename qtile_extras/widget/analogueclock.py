@@ -114,7 +114,7 @@ class AnalogueClock(base._Widget):
             self.drawer.ctx.arc(
                 self.bar.size // 2 + self.padding,
                 self.bar.size // 2,
-                self.bar.size // 2 - self.margin,
+                self.bar.size // 2 - self.margin - self.face_border_width,
                 0,
                 to_rads(360),
             )

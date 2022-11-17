@@ -31,9 +31,12 @@ from libqtile.images import Img
 from libqtile.lazy import LazyCall
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
+from libqtile.utils import QtileError
 
 if TYPE_CHECKING:
     from typing import Any
+
+    from libqtile.core.manager import Qtile
 
 
 class _PopupLayout(configurable.Configurable):
@@ -79,7 +82,7 @@ class _PopupLayout(configurable.Configurable):
         ("hide_on_mouse_leave", False, "Hide the popup if the mouse pointer leaves the popup"),
     ]  # type: list[tuple[str, Any, str]]
 
-    def __init__(self, qtile, **config):
+    def __init__(self, qtile: Qtile | None = None, **config):
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_PopupLayout.defaults)
         self.configured = False
@@ -114,12 +117,10 @@ class _PopupLayout(configurable.Configurable):
         # Build dict of updateable controls
         self._set_updateable_controls()
 
-        self.queued_draws = []
-
         self._hide_timer = None
         self._killed = False
 
-    def _configure(self):
+    def _configure(self, qtile: Qtile | None = None):
         """
         This method creates an instances of a Popup window which serves as the
         base for the tooltip.
@@ -127,6 +128,12 @@ class _PopupLayout(configurable.Configurable):
         We also attach handlers for mouse events so that these can be passed to
         the relevant controls.
         """
+        if self.qtile is None:
+            if qtile is None:
+                raise QtileError("Cannot configure layout without Qtile instance.")
+            else:
+                self.qtile = qtile
+
         self.popup = Popup(
             self.qtile,
             width=self.width,
@@ -196,10 +203,6 @@ class _PopupLayout(configurable.Configurable):
             c.draw()
         self.popup.draw()
 
-        while self.queued_draws:
-            func = self.queued_draws.pop()
-            func()
-
     def show(
         self,
         x: int | float = 0,
@@ -208,6 +211,7 @@ class _PopupLayout(configurable.Configurable):
         warp_pointer: bool = False,
         relative_to: int = 1,
         relative_to_bar: bool = False,
+        qtile: Qtile | None = None,
     ):
         """
         Display the popup. Can be centered on screen.
@@ -242,7 +246,11 @@ class _PopupLayout(configurable.Configurable):
         occupied by the bar).
         """
         if not self.configured:
-            self._configure()
+            self._configure(qtile)
+
+        # mypy doesn't realise we can only get here if the layout is configured which
+        # requires self.qtile to be set...
+        assert self.qtile
 
         scr = self.qtile.current_screen
 
@@ -319,7 +327,8 @@ class _PopupLayout(configurable.Configurable):
 
         if warp_pointer:
             self.qtile.core.warp_pointer(
-                self.popup.x + self.popup.width // 2, self.popup.y + self.popup.height // 2
+                int(self.popup.x + self.popup.width // 2),
+                int(self.popup.y + self.popup.height // 2),
             )
 
         if self.keyboard_navigation:
@@ -1295,7 +1304,7 @@ class ControlBar:
         return Obj(self)
 
     def draw(self):
-        self.control.container.draw()
+        self.control.draw()
 
 
 class PopupWidget(_PopupWidget):
@@ -1336,6 +1345,7 @@ class PopupWidget(_PopupWidget):
 
         # Configure the widget
         self.widget._configure(qtile, ControlBar(self))
+        self.widget.configured = True
 
         # Set the correct offsets for positioning the widget in the popup window
         self.widget.offsetx = self.offsetx
