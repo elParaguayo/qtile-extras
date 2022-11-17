@@ -17,8 +17,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from copy import deepcopy
 from typing import TYPE_CHECKING
 
+from libqtile.command.base import expose_command
 from libqtile.configurable import Configurable
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
@@ -60,7 +62,7 @@ class TooltipMixin(_BaseMixin):
 
     _screenshots = [("tooltip_mixin.gif", "")]
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._tooltip = None
         self._tooltip_timer = None
         self.tooltip_text = ""
@@ -297,3 +299,98 @@ class DbusMenuMixin(MenuMixin):
     the callback should be set to the widget's ``display_menu`` method.
     """
     _build_menu = PopupMenu.from_dbus_menu  # type: Callable
+
+
+class ExtendedPopupMixin(_BaseMixin):
+    """
+    Mixin that provides the ability for a widget to display extended
+    detail in popups via the Popup toolkit.
+
+    It is not mandatory for widgets to use this if they want to use the
+    toolkit. However, the mixin provides some standard variable and
+    method names.
+
+    .. list-table::
+
+      * -  ``self.extended_popup``
+        - the popup instance or None
+      * - ``self._popup_hide_timer``
+        - the current timer object for hiding the popup or None
+      * - ``self.has_popup``
+        - property that returns ``True`` is popup is defined and not killed
+      * - ``self.update_popup()``
+        - method to call to update popup contents. Should not be overriden
+          as it calls ``self._update_popup`` (see below) but only if ``self.has_popup`` is ``True``
+      * - ``self._update_popup()``
+        - method that actually updates the contents. This will raise a
+          ``NotImplementedError`` if called without being overriden.
+      * - ``self._set_popup_timer()``
+        - sets the timer to kill the popup.
+      * - ``self._kill_popup()``
+        - kills the popup
+      * - ``self.show_popup()``
+        - displays the popup. Is also exposed to command interface so can be used
+          in ``lazy`` calls etc.
+
+    """
+
+    defaults = [
+        ("popup_show_args", {"centered": True}, "Arguments to be passed to ``popup.show()``"),
+        ("popup_layout", None, "The popup layout definition"),
+        ("popup_hide_timeout", 0, "Number of seconds before popup is hidden (0 to disable)."),
+    ]  # type: list[tuple[str, Any, str]]
+
+    def __init__(self, **kwargs):
+        self.extended_popup = None
+        self._popup_hide_timer = None
+
+    @property
+    def has_popup(self):
+        return self.extended_popup is not None and not getattr(
+            self.extended_popup, "_killed", True
+        )
+
+    def update_popup(self):
+        """
+        This is the primary call to update the popup's contents and is the method that should be called
+        by the widget. It is not anticipated that this method would be overriden.
+        """
+        if not self.has_popup:
+            return
+
+        self._update_popup()
+
+    def _update_popup(self):
+        """
+        This method mus be overriden by individual widgets and should contain a call
+        to `self.extended_popup.update_controls` in order to set the value of the controls
+        being displayed by the popup.
+        """
+        raise NotImplementedError("Widgets need to override this method.")
+
+    def _set_popup_timer(self):
+        if not self.popup_hide_timeout:
+            return
+
+        if self._popup_hide_timer is not None:
+            self._popup_hide_timer.cancel()
+
+        self.timeout_add(self.popup_hide_timeout, self._kill_popup)
+
+    def _kill_popup(self):
+        if self.has_popup:
+            self.extended_popup.kill()
+
+        self._popup_hide_timer = None
+
+    @expose_command()
+    def show_popup(self):
+        """Method to display the popup."""
+        if not self.has_popup:
+            self.extended_popup = deepcopy(self.popup_layout)
+            self.extended_popup._configure(self.qtile)
+
+        self.update_popup()
+
+        self.extended_popup.show(**self.popup_show_args)
+        self._set_popup_timer()

@@ -1,3 +1,4 @@
+2022-11-18: [FEATURE] Add `ExtendedPopupMixin` to simplify adding popups to widgets
 2022-11-18: [FEATURE] Add `MenuMixin` and `DBusMenuMixin` to standardise approach to widget menus
 2022-11-17: [FEATURE] Add HTTPDigest authentication to `TVHWidget`
 2022-11-13: [FEATURE] Add ability to update popup control values
