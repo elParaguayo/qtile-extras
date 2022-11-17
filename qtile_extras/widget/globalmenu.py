@@ -25,15 +25,15 @@ from typing import TYPE_CHECKING
 from libqtile import hook
 from libqtile.widget import base
 
-from qtile_extras.popup.menu import PopupMenu
 from qtile_extras.resources.dbusmenu import DBusMenu
 from qtile_extras.resources.global_menu import registrar
+from qtile_extras.widget.mixins import DbusMenuMixin
 
 if TYPE_CHECKING:
     from typing import Any
 
 
-class GlobalMenu(base._TextBox):
+class GlobalMenu(base._TextBox, DbusMenuMixin):
     """
     A widget to display a Global Menu (File Edit etc.) in your bar.
 
@@ -48,40 +48,7 @@ class GlobalMenu(base._TextBox):
     _experimental = True
 
     defaults = [
-        ("menu_font", "sans", "Font for menu text"),
-        ("menu_fontsize", 12, "Font size for menu text"),
-        ("menu_foreground", "ffffff", "Font colour for menu text"),
-        ("menu_foreground_disabled", "aaaaaa", "Font colour for disabled menu items"),
-        (
-            "menu_foreground_highlighted",
-            None,
-            "Font colour for highlighted item (None to use menu_foreground value)",
-        ),
-        ("menu_background", "333333", "Background colour for menu"),
-        ("separator_colour", "555555", "Colour of menu separator"),
-        (
-            "highlight_colour",
-            "0060A0",
-            "Colour of highlight for menu items (None for no highlight)",
-        ),
-        ("separator_colour", "555555", "Colour of menu separator"),
-        ("highlight_radius", 0, "Radius for menu highlight"),
-        (
-            "menu_row_height",
-            None,
-            (
-                "Height of menu row (NB text entries are 2 rows tall, separators are 1 row tall.) "
-                '"None" will attempt to calculate height based on font size.'
-            ),
-        ),
-        ("menu_width", 200, "Context menu width"),
-        ("show_menu_icons", True, "Show icons in context menu"),
-        ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
-        ("opacity", 1, "Menu opactity"),
         ("padding", 3, "Padding between items in menu bar"),
-        ("menu_border", "111111", "Menu border colour"),
-        ("menu_border_width", 0, "Width of menu border"),
-        ("menu_icon_size", 12, "Size of icons in menu (where available)"),
     ]  # type: list[tuple[str, Any, str]]
 
     _dependencies = ["dbus-next"]
@@ -92,6 +59,7 @@ class GlobalMenu(base._TextBox):
 
     def __init__(self, **config):
         base._TextBox.__init__(self, **config)
+        DbusMenuMixin.__init__(self, **config)
         self.add_defaults(GlobalMenu.defaults)
         self.root = None
         self.items = []
@@ -99,28 +67,7 @@ class GlobalMenu(base._TextBox):
         self.main_menu = None
         self.current_wid = None
         self.add_callbacks({"Button1": self.show_menu})
-        self.menu = None
         self.item_pos = 0
-
-        self.menu_config = {
-            "background": self.menu_background,
-            "font": self.menu_font,
-            "fontsize": self.menu_fontsize,
-            "foreground": self.menu_foreground,
-            "foreground_disabled": self.menu_foreground_disabled,
-            "foreground_highlighted": self.menu_foreground_highlighted,
-            "highlight": self.highlight_colour,
-            "show_menu_icons": self.show_menu_icons,
-            "hide_after": self.hide_after,
-            "colour_above": self.separator_colour,
-            "opacity": self.opacity,
-            "row_height": self.menu_row_height,
-            "menu_width": self.menu_width,
-            "icon_size": self.menu_icon_size,
-            "highlight_radius": self.highlight_radius,
-            "border": self.menu_border,
-            "border_width": self.menu_border_width,
-        }
 
     async def _config_async(self):
         if not registrar.started:
@@ -248,15 +195,7 @@ class GlobalMenu(base._TextBox):
             return
         self.main_menu.get_menu(root=self.selected_item.id)
 
-    def display_menu(self, menu_items):
-        if not menu_items:
-            return
-
-        if self.menu is not None:
-            self.menu.kill()
-
-        self.menu = PopupMenu.from_dbus_menu(self.qtile, menu_items, **self.menu_config)
-
+    def set_menu_position(self, x, y):
         if self.bar.screen.top == self.bar:
             x = min(self.offsetx + self.item_pos, self.bar.width - self.menu.width)
             y = self.bar.height
@@ -265,7 +204,7 @@ class GlobalMenu(base._TextBox):
             x = min(self.offsetx + self.item_pos, self.bar.width - self.menu.width)
             y = self.bar.screen.height - self.bar.height - self.menu.height
 
-        self.menu.show(x, y)
+        return x, y
 
     def finalize(self):
         registrar.remove_callback(self.client_updated)

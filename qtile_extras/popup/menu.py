@@ -48,6 +48,7 @@ class PopupMenuItem(PopupText):
         ("row_span", 2, "Text item is twice size of separator"),
         ("has_submenu", False, "Whether the items leads to a submenu"),
         ("enabled", True, "Whether the menu item is enabled"),
+        ("foreground_disabled", "aaaaaa", "Text colour when disabled"),
     ]
 
     def __init__(self, text="", **config):

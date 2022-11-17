@@ -19,11 +19,14 @@
 # SOFTWARE.
 from typing import TYPE_CHECKING
 
+from libqtile.configurable import Configurable
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 
+from qtile_extras.popup.menu import PopupMenu
+
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Callable
 
 
 class _BaseMixin:
@@ -148,3 +151,149 @@ class TooltipMixin(_BaseMixin):
             self._tooltip.kill()
             self._tooltip = None
             self._tooltip_timer = None
+
+
+class MenuMixin(Configurable, _BaseMixin):
+    """
+    Provides the relevant settings to help configure a context menu to
+    be displayed by the widget.
+
+    The use of the mixin ensures that all menus use the same property names which
+    allows users to theme menus more easily e.g. by setting values in
+    ``widget_defaults``.
+    """
+
+    _build_menu = PopupMenu.generate  # type: Callable
+
+    defaults = [
+        ("menu_font", "sans", "Font for menu text"),
+        ("menu_fontsize", 12, "Font size for menu text"),
+        ("menu_foreground", "ffffff", "Font colour for menu text"),
+        ("menu_foreground_disabled", "aaaaaa", "Font colour for disabled menu items"),
+        (
+            "menu_foreground_highlighted",
+            None,
+            "Font colour for highlighted item (None to use menu_foreground value)",
+        ),
+        ("menu_background", "333333", "Background colour for menu"),
+        ("menu_border", "111111", "Menu border colour"),
+        ("menu_border_width", 0, "Width of menu border"),
+        ("menu_icon_size", 12, "Size of icons in menu (where available)"),
+        ("menu_offset_x", 0, "Fine tune x position of menu"),
+        ("menu_offset_y", 0, "Fine tune y position of menu"),
+        ("separator_colour", "555555", "Colour of menu separator"),
+        (
+            "highlight_colour",
+            "0060A0",
+            "Colour of highlight for menu items (None for no highlight)",
+        ),
+        ("highlight_radius", 0, "Radius for menu highlight"),
+        (
+            "menu_row_height",
+            None,
+            (
+                "Height of menu row (NB text entries are 2 rows tall, separators are 1 row tall.) "
+                '"None" will attempt to calculate height based on font size.'
+            ),
+        ),
+        ("menu_width", 200, "Context menu width"),
+        ("show_menu_icons", True, "Show icons in context menu"),
+        ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
+        ("opacity", 1, "Menu opactity"),
+    ]  # type: list[tuple[str, Any, str]]
+
+    def __init__(self, **config):
+        self.add_defaults(MenuMixin.defaults)
+        self.menu_config = {
+            "font": self.menu_font,
+            "fontsize": self.menu_fontsize,
+            "foreground": self.menu_foreground,
+            "foreground_disabled": self.menu_foreground_disabled,
+            "foreground_highlighted": self.menu_foreground_highlighted,
+            "background": self.menu_background,
+            "border": self.menu_border,
+            "border_width": self.menu_border_width,
+            "icon_size": self.menu_icon_size,
+            "colour_above": self.separator_colour,
+            "highlight": self.highlight_colour,
+            "highlight_radius": self.highlight_radius,
+            "row_height": self.menu_row_height,
+            "menu_width": self.menu_width,
+            "show_menu_icons": self.show_menu_icons,
+            "hide_after": self.hide_after,
+            "opacity": self.opacity,
+        }
+
+        self.menu: PopupMenu | None = None
+
+    def set_menu_position(self, x: int, y: int) -> tuple[int, int]:
+        """
+        Set the x and y coordinates of the menu.
+
+        The method receivs and x and y value which is calculated during
+        ``self.display_menu``. The x and y coordinates place the menu at
+        the start of the widget and adjacent to the bar. The values have also
+        already been adjusted to ensure that the menu will fit on the screen.
+
+        This method can be overriden if menus need to adjust the placement of the menu
+        e.g. if the widget has multiple items with separate menus.
+
+        NB: if a user has defined ``menu_offset_x`` or ``menu_offset_y`` these will
+        be applied after this method and so should not be included here.
+        """
+        return x, y
+
+    def display_menu(self, menu_items):
+        """
+        Method to display the menu.
+
+        By default, the menu will be placed by the widget using the widget's offset along the bar
+        and the bar's size. If the position needs to be adjusted then the x and y coordinates should
+        be set by overriding the ``set_menu_position`` method.
+        """
+        if not menu_items:
+            return
+
+        if self.menu and not self.menu._killed:
+            self.menu.kill()
+
+        self.menu = self._build_menu(self.qtile, menu_items, **self.menu_config)
+
+        screen = self.bar.screen
+
+        if screen.top == self.bar:
+            x = min(self.offsetx, self.bar.width - self.menu.width - 2 * self.menu_border_width)
+            y = self.bar.height
+
+        elif screen.bottom == self.bar:
+            x = min(self.offsetx, self.bar.width - self.menu.width - 2 * self.menu_border_width)
+            y = screen.height - self.bar.height - self.menu.height - 2 * self.menu_border_width
+
+        elif screen.left == self.bar:
+            x = self.bar.width
+            y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
+
+        else:
+            x = screen.width - self.bar.width - self.menu.width - 2 * self.menu_border_width
+            y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
+
+        x, y = self.set_menu_position(x, y)
+
+        # Adjust the position for any user-defined settings
+        x += self.menu_offset_x
+        y += self.menu_offset_y
+
+        self.menu.show(x, y)
+
+
+class DbusMenuMixin(MenuMixin):
+    """
+    Builds a menu from ``qtile_extras.resources.dbusmenu.DBusMenuItem``
+    objects.
+
+    Should be used where a widget is accessing menu data over DBus.
+
+    When calling ``qtile_extras.resources.dbusmenu.DBusMenu.get_menu``,
+    the callback should be set to the widget's ``display_menu`` method.
+    """
+    _build_menu = PopupMenu.from_dbus_menu  # type: Callable
