@@ -298,6 +298,7 @@ class DbusMenuMixin(MenuMixin):
     When calling ``qtile_extras.resources.dbusmenu.DBusMenu.get_menu``,
     the callback should be set to the widget's ``display_menu`` method.
     """
+
     _build_menu = PopupMenu.from_dbus_menu  # type: Callable
 
 
