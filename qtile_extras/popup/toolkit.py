@@ -1045,6 +1045,9 @@ class PopupSlider(_PopupWidget):
 
     Bar can be displayed horizontally (draws left-to-right) or vertically
     (bottom-to-top).
+
+    In addition, a border can be drawn around the bar using the
+    ``bar_border_colour/size/margin`` parameters.
     """
 
     defaults = [
@@ -1056,7 +1059,10 @@ class PopupSlider(_PopupWidget):
         ("bar_size", 2, "Thickness of bar"),
         ("marker_size", 10, "Size of marker"),
         ("marker_colour", "#bbbbbb", "Colour of marker"),
-        ("end_margin", 5, "Gap between edge of control and ends of bar"),
+        ("end_margin", 5, "Gap between edge of control and ends of the bar/border"),
+        ("bar_border_colour", "ffffff", "Colour of border drawn around bar"),
+        ("bar_border_size", 0, "Thickness of border around bar"),
+        ("bar_border_margin", 0, "Size of gap between border and bar"),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, value=None, **config):
@@ -1071,22 +1077,35 @@ class PopupSlider(_PopupWidget):
 
     def _configure(self, qtile, container):
         _PopupWidget._configure(self, qtile, container)
-        self.bar_length = self.length - 2 * self.end_margin
+        self.full_bar_depth = (self.bar_border_size + self.bar_border_margin) * 2 + self.bar_size
+        self.full_bar_length = self.length - self.end_margin * 2
+        self.bar_length = (
+            self.full_bar_length - (self.bar_border_size + self.bar_border_margin) * 2
+        )
 
     def paint(self):
         self.clear(self._background)
 
-        offset = int((self.depth - self.bar_size) / 2)
-
         ctx = self.drawer.ctx
         ctx.save()
-        ctx.set_line_width(self.bar_size)
 
         if not self.horizontal:
             ctx.rotate(-90 * math.pi / 180.0)
             ctx.translate(-self.length, 0)
 
-        ctx.translate(self.end_margin, offset)
+        if self.bar_border_size:
+            ctx.save()
+            ctx.translate(self.end_margin, (self.depth - self.full_bar_depth) // 2)
+            ctx.set_line_width(self.bar_border_size)
+            self.drawer.set_source_rgb(self.bar_border_colour)
+            ctx.rectangle(0, 0, self.full_bar_length, self.full_bar_depth)
+            ctx.stroke()
+            ctx.restore()
+
+        ctx.translate(
+            self.end_margin + self.bar_border_size + self.bar_border_margin, self.depth // 2
+        )
+        ctx.set_line_width(self.bar_size)
 
         if self.percentage > 0:
             ctx.new_sub_path()
