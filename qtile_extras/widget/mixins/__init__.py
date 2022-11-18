@@ -395,3 +395,9 @@ class ExtendedPopupMixin(_BaseMixin):
 
         self.extended_popup.show(**self.popup_show_args)
         self._set_popup_timer()
+
+    def update_or_show_popup(self):
+        if self.has_popup:
+            self.update_popup()
+        else:
+            self.show_popup()
