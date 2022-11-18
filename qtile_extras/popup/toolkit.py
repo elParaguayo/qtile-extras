@@ -80,6 +80,11 @@ class _PopupLayout(configurable.Configurable):
         ("initial_focus", 0, "Index of control to be focused at startup."),
         ("hide_interval", 0.5, "Timeout after mouse leaves popup before popup is lilled"),
         ("hide_on_mouse_leave", False, "Hide the popup if the mouse pointer leaves the popup"),
+        (
+            "hide_on_timeout",
+            0,
+            "Timeout before popup closes (0 = disabled). Useful for notifications",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, qtile: Qtile | None = None, **config):
@@ -117,6 +122,7 @@ class _PopupLayout(configurable.Configurable):
         # Build dict of updateable controls
         self._set_updateable_controls()
 
+        self._autohide_timer = None
         self._hide_timer = None
         self._killed = False
 
@@ -212,6 +218,7 @@ class _PopupLayout(configurable.Configurable):
         relative_to: int = 1,
         relative_to_bar: bool = False,
         qtile: Qtile | None = None,
+        hide_on_timeout: int | float | None = None,
     ):
         """
         Display the popup. Can be centered on screen.
@@ -244,6 +251,9 @@ class _PopupLayout(configurable.Configurable):
         ``relative_to-bar=True`` and you use a float value for x and/or y, the float value is
         still calculated by reference to the whole screen's dimensions (i.e. including the space
         occupied by the bar).
+
+        An automatic hide timer can be set via ``hide_on_timeout``. This will replace any value
+        that was set when configuring the layout.
         """
         if not self.configured:
             self._configure(qtile)
@@ -335,6 +345,12 @@ class _PopupLayout(configurable.Configurable):
             self.set_hooks()
             self.popup.win.focus(False)
 
+        if hide_on_timeout is not None:
+            self.hide_on_timeout = hide_on_timeout
+
+        if self.hide_on_timeout:
+            self._set_autohide()
+
     def set_hooks(self):
         hook.subscribe.client_focus(self.focus_change)
         hook.subscribe.focus_change(self.focus_change)
@@ -349,6 +365,12 @@ class _PopupLayout(configurable.Configurable):
     def focus_change(self, window=None):
         if window is None or not window == self.popup.win:
             self.kill()
+
+    def _set_autohide(self):
+        if self._autohide_timer is not None:
+            self._autohide_timer.cancel()
+
+        self._autohide_timer = self.qtile.call_later(self.hide_on_timeout, self.kill)
 
     def hide(self):
         """Hide the popup."""
@@ -540,6 +562,9 @@ class _PopupLayout(configurable.Configurable):
                 control.value = value
 
         self.draw()
+
+        if self.hide_on_timeout:
+            self._set_autohide()
 
     def info(self):
         return {
