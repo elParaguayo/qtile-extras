@@ -28,10 +28,43 @@ from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
+from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupSlider, PopupText
+from qtile_extras.widget.mixins import ExtendedPopupMixin
+
 RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\].*\[(on|off)\]")
 
+VOLUME_NOTIFICATION = PopupRelativeLayout(
+    width=200,
+    height=50,
+    controls=[
+        PopupText(
+            text="Volume:",
+            name="text",
+            pos_x=0.1,
+            pos_y=0.1,
+            height=0.2,
+            width=0.8,
+            v_align="middle",
+            h_align="center",
+        ),
+        PopupSlider(
+            name="volume",
+            pos_x=0.1,
+            pos_y=0.3,
+            width=0.7,
+            height=0.8,
+            colour_below="00ffff",
+            bar_border_size=2,
+            bar_border_margin=1,
+            bar_size=6,
+            marker_size=0,
+            end_margin=0,
+        ),
+    ],
+)
 
-class ALSAWidget(base._Widget):
+
+class ALSAWidget(base._Widget, ExtendedPopupMixin):
     """
     The widget is very simple and, so far, just allows controls for
     volume up, down and mute.
@@ -44,6 +77,14 @@ class ALSAWidget(base._Widget):
     The widget displays volume level via an icon, bar or both. The icon
     is permanently visible while the bar only displays when the volume
     is changed and will hide after a user-defined period.
+
+    Alternatively, if you select the `popup` mode then no widget will
+    appear on the bar and, instead, a small popup will be displayed.
+
+    The layout of the popup can be customised via the `popup_layout` parameter.
+    Users should provide a _PopupLayout object. The layout should have at least one
+    of the following controls: a PopupSlider named `volume` and a PopupText control
+    named `text` as these controls will be updated whenever the volume changes.
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -51,7 +92,7 @@ class ALSAWidget(base._Widget):
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
         ("foreground", "ffffff", "Font colour"),
-        ("mode", "bar", "Display mode: 'icon', 'bar', 'both'."),
+        ("mode", "bar", "Display mode: 'icon', 'bar', 'both', 'popup'."),
         ("hide_interval", 5, "Timeout before bar is hidden after update"),
         ("text_format", "{volume}%", "String format"),
         ("bar_width", 75, "Width of display bar"),
@@ -68,6 +109,13 @@ class ALSAWidget(base._Widget):
         ("device", "Master", "Name of ALSA device"),
         ("icon_size", None, "Size of the volume icon"),
         ("padding", 0, "Padding before icon"),
+        ("popup_layout", VOLUME_NOTIFICATION, "Layout for popup mode"),
+        ("popup_hide_timeout", 5, "Time before popup hides"),
+        (
+            "popup_show_args",
+            {"relative_to": 2, "relative_to_bar": True, "y": 50},
+            "Control position of popup",
+        ),
     ]
 
     _screenshots = [
@@ -78,6 +126,8 @@ class ALSAWidget(base._Widget):
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
+        ExtendedPopupMixin.__init__(self, **config)
+        self.add_defaults(ExtendedPopupMixin.defaults)
         self.add_defaults(ALSAWidget.defaults)
 
         self.add_callbacks(
@@ -183,8 +233,16 @@ class ALSAWidget(base._Widget):
         if self.show_bar:
             self.set_hide_timer()
 
+        if self.mode == "popup":
+            self.update_or_show_popup()
+
         # Draw
         self.bar.draw()
+
+    def _update_popup(self):
+        volume = self.volume / 100
+        label = f"Volume {volume:.0%}" if not self.muted else "Muted"
+        self.extended_popup.update_controls(volume=volume, text=label)
 
     def setup_images(self):
         # Load icons
