@@ -23,6 +23,7 @@ from pathlib import Path
 
 import requests
 from libqtile import bar
+from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
@@ -152,7 +153,9 @@ class SnapCast(base._Widget):
 
         return self.error_colour
 
+    @expose_command()
     def toggle_state(self):
+        """Toggle Snapcast on and off."""
         if self._proc is None:
             self._proc = subprocess.Popen(
                 self._cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
