@@ -25,10 +25,43 @@ from libqtile.log_utils import logger
 from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
 
+from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupSlider, PopupText
+from qtile_extras.widget.mixins import ExtendedPopupMixin
+
 ERROR_VALUE = -1
 
+BRIGHTNESS_NOTIFICATION = PopupRelativeLayout(
+    width=200,
+    height=50,
+    controls=[
+        PopupText(
+            text="Brightness:",
+            name="text",
+            pos_x=0.1,
+            pos_y=0.1,
+            height=0.2,
+            width=0.8,
+            v_align="middle",
+            h_align="center",
+        ),
+        PopupSlider(
+            name="brightness",
+            pos_x=0.1,
+            pos_y=0.3,
+            width=0.7,
+            height=0.8,
+            colour_below="00ffff",
+            bar_border_size=2,
+            bar_border_margin=1,
+            bar_size=6,
+            marker_size=0,
+            end_margin=0,
+        ),
+    ],
+)
 
-class BrightnessControl(base._Widget):
+
+class BrightnessControl(base._Widget, ExtendedPopupMixin):
     """
     This module provides basic screen brightness controls and a simple
     widget showing the brightness level for Qtile.
@@ -97,6 +130,18 @@ class BrightnessControl(base._Widget):
         ("max_brightness_path", "max_brightness", "Name of file holding max brightness value"),
         ("min_brightness", 100, "Minimum brightness. Do not set to 0!"),
         ("max_brightness", None, "Set value or leave as None to allow device maximum"),
+        (
+            "mode",
+            "bar",
+            "Display mode: 'bar' shows bar in widget, 'popup' to display a popup window",
+        ),
+        ("popup_layout", BRIGHTNESS_NOTIFICATION, "Layout for popup mode"),
+        ("popup_hide_timeout", 5, "Time before popup hides"),
+        (
+            "popup_show_args",
+            {"relative_to": 2, "relative_to_bar": True, "y": 50},
+            "Control position of popup",
+        ),
     ]
 
     _screenshots = [
@@ -105,6 +150,8 @@ class BrightnessControl(base._Widget):
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
+        ExtendedPopupMixin.__init__(self, **config)
+        self.add_defaults(ExtendedPopupMixin.defaults)
         self.add_defaults(BrightnessControl.defaults)
 
         if "font_colour" in config:
@@ -126,6 +173,8 @@ class BrightnessControl(base._Widget):
 
         # Hide the widget by default
         self.hidden = True
+
+        self.show_bar = self.mode == "bar"
 
         self.bright_path = os.path.join(self.device, self.brightness_path)
         self.min = self.min_brightness
@@ -226,14 +275,24 @@ class BrightnessControl(base._Widget):
 
     def status_change(self, percentage):
         # The brightness has changed so we need to show the widget
-        self.hidden = False
+        if self.show_bar:
+            self.hidden = False
 
         # Set the value and update the display
         self.percentage = percentage
         self.bar.draw()
 
         # Start the timer to hide the widget
-        self.set_timer()
+        if self.show_bar:
+            self.set_timer()
+
+        if self.mode == "popup":
+            self.update_or_show_popup()
+
+    def _update_popup(self):
+        brightness = self.percentage
+        label = f"Brightness {brightness:.0%}"
+        self.extended_popup.update_controls(brightness=brightness, text=label)
 
     def draw(self):
         # Clear the widget backgrouns
@@ -273,7 +332,6 @@ class BrightnessControl(base._Widget):
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
     def set_timer(self):
-
         # Cancel old timer
         if self.update_timer:
             self.update_timer.cancel()
