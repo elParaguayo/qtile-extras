@@ -81,12 +81,16 @@ def test_rect_decoration_using_widget_background(manager_nospawn, minimal_conf_n
                     widget.ScriptExit(
                         name="one",
                         background="ff0000",
-                        decorations=[RectDecoration(colour="00ff00")],
+                        decorations=[RectDecoration(colour="00ff00", filled=True)],
                     ),
                     widget.ScriptExit(
                         name="two",
                         background="ff0000",
-                        decorations=[RectDecoration(colour="00ff00", use_widget_background=True)],
+                        decorations=[
+                            RectDecoration(
+                                colour="00ff00", use_widget_background=True, filled=True
+                            )
+                        ],
                     ),
                 ],
                 10,

@@ -1,3 +1,5 @@
+2022-11-22: [FEATURE] Add ability to draw border in different colour in `RectDecoration`
+2022-11-22: [BUGFIX] Fix `RectDecoration` grouping when not filled
 2022-11-18: [FEATURE] Add support for web-based images in `PopupImage` and `Image` widget
 2022-11-18: [FEATURE] Add ability to draw border on `PopupSlider` controls
 2022-11-18: [FEATURE] Add `ExtendedPopupMixin` to simplify adding popups to widgets

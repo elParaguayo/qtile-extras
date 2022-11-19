@@ -121,10 +121,9 @@ class RectDecoration(_Decoration):
     """
     Widget decoration that draws a rectangle behind the widget contents.
 
-    Only one colour can be set but decorations can be layered to achieve
-    multi-coloured effects.
-
-    Rectangles can be drawn as just the the outline or filled.
+    Rectangles can be drawn as just the the outline or filled and the outline
+    can be a different colour to fill. In addition, decorations can be layered
+    to achieve more multi-coloured effects.
 
     Curved corners can be obtained by setting the ``radius`` parameter.
 
@@ -179,7 +178,6 @@ class RectDecoration(_Decoration):
 
     Note the group is not broken despite the Mpris2 widget having no contents.
 
-
     Groups are determined by looking for:
       - widgets using the identical configuration for the decoration
       - widgets in a consecutive groups
@@ -190,7 +188,8 @@ class RectDecoration(_Decoration):
 
     Setting ``clip=True`` will result in the widget's contents being restricted to the area covered
     by the decoration. This may be desirable for widgets like ``ALSAWidget`` and
-    ``BrightnessControl`` which draw their levels in the bar.
+    ``BrightnessControl`` which draw their levels in the bar. NB clipping be be constrained to the
+    area inside the outline line width.
 
     .. image:: /_static/images/rect_decoration_clip.png
 
@@ -202,7 +201,8 @@ class RectDecoration(_Decoration):
         ("filled", False, "Whether to fill shape"),
         ("radius", 4, "Corner radius as int or list of ints [TL TR BR BL]. 0 is square"),
         ("colour", "#000000", "Colour for decoration"),
-        ("line_width", 2, "Line width for decoration"),
+        ("line_width", 0, "Line width for decoration"),
+        ("line_colour", "#ffffff", "Colour of border"),
         (
             "use_widget_background",
             False,
@@ -280,20 +280,21 @@ class RectDecoration(_Decoration):
         visible = [w for w in grouped if w.length > 0]
         return visible and self.parent is visible[-1]
 
-    def draw(self) -> None:
+    def _draw_path(self, clip=False):
+        ctx = self.ctx if not clip else self.drawer.ctx
+        ctx.new_path()
+
+        # If we're clipping then we want the path to be inside
+        # the border
+        diff = self.line_width / 2 if clip else 0
+
         box_height = self.height - 2 * self.padding_y
         box_width = self.width - 2 * self.padding_x
+        first = False
+        last = False
 
-        # The widget may have resized itsef so we should reset any existing clip area
-        self.drawer.ctx.reset_clip()
-
-        self.fill_colour = self.parent.background if self.use_widget_background else self.colour
-
-        self.set_source_rgb(self.fill_colour)
-
-        if not self.radius:
-
-            self.ctx.rectangle(self.padding_x, self.padding_y, box_width, box_height)
+        if not self.radius and not self.group:
+            ctx.rectangle(self.padding_x, self.padding_y, box_width, box_height)
 
         else:
             if self.group and self.parent in self.parent.bar.widgets:
@@ -301,82 +302,113 @@ class RectDecoration(_Decoration):
                 corners = [0, 0, 0, 0]
 
                 if self.is_first:
+                    first = True
                     corners[0] = self.corners[0]
                     corners[3] = self.corners[3]
                 if self.is_last:
+                    last = True
                     corners[1] = self.corners[1]
                     corners[2] = self.corners[2]
 
             else:
                 corners = self.corners
+                first = True
+                last = True
 
             degrees = math.pi / 180.0
 
-            # We may need to draw this path to multiple contexts
-            contexts = [self.ctx]
+            # Top left
+            radius = corners[0]
+            delta = radius + self.line_width / 2
+            y = self.padding_y + delta + diff
+            if first:
+                x = self.padding_x + delta
+            else:
+                radius = max(radius - diff, 0)
+                x = -self.line_width + diff
+            ctx.arc(
+                x,
+                y,
+                radius,
+                180 * degrees,
+                270 * degrees,
+            )
 
-            # If we're clipping then draw the path to the widget's drawer
-            if self.clip:
-                contexts.append(self.drawer.ctx)
+            # Top right
+            radius = corners[1]
+            delta = radius + self.line_width / 2
+            y = self.padding_y + delta + diff
+            if last:
+                x = self.padding_x + box_width - delta
+            else:
+                radius = max(radius - diff, 0)
+                x = self.width + self.line_width - diff
+            ctx.arc(
+                x,
+                y,
+                radius,
+                -90 * degrees,
+                0 * degrees,
+            )
 
-            for ctx in contexts:
-                ctx.new_sub_path()
+            # Bottom right
+            radius = corners[2]
+            delta = radius + self.line_width / 2
+            y = self.padding_y + box_height - delta - diff
+            if last:
+                x = self.padding_x + box_width - delta
+            else:
+                radius = max(radius - diff, 0)
+                x = self.width + self.line_width - diff
+            ctx.arc(
+                x,
+                y,
+                radius,
+                0 * degrees,
+                90 * degrees,
+            )
 
-                # Top left
-                radius = corners[0]
-                delta = radius + self.line_width / 2 - 1
-                ctx.arc(
-                    self.padding_x + delta,
-                    self.padding_y + delta,
-                    radius,
-                    180 * degrees,
-                    270 * degrees,
-                )
+            # Bottom left
+            radius = corners[3]
+            delta = radius + self.line_width / 2
+            y = self.padding_y + box_height - delta - diff
+            if first:
+                x = self.padding_x + delta
+            else:
+                radius = max(radius - diff, 0)
+                x = -self.line_width + diff
+            ctx.arc(
+                x,
+                y,
+                radius,
+                90 * degrees,
+                180 * degrees,
+            )
 
-                # Top right
-                radius = corners[1]
-                delta = radius + self.line_width / 2 - 1
-                ctx.arc(
-                    self.padding_x + box_width - delta,
-                    self.padding_y + delta,
-                    radius,
-                    -90 * degrees,
-                    0 * degrees,
-                )
+            ctx.close_path()
 
-                # Bottom right
-                radius = corners[2]
-                delta = radius + self.line_width / 2 - 1
-                ctx.arc(
-                    self.padding_x + box_width - delta,
-                    self.padding_y + box_height - delta,
-                    radius,
-                    0 * degrees,
-                    90 * degrees,
-                )
+    def draw(self) -> None:
+        # The widget may have resized itsef so we should reset any existing clip area
+        self.drawer.ctx.reset_clip()
 
-                # Bottom left
-                radius = corners[3]
-                delta = radius + self.line_width / 2 - 1
-                ctx.arc(
-                    self.padding_x + delta,
-                    self.padding_y + box_height - delta,
-                    radius,
-                    90 * degrees,
-                    180 * degrees,
-                )
-
-                ctx.close_path()
+        self._draw_path()
 
         if self.filled:
-            self.ctx.fill()
-        else:
+            self.fill_colour = (
+                self.parent.background if self.use_widget_background else self.colour
+            )
+            self.set_source_rgb(self.fill_colour)
+            self.ctx.fill_preserve()
+
+        if self.line_width:
             self.ctx.set_line_width(self.line_width)
+            self.set_source_rgb(self.line_colour)
             self.ctx.stroke()
 
         # Clip the widget's drawer so that the contents is limited to the
         # area defined by the decoration
         if self.clip:
+            self._draw_path(clip=True)
             self.drawer.ctx.clip()
 
 
