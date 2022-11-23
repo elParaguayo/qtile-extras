@@ -28,7 +28,7 @@ from libqtile.popup import Popup
 from qtile_extras.popup.menu import PopupMenu
 
 if TYPE_CHECKING:
-    from typing import Any, Callable
+    from typing import Any, Callable  # noqa: F401
 
 
 class _BaseMixin:

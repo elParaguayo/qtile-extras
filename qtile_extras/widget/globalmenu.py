@@ -30,7 +30,7 @@ from qtile_extras.resources.global_menu import registrar
 from qtile_extras.widget.mixins import DbusMenuMixin
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any  # noqa: F401
 
 
 class GlobalMenu(base._TextBox, DbusMenuMixin):
