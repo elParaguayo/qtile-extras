@@ -35,7 +35,7 @@ from libqtile.utils import QtileError
 from qtile_extras.images import Img
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any  # noqa: F401
 
     from libqtile.core.manager import Qtile
 

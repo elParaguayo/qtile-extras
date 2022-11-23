@@ -28,7 +28,7 @@ from libqtile.widget import base
 from qtile_extras.resources.footballscores import FootballMatch, FSConnectionError, League
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any  # noqa: F401
 
 
 # Massively overkill to use a class here...

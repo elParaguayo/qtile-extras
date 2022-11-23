@@ -33,7 +33,7 @@ from libqtile.log_utils import logger
 from libqtile.widget import Systray, base
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any  # noqa: F401
 
 
 class _Decoration(base.PaddingMixin):
