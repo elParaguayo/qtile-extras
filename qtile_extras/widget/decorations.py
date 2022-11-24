@@ -642,17 +642,16 @@ class PowerLineDecoration(_Decoration):
         self.next_background = self.override_next_colour or self.set_next_colour()
 
     def set_next_colour(self):
-        index = self.parent.bar.widgets.index(self.parent)
-        widgets = self.parent.bar.widgets
-
         try:
+            index = self.parent.bar.widgets.index(self.parent)
+            widgets = self.parent.bar.widgets
             next_widget = next(
                 w
                 for w in widgets
                 if hasattr(w, "length") and w.length and widgets.index(w) > index
             )
             return next_widget.background or self.parent.bar.background
-        except (IndexError, StopIteration):
+        except (ValueError, IndexError, StopIteration):
             return self.parent.bar.background
 
     def paint_background(self, background):
