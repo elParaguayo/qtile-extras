@@ -79,8 +79,9 @@ class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):
 
     def __init__(self, **config):
         QtileStatusNotifier.__init__(self, **config)
-        DbusMenuMixin.__init__(self, **config)
+        self.add_defaults(DbusMenuMixin.defaults)
         self.add_defaults(StatusNotifier.defaults)
+        DbusMenuMixin.__init__(self, **config)
         self.add_callbacks({"Button3": self.show_menu})
 
         self.session = os.environ.get("DBUS_SESSION_BUS_ADDRESS")

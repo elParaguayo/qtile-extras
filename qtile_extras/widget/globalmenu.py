@@ -59,8 +59,9 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
 
     def __init__(self, **config):
         base._TextBox.__init__(self, **config)
-        DbusMenuMixin.__init__(self, **config)
+        self.add_defaults(DbusMenuMixin.defaults)
         self.add_defaults(GlobalMenu.defaults)
+        DbusMenuMixin.__init__(self, **config)
         self.root = None
         self.items = []
         self.app_menus = {}
