@@ -205,7 +205,6 @@ class MenuMixin(Configurable, _BaseMixin):
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, **config):
-        self.add_defaults(MenuMixin.defaults)
         self.menu_config = {
             "font": self.menu_font,
             "fontsize": self.menu_fontsize,
