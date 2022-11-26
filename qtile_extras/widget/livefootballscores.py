@@ -19,16 +19,87 @@
 # SOFTWARE.
 from typing import TYPE_CHECKING
 
-from libqtile import bar, pangocffi
+from libqtile import bar
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
-from libqtile.popup import Popup
 from libqtile.widget import base
 
+from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
+from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText
 from qtile_extras.resources.footballscores import FootballMatch, FSConnectionError, League
+from qtile_extras.widget.mixins import ExtendedPopupMixin, MenuMixin
 
 if TYPE_CHECKING:
     from typing import Any  # noqa: F401
+
+
+DETAILED_LAYOUT = PopupRelativeLayout(
+    width=700,
+    height=200,
+    controls=[
+        PopupText(fontsize=15, pos_x=0.1, pos_y=0.1, width=0.3, height=0.1, name="competition"),
+        PopupText(
+            fontsize=20,
+            v_align="middle",
+            h_align="right",
+            pos_x=0.05,
+            pos_y=0.3,
+            width=0.35,
+            height=0.2,
+            name="home_team",
+        ),
+        PopupText(
+            fontsize=25,
+            v_align="middle",
+            h_align="center",
+            pos_x=0.45,
+            pos_y=0.3,
+            width=0.1,
+            height=0.2,
+            name="score",
+        ),
+        PopupText(
+            fontsize=20,
+            v_align="middle",
+            h_align="left",
+            pos_x=0.6,
+            pos_y=0.3,
+            width=0.35,
+            height=0.2,
+            name="away_team",
+        ),
+        PopupText(
+            fontsize=15,
+            h_align="right",
+            v_align="top",
+            pos_x=0.05,
+            pos_y=0.6,
+            width=0.35,
+            height=0.2,
+            name="home_scorers",
+        ),
+        PopupText(
+            fontsize=15,
+            h_align="center",
+            v_align="top",
+            pos_x=0.45,
+            pos_y=0.6,
+            width=0.1,
+            height=0.2,
+            name="display_time",
+        ),
+        PopupText(
+            fontsize=15,
+            h_align="left",
+            v_align="top",
+            pos_x=0.6,
+            pos_y=0.6,
+            width=0.35,
+            height=0.2,
+            name="away_scorers",
+        ),
+    ],
+)
 
 
 # Massively overkill to use a class here...
@@ -51,7 +122,7 @@ class MatchFlags(object):
         self._reset()
 
 
-class LiveFootballScores(base._Widget, base.MarginMixin):
+class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, MenuMixin):
     """
     The module uses a module I wrote a number of years ago that parses
     data from the BBC Sport website.
@@ -65,6 +136,14 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
     Goals and red cards are indicated by a coloured bar next to the
     relevant team name. The match status is indicated by a coloured bar
     underneath the match summary. All colours are customisable.
+
+    Right-clicking the widget will bring up a list of all matches that meet your
+    selected criteria. Clicking on any of those matches will open a popup showing
+    more detail.
+
+    The popup can be accessed directly by the ``show_detail()`` command.
+    When this is used, the selected match is the one currently visible in
+    the widget.
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -98,7 +177,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
              {r}: Away red cards
              """,
         ),
-        ("popup_text", "{H:>20.20} {h}-{a} {A:<20.20} {T:<5}", "Format to use for popup window."),
+        ("popup_text", "{H:.20} {h}-{a} {A:.20} ({T:.5})", "Format to use for popup window."),
         ("refresh_interval", 60, "Time to update data"),
         ("info_timeout", 5, "Time before reverting to default text"),
         ("startup_delay", 30, "Time before sending first web request"),
@@ -119,9 +198,15 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             "monospace",
             "Font to use for displaying upcoming recordings. A monospace font " "is recommended",
         ),
-        ("popup_opacity", 0.8, "Opacity for popup window."),
-        ("popup_padding", 10, "Padding for popup window."),
+        ("opacity", 0.8, "Opacity for popup window."),
         ("popup_display_timeout", 10, "Seconds to show recordings."),
+        ("menu_width", 300, "Width of menu showing all matches"),
+        ("popup_layout", DETAILED_LAYOUT, "Layout to use for extended match information"),
+        (
+            "popup_show_args",
+            {"centered": True, "hide_on_timeout": 5},
+            "Arguments to set behaviour of extended popup",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     _screenshots = [
@@ -142,8 +227,12 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
+        ExtendedPopupMixin.__init__(self, **config)
+        self.add_defaults(MenuMixin.defaults)
+        self.add_defaults(ExtendedPopupMixin.defaults)
         self.add_defaults(LiveFootballScores.defaults)
         self.add_defaults(base.MarginMixin.defaults)
+        MenuMixin.__init__(self, **config)
 
         if "font_colour" in config:
             self.foreground = config["font_colour"]
@@ -152,12 +241,20 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
                 "Please update your config to use `foreground` instead."
             )
 
+        if "popup_opacity" in config:
+            self.opacity = config["popup_opacity"]
+            logger.warning(
+                "The use of `popup_opacity` is deprecated. "
+                "Please update your config to use `opacity` instead."
+            )
+
         self.flags = {}
         self.reset_flags()
 
         self.sources = ([], [], [])
         self.matches = []
         self.match_index = 0
+        self._selected_match = None
 
         # Define our screens
         self.screens = [self.status_text] + self.info_text
@@ -174,7 +271,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.add_callbacks(
             {
                 "Button1": self.loop_match_info,
-                "Button3": self.toggle_info,
+                "Button3": self.show_menu,
                 "Button4": self.scroll_up,
                 "Button5": self.scroll_down,
             }
@@ -320,7 +417,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         return success
 
     def match_event(self, event):
-
         self.set_flags()
 
         team = event.match.home_team
@@ -358,7 +454,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         self.queue_timer = self.timeout_add(self._queue_time, self.bar.draw)
 
     def get_match(self):
-
         if self.match_index >= len(self.matches):
             self.match_index = 0
 
@@ -368,7 +463,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             return None
 
     def calculate_length(self):
-
         m = self.get_match()
 
         if m:
@@ -521,54 +615,19 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
             "matches": matches,
         }
 
-    def _format_matches(self):
-        lines = []
-
-        for team in [m for m in self.sources[0] if m]:
-            lines.append(team.competition)
-            lines.append(team.format_text(self.popup_text))
-            lines.append("")
-
-        if self.sources[1]:
-            lines.append("Selected Teams:")
-            for team in [m for m in self.sources[1] if m]:
-                lines.append(team.format_text(self.popup_text))
-            lines.append("")
-
-        for league in self.sources[2]:
-            if league:
-                lines.append("{}:".format(league.league_name))
-                for team in league:
-                    lines.append(team.format_text(self.popup_text))
-                lines.append("")
-
-        # Last line is always blank so remove it
-        _ = lines.pop()
-
-        return lines
-
-    @property
-    def bar_on_top(self):
-        return self.bar.screen.top == self.bar
-
     def kill_popup(self):
         self.popup.kill()
         self.popup = None
 
     def toggle_info(self):
-        if self.popup is not None:
-            try:
-                self.hide_timer.cancel()
-            except AttributeError:
-                pass
-            self.kill_popup()
-
+        if self.menu and not self.menu._killed:
+            self.menu.kill()
         else:
-            self.show_matches()
+            self.show_menu()
 
     @expose_command()
     def popup(self):
-        """Display popup window"""
+        """Display window listing all matches"""
         self.toggle_info()
 
     @expose_command()
@@ -576,42 +635,72 @@ class LiveFootballScores(base._Widget, base.MarginMixin):
         """Get displayed text. Removes padding."""
         return self.text.strip()
 
-    def show_matches(self):
-        lines = []
+    @expose_command()
+    def show_detail(self):
+        """Displays popup showing detailed info about match."""
+        self.update_or_show_popup()
 
-        if not self.matches:
-            lines.append("No matches today.")
+    def _update_popup(self):
+        selected = self._selected_match
+        current = self.get_match()
 
-        else:
-            lines.extend(self._format_matches())
+        team = selected if selected is not None else current
 
-        self.popup = Popup(
-            self.qtile,
-            width=self.bar.screen.width,
-            height=self.bar.screen.height,
-            font=self.popup_font,
-            horizontal_padding=self.popup_padding,
-            vertical_padding=self.popup_padding,
-            opacity=self.popup_opacity,
+        self.extended_popup.update_controls(
+            competition=team.competition,
+            home_team=team.home_team,
+            away_team=team.away_team,
+            score=team.format_text("{h} - {a}"),
+            home_scorers=team.home_scorer_text.replace("), ", ")\n"),
+            away_scorers=team.away_scorer_text.replace("), ", ")\n"),
+            display_time=team.display_time,
         )
 
-        text = pangocffi.markup_escape_text("\n".join(lines))
+        self._selected_match = None
 
-        self.popup.text = text
+    def select_match(self, match):
+        self._selected_match = match
+        self.update_or_show_popup()
 
-        self.popup.height = self.popup.layout.height + (2 * self.popup.vertical_padding)
-        self.popup.width = self.popup.layout.width + (2 * self.popup.horizontal_padding)
+    def _get_match_list(self):
+        lines = []
 
-        self.popup.x = min(self.offsetx, self.bar.width - self.popup.width)
+        def _callback(team):
+            return {"mouse_callbacks": {"Button1": lambda team=team: self.select_match(team)}}
 
-        if self.bar_on_top:
-            self.popup.y = self.bar.height
-        else:
-            self.popup.y = self.bar.screen.height - self.popup.height - self.bar.height
+        for team in [m for m in self.sources[0] if m]:
+            lines.extend(
+                [
+                    PopupMenuItem(text=team.competition, enabled=False),
+                    PopupMenuItem(text=team.format_text(self.popup_text), **_callback(team)),
+                ]
+            )
 
-        self.popup.place()
-        self.popup.draw_text()
-        self.popup.unhide()
-        self.popup.draw()
+        if self.sources[1]:
+            if lines:
+                lines.append(PopupMenuSeparator())
 
-        self.hide_timer = self.timeout_add(self.popup_display_timeout, self.kill_popup)
+            lines.append(PopupMenuItem(text="Selected Teams:", enabled=False))
+
+            for team in [m for m in self.sources[1] if m]:
+                lines.append(
+                    PopupMenuItem(text=team.format_text(self.popup_text), **_callback(team))
+                )
+
+        for league in self.sources[2]:
+            if lines:
+                lines.append(PopupMenuSeparator())
+            if league:
+                lines.append(PopupMenuItem(text="{}:".format(league.league_name), enabled=False))
+                for team in league:
+                    lines.append(
+                        PopupMenuItem(text=team.format_text(self.popup_text), **_callback(team))
+                    )
+
+        if not lines:
+            lines.append(PopupMenuItem(text="No matches today", enabled=False))
+
+        return lines
+
+    def show_menu(self):
+        self.display_menu(self._get_match_list())

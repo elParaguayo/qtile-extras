@@ -238,24 +238,42 @@ def test_widget_popup(lfs_manager, manager_nospawn):
     manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 3)
     assert len(manager_nospawn.c.internal_windows()) == 2
 
-    _, text = manager_nospawn.c.widget["livefootballscores"].eval("self.popup.text")
-
-    assert text == (
-        "Premier League\n"
-        "             Chelsea 1-1 Burnley              FT   \n"
-        "\n"
-        "Selected Teams:\n"
-        "     West Ham United 3-2 Liverpool            FT   \n"
-        "\n"
-        "Premier League:\n"
-        "         Aston Villa 0-0 Brighton & Hove Albi 15:00\n"
-        "             Burnley 0-0 Crystal Palace       15:00\n"
-        "    Newcastle United 0-0 Brentford            15:00\n"
-        "        Norwich City 0-0 Southampton          15:00\n"
-        "             Watford 0-0 Manchester United    15:00\n"
-        "Wolverhampton Wander 0-0 West Ham United      15:00\n"
-        "           Liverpool 0-0 Arsenal              17:30"
+    # Each menu item is a tuple of:
+    # - boolean: whether menu item is text (True) or a separator (False)
+    # - string: text contents
+    # - boolean: whether item is enable or not
+    items = (
+        (True, "Premier League", False),
+        (True, "Chelsea 1-1 Burnley (FT)", True),
+        (False, "", False),
+        (True, "Selected Teams:", False),
+        (True, "West Ham United 3-2 Liverpool (FT)", True),
+        (False, "", False),
+        (True, "Premier League:", False),
+        (True, "Aston Villa 0-0 Brighton & Hove Albi (15:00)", True),
+        (True, "Burnley 0-0 Crystal Palace (15:00)", True),
+        (True, "Newcastle United 0-0 Brentford (15:00)", True),
+        (True, "Norwich City 0-0 Southampton (15:00)", True),
+        (True, "Watford 0-0 Manchester United (15:00)", True),
+        (True, "Wolverhampton Wander 0-0 West Ham United (15:00)", True),
+        (True, "Liverpool 0-0 Arsenal (17:30)", True),
     )
+
+    for i, (is_text, match, enabled) in enumerate(items):
+        if is_text:
+            _, text = manager_nospawn.c.widget["livefootballscores"].eval(
+                f"self.menu.controls[{i}].text"
+            )
+            assert text == match
+            _, is_enabled = manager_nospawn.c.widget["livefootballscores"].eval(
+                f"self.menu.controls[{i}].enabled"
+            )
+            assert str(enabled) == is_enabled
+        else:
+            _, class_type = manager_nospawn.c.widget["livefootballscores"].eval(
+                f"type(self.menu.controls[{i}])"
+            )
+            assert "PopupMenuSeparator" in class_type
 
     manager_nospawn.c.widget["livefootballscores"].popup()
     _, popup = manager_nospawn.c.widget["livefootballscores"].eval("self.popup")
