@@ -32,7 +32,7 @@ from libqtile.log_utils import logger
 from libqtile.popup import Popup
 from libqtile.utils import QtileError
 
-from qtile_extras.images import Img
+from qtile_extras.images import Img, ImgMask
 
 if TYPE_CHECKING:
     from typing import Any  # noqa: F401
@@ -105,17 +105,7 @@ class _PopupLayout(configurable.Configurable):
         self._hooked = False
 
         # Identify focused control (via mouse of keypress)
-        self.focusable_controls = [c for c in self.controls if c.can_focus]
-        if self.initial_focus is None or not self.focusable_controls:
-            self._focused = None
-        else:
-            try:
-                self._focused = self.focusable_controls[self.initial_focus]
-            except IndexError:
-                self._focused = self.focusable_controls[0]
-
-        if not self.focusable_controls:
-            self.keyboard_navigation = False
+        self._get_focusable_controls()
 
         # Identify keysyms for keybaord navigation
         self.keys = {k: [keysyms[key.lower()] for key in v] for k, v in self.keymap.items()}
@@ -165,6 +155,18 @@ class _PopupLayout(configurable.Configurable):
             self._focused.focus()
 
         self.configured = True
+
+    def _get_focusable_controls(self):
+        self.focusable_controls = [c for c in self.controls if c.can_focus]
+        if self.initial_focus is None or not self.focusable_controls:
+            self._focused = None
+        else:
+            try:
+                self._focused = self.focusable_controls[self.initial_focus]
+            except IndexError:
+                self._focused = self.focusable_controls[0]
+
+        self.keyboard_navigation = bool(self.focusable_controls)
 
     def _set_updateable_controls(self):
         controls = {}
@@ -536,7 +538,6 @@ class _PopupLayout(configurable.Configurable):
         """
         for name, value in updates.items():
             if name not in self._updateable_controls:
-                logger.warning("Unknown control: %s. Skipping.", name)
                 continue
 
             control = self._updateable_controls[name]
@@ -557,15 +558,40 @@ class _PopupLayout(configurable.Configurable):
                     if highlight is not None:
                         control.highlight_filename = highlight
 
-                    control.load_images()
+                control.load_images()
 
             elif isinstance(control, PopupSlider):
                 control.value = value
 
-        self.draw()
+            control.draw()
+
+        self.popup.draw()
 
         if self.hide_on_timeout:
             self._set_autohide()
+
+    def bind_callbacks(self, **binds):
+        """
+        Add callbacks to controls.
+
+        Useful when a user has provided a template as the parent object (e.g. widget)
+        can then bind callbacks to the relevant controls.
+
+        Arguments should be passed in the following format.
+        ``controlname={"Button1": self.bound_command}``
+
+        Non-existing controls will be ignored.
+        """
+        for name, callbacks in binds.items():
+            control = self._updateable_controls.get(name, None)
+            if control is None:
+                continue
+
+            control.mouse_callbacks.update(callbacks)
+            control.can_focus = bool(control.mouse_callbacks.get("Button1", False))
+
+        # Update controls which can be focused
+        self._get_focusable_controls()
 
     def info(self):
         return {
@@ -885,11 +911,11 @@ class _PopupWidget(configurable.Configurable):
         if (
             self._highlight
             and self.highlight
-            and self.highlight_method not in ["border", "text", "image"]
+            and self.highlight_method not in ["border", "text", "image", "mask"]
         ):
             return self.highlight
         else:
-            return self.background
+            return self.background or self.container.background
 
     def mouse_in_control(self, x, y):
         """Checks whether the point (x, y) is inside the control."""
@@ -921,12 +947,14 @@ class _PopupWidget(configurable.Configurable):
     def mouse_enter(self, x, y):
         if self.can_focus and self.highlight and not self._highlight:
             self.focus()
-            self.container.draw()
+            self.draw()
+            self.container.popup.draw()
 
     def mouse_leave(self, x, y):
         if self.can_focus and self._highlight:
             self.unfocus()
-            self.container.draw()
+            self.draw()
+            self.container.popup.draw()
 
     def info(self):
         return {
@@ -1202,12 +1230,12 @@ class PopupImage(_PopupWidget):
             None,
             "path to image to be displayed when highlight method is 'image'",
         ),
+        ("mask", False, "Use the image as a mask"),
+        ("colour", "ffffff", "Colour to use to fill image when using mask mode"),
         (
             "highlight_method",
             "block",
-            "How to highlight focused control. Options are 'image', 'border', 'block' and 'mask'. "
-            "'mask' is experimental and will replace the image with the 'highlight' colour "
-            "masked by the image. Works best with solid icons on a transparent background.",
+            "How to highlight focused control. Options are 'image', 'border', 'block' and 'mask'. ",
         ),
     ]
 
@@ -1233,8 +1261,9 @@ class PopupImage(_PopupWidget):
             self.highlight_img = self._load_image(self.highlight_filename)
 
     def _load_image(self, filename):
+        img_class = ImgMask if self.mask else Img
         if filename.startswith("http"):
-            img = Img.from_url(filename)
+            img = img_class.from_url(filename)
 
         else:
             filename = os.path.expanduser(filename)
@@ -1242,47 +1271,44 @@ class PopupImage(_PopupWidget):
                 logger.warning("Image does not exist: %s", filename)
                 return
 
-            img = Img.from_path(filename)
+            img = img_class.from_path(filename)
 
         if (img.width / img.height) >= (self.width / self.height):
             img.scale(width_factor=(self.width / img.width), lock_aspect_ratio=True)
         else:
             img.scale(height_factor=(self.height / img.height), lock_aspect_ratio=True)
 
+        if self.mask:
+            img.attach_drawer(self.drawer)
+
         return img
 
     def paint(self):
         self.clear(self._background)
-        if self.highlight_method == "mask" and self._highlight:
-            return
+
         self.drawer.ctx.save()
         self.drawer.ctx.translate(
             int((self.width - self.img.width) / 2), int((self.height - self.img.height) / 2)
         )
-        if self._highlight and self.highlight_method == "image":
-            pattern = self.highlight_img.pattern
+        if self.mask:
+            self.img.draw(
+                colour=self.highlight
+                if (self._highlight and self.highlight_method == "mask")
+                else self.colour
+            )
         else:
-            pattern = self.img.pattern
-        self.drawer.ctx.set_source(pattern)
-        self.drawer.ctx.paint()
+            if self._highlight and self.highlight_method == "image":
+                pattern = self.highlight_img.pattern
+            else:
+                pattern = self.img.pattern
+            self.drawer.ctx.set_source(pattern)
+            self.drawer.ctx.paint()
         self.drawer.ctx.restore()
 
     def info(self):
         info = _PopupWidget.info(self)
         info["image"] = self.filename
         return info
-
-    def clear(self, colour):
-        if not (colour and self.highlight_method == "mask" and self._highlight):
-            _PopupWidget.clear(self, colour)
-            return
-
-        self.drawer.set_source_rgb(colour)
-        self.drawer.ctx.save()
-        self.drawer.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.drawer.ctx.mask_surface(self.img.surface, 0, 0)
-        self.drawer.ctx.fill()
-        self.drawer.ctx.restore()
 
 
 class ControlBar:
