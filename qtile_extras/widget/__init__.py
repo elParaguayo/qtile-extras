@@ -40,6 +40,7 @@ widgets = {
     "Image": "image",
     "LiveFootballScores": "livefootballscores",
     "MemoryGraph": "graph",
+    "Mpris2": "mpris2widget",
     "NetGraph": "graph",
     "QTEMirror": "mirror",
     "ScriptExit": "scriptexit",
