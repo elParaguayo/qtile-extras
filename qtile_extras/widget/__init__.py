@@ -38,6 +38,7 @@ widgets = {
     "HDDGraph": "graph",
     "HDDBusyGraph": "graph",
     "Image": "image",
+    "LightControlWidget": "lightcontrol",
     "LiveFootballScores": "livefootballscores",
     "MemoryGraph": "graph",
     "NetGraph": "graph",
