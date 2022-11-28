@@ -827,9 +827,7 @@ def inject_decorations(classdef):
         for c, func in base_classes.items():
             c._configure = func
 
-        if not getattr(self, "_decorations_configured", False):
-            self._decorations_configured = True
-            self.configure_decorations()
+        self.configure_decorations()
 
     def length_get(self):
         if self.length_type == bar.CALCULATED:
