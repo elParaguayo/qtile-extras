@@ -39,6 +39,13 @@ class Image(QtileImage):
         ("filename", None, "Image filename. Can contain '~'. Can also be a url."),
         ("mask", False, "Use the image as a mask and fill with ``colour``."),
         ("colour", "ffffff", "Colour to paint maksed image"),
+        ("adjust_x", 0, "Fine x-axis adjustment of icon position"),
+        ("adjust_y", 0, "Fine y-axis adjustment of icon position"),
+        (
+            "padding",
+            0,
+            "Padding to left and right of image on horizontal bar, or above and below widget on vertical bar.",
+        ),
     ]
 
     def __init__(self, length=bar.CALCULATED, **config):
@@ -67,6 +74,9 @@ class Image(QtileImage):
 
             img = img_class.from_path(self.filename)
 
+        if self.mask:
+            img.attach_drawer(self.drawer)
+
         self.img = img
         img.theta = self.rotate
         if not self.scale:
@@ -82,9 +92,14 @@ class Image(QtileImage):
         if self.img is None:
             return
 
+        pad_x = self.padding if self.bar.horizontal else 0
+        pad_y = self.padding if not self.bar.horizontal else 0
+
         self.drawer.clear(self.background or self.bar.background)
         self.drawer.ctx.save()
-        self.drawer.ctx.translate(self.margin_x, self.margin_y)
+        self.drawer.ctx.translate(
+            self.margin_x + pad_x + self.adjust_x, self.margin_y + pad_y + self.adjust_y
+        )
         if self.mask:
             self.img.draw(colour=self.colour)
         else:
@@ -96,3 +111,12 @@ class Image(QtileImage):
             self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
         else:
             self.drawer.draw(offsety=self.offset, offsetx=self.offsetx, height=self.width)
+
+    def calculate_length(self):
+        if self.img is None:
+            return 0
+
+        if self.bar.horizontal:
+            return self.img.width + (self.margin_x * 2) + (self.padding * 2)
+        else:
+            return self.img.height + (self.margin_y * 2) + (self.padding * 2)
