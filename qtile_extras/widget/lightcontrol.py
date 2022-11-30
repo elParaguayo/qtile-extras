@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from pathlib import Path
+import re
 
 from libqtile import bar, confreader, images
 from libqtile.command.base import expose_command
@@ -60,7 +62,6 @@ BRIGHTNESS_NOTIFICATION = PopupRelativeLayout(
         ),
     ],
 )
-
 
 class LightControlWidget(base._Widget, ExtendedPopupMixin):
     """
@@ -230,9 +231,8 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
     def setup_images(self):
         # Load icons
         names = (
-            "gpm-brightness-lcd-disabled",
-            "gpm-brightness-lcd",
             "weather-clear",
+            "weather-clear-night",
         )
 
         d_images = images.Loader(self.theme_path)(*names)
@@ -256,10 +256,8 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         if self.show_icon:
             x_offset += self.padding
 
-            if self.brightness <= 35:
-                img_name = "gpm-brightness-lcd-disabled"
-            elif self.brightness <= 70:
-                img_name = "gpm-brightness-lcd"
+            if self.brightness <= 50:
+                img_name = "weather-clear-night"
             else:
                 img_name = "weather-clear"
 
@@ -269,7 +267,7 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
             self.drawer.ctx.set_source(self.surfaces[img_name])
             self.drawer.ctx.paint()
             self.drawer.ctx.restore()
-
+            
             # Increase offset
             x_offset += self.icon_width
 
@@ -338,25 +336,29 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
             logger.warning("'light' is not installed. Unable to set brightness.")
             return
 
+        cmd_get = "light -G -s {}".format(self.device)
+        
         # Run the light command to capture brightness value
-        proc = subprocess.run(cmd.split(), capture_output=True)
-        matched = proc.stdout.decode().strip("\n")
+        if cmd == "get":
+            proc = subprocess.run(cmd_get.split(), capture_output=True, text=True).stdout
+        else:
+            subprocess.run(cmd.split())
+            proc = subprocess.run(cmd_get.split(), capture_output=True, text=True).stdout
 
-        # If we find a match, extract brightness status
-        if matched:
-            self.brightness = int(float(matched))
+
+        matched = re.findall(r'\d+\.\d+', proc)
+        self.brightness = int(float(matched[0]))
 
         # If brightness status has changed
         # then we need to trigger callback
-        if any([self.brightness != self.oldbrightness]):
+        if self.brightness != self.oldbrightness:
             self.status_change(self.brightness)
 
             # Record old values
             self.oldbrightness = self.brightness
 
     def get_brightness(self):
-        cmd = "light -G -s {}".format(self.device)
-        self._run(cmd)
+        self._run("get")
 
     @expose_command()
     def brightness_up(self, *args, **kwargs):
