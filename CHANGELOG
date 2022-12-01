@@ -1,3 +1,4 @@
+2022-12-02: [BUGFUX] Fix startup slowdown caused by `ALSAWidget` 
 2022-12-02: [BUGHFIX] Fixed bug when drawing masked images with `Image` widget
 2022-12-01: [FEATURE] Add ability to fine tune position of `AnalogueClock`
 2022-11-29: [BUGFIX] Handle JSON error in `TVHWidget`

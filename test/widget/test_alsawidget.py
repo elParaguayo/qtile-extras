@@ -127,17 +127,18 @@ def test_alsawidget_defaults(alsa_manager):
     widget = alsa_manager.c.widget["alsawidget"]
 
     info = widget.info()
-    assert info["volume"] == 50
+
+    # Widget does not immediately load volume
+    assert info["volume"] == -1
     assert not info["muted"]
 
-    # widget is visible at start
-    assert info["width"] == 75
+    # # widget is visible at start
+    # assert info["width"] == 75
 
-    # Wait until it hides
-    wait_for_hide(widget)
+    # # Wait until it hides
+    # wait_for_hide(widget)
 
     # Method that's called on an interval
-    # Should have no impact here
     widget.eval("self.refresh()")
     assert widget.info()["volume"] == 50
 
@@ -145,10 +146,6 @@ def test_alsawidget_defaults(alsa_manager):
 def test_controls(alsa_manager):
     """Check widget reads and parses volume"""
     widget = alsa_manager.c.widget["alsawidget"]
-
-    info = widget.info()
-    assert info["volume"] == 50
-    wait_for_hide(widget)
 
     widget.volume_up()
     assert widget.info()["volume"] == 55
@@ -190,9 +187,6 @@ def test_step(alsa_manager):
 def test_icons(alsa_manager):
     """Check widget reads and parses volume"""
     widget = alsa_manager.c.widget["alsawidget"]
-
-    # Images are resized to bar.height - 1
-    assert widget.info()["width"] == 49
 
     # We need to set levels to display each icon
     widget.toggle_mute()
@@ -239,17 +233,17 @@ def test_no_theme_path(monkeypatch):
         widget._configure(None, None)
 
 
-def test_no_icons(monkeypatch):
-    """Widget should raise a config error if there are no icons in the path."""
+@pytest.mark.parametrize(
+    "alsa_manager", [{"theme_path": "/no/path", "mode": "icon"}], indirect=True
+)
+def test_no_icons(alsa_manager, logger):
+    """Icons are loaded in background and will log a failure if not found."""
 
-    def no_op(*args, **kwargs):
-        pass
+    @Retry(ignore_exceptions=(AssertionError,))
+    def wait_for_failure():
+        assert any(
+            "Could not find volume icons at /no/path." in r.msg
+            for r in logger.get_records("setup")
+        )
 
-    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.base._Widget._configure", no_op)
-    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.ALSAWidget.get_volume", no_op)
-    widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget(mode="icon", theme_path="/no/path")
-
-    # No idea why decorations code is being injected in the tests.
-    widget._configure = widget.old_configure
-    with pytest.raises(confreader.ConfigError):
-        widget._configure(None, None)
+    wait_for_failure()
