@@ -24,6 +24,7 @@ import shutil
 import subprocess
 from pathlib import Path
 import re
+import math
 
 from libqtile import bar, confreader, images
 from libqtile.command.base import expose_command
@@ -91,9 +92,17 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         ("hide_interval", 5, "Timeout before bar is hidden after update"),
         ("text_format", "{brightness}%", "String format"),
         ("bar_width", 75, "Width of display bar"),
-        ("bar_colour_low", "000099", "Colour of bar in low range"),
-        ("bar_colour_normal", "009900", "Colour of bar in normal range"),
-        ("bar_colour_high", "990000", "Colour of bar if high range"),
+        ("bar_colour_low", "000099", "Colour of bar if low brightness"),
+        ("bar_colour_medium", "009900", "Colour of bar if medium brightness"),
+        ("bar_colour_high", "990000", "Colour of bar if high brightness"),
+        ("fill_colour_low", "404040", "Colour of icon fill if low brightness"),
+        ("fill_colour_medium", "000099", "Colour of icon fill if medium brightness"),
+        ("fill_colour_high", "009900", "Colour of icon fill if high brightness"),
+        ("fill_colour_full", "990000", "Colour of icon fill if full brightness"),
+        ("border_colour_low", "404040", "Colour of icon border if low brightness"),
+        ("border_colour_medium", "000099", "Colour of icon border if medium brightness"),
+        ("border_colour_high", "009900", "Colour of icon border if high brightness"),
+        ("border_colour_full", "990000", "Colour of icon border if full brightness"),
         ("limit_low", 40, "Max percentage for low range"),
         ("limit_normal", 70, "Max percentage for normal range"),
         ("limit_high", 100, "Max percentage for high range"),
@@ -149,7 +158,7 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
 
         # Map bar colours for brightness level
         self.colours = [
-            (self.limit_normal, self.bar_colour_normal),
+            (self.limit_normal, self.bar_colour_medium),
             (self.limit_high, self.bar_colour_high),
             (self.limit_low, self.bar_colour_low),
         ]
@@ -248,6 +257,26 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
     def draw(self):
         # Define an offset for x placement
         x_offset = 0
+        x = (self.icon_size + self.padding) / 2
+        y = self.bar.height / 2
+        circle_size = self.icon_size - self.padding
+
+        if self.brightness <= 30:
+            degree = 2
+            border_fill = self.border_colour_low
+            fill = self.fill_colour_low
+        elif self.brightness <= 50:
+            degree = 1.2
+            border_fill = self.border_colour_medium
+            fill = self.fill_colour_medium
+        elif self.brightness <= 70:
+            degree = 0.9
+            border_fill = self.border_colour_high
+            fill = self.fill_colour_high
+        else:
+            degree = 0.1
+            border_fill = self.border_colour_full
+            fill = self.fill_colour_full
 
         # Clear the widget
         self.drawer.clear(self.background or self.bar.background)
@@ -255,21 +284,17 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         # Which icon do we need?
         if self.show_icon:
             x_offset += self.padding
-
-            if self.brightness <= 50:
-                img_name = "weather-clear-night"
-            else:
-                img_name = "weather-clear"
-
-            # Draw icon
-            self.drawer.ctx.save()
-            self.drawer.ctx.translate(x_offset, self._icon_padding)
-            self.drawer.ctx.set_source(self.surfaces[img_name])
-            self.drawer.ctx.paint()
-            self.drawer.ctx.restore()
+            
+            self.drawer.ctx.new_sub_path()
+            self.drawer.ctx.arc(x, y, circle_size, 0, 2*math.pi)
+            self.drawer.set_source_rgb(border_fill)
+            self.drawer.ctx.stroke()
+            self.drawer.ctx.arc(x, y, circle_size, 0, math.pi / degree)
+            self.drawer.set_source_rgb(fill)
+            self.drawer.ctx.fill()
             
             # Increase offset
-            x_offset += self.icon_width
+            x_offset += self.icon_size
 
         # Does bar need to be displayed
         if self.show_bar and not self.hidden:
