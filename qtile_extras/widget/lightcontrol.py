@@ -103,6 +103,9 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         ("border_colour_medium", "000099", "Colour of icon border if medium brightness"),
         ("border_colour_high", "009900", "Colour of icon border if high brightness"),
         ("border_colour_full", "990000", "Colour of icon border if full brightness"),
+        ("background_fill", "404040", "Colour of icon background"),
+        ("show_border", True, "Show border or not?"),
+        ("show_background", True, "Show background or not?"),
         ("limit_low", 40, "Max percentage for low range"),
         ("limit_normal", 70, "Max percentage for normal range"),
         ("limit_high", 100, "Max percentage for high range"),
@@ -144,6 +147,8 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         # Work out what we need to display
         self.show_bar = self.mode in ["bar", "both"]
         self.show_icon = self.mode in ["icon", "both"]
+        self.show_border = True
+        self.show_background = True
 
         # Define some variables to prevent early errors
         self.iconsize = 0
@@ -262,19 +267,23 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         circle_size = self.icon_size - self.padding
 
         if self.brightness <= 30:
-            degree = 2
+            start = math.pi/1.5
+            end = math.pi * 1.3
             border_fill = self.border_colour_low
             fill = self.fill_colour_low
         elif self.brightness <= 50:
-            degree = 1.2
+            start = math.pi/2
+            end = math.pi * 1.5
             border_fill = self.border_colour_medium
             fill = self.fill_colour_medium
         elif self.brightness <= 70:
-            degree = 0.9
+            start = math.pi/3
+            end = math.pi * 1.6
             border_fill = self.border_colour_high
             fill = self.fill_colour_high
         else:
-            degree = 0.1
+            start = 0
+            end = math.pi*2
             border_fill = self.border_colour_full
             fill = self.fill_colour_full
 
@@ -284,12 +293,19 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         # Which icon do we need?
         if self.show_icon:
             x_offset += self.padding
-            
-            self.drawer.ctx.new_sub_path()
-            self.drawer.ctx.arc(x, y, circle_size, 0, 2*math.pi)
-            self.drawer.set_source_rgb(border_fill)
-            self.drawer.ctx.stroke()
-            self.drawer.ctx.arc(x, y, circle_size, 0, math.pi / degree)
+
+
+            if self.show_background:
+                self.drawer.ctx.new_sub_path()
+                self.drawer.ctx.arc(x, y, circle_size, 0, 2*math.pi)
+                self.drawer.set_source_rgb(self.background_fill)
+                self.drawer.ctx.fill()
+            if self.show_border:
+                self.drawer.ctx.new_sub_path()
+                self.drawer.ctx.arc(x, y, circle_size, 0, 2*math.pi)
+                self.drawer.set_source_rgb(border_fill)
+                self.drawer.ctx.stroke()
+            self.drawer.ctx.arc(x, y, circle_size, start, end)
             self.drawer.set_source_rgb(fill)
             self.drawer.ctx.fill()
             
