@@ -154,6 +154,8 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
         # Define some variables to prevent early errors
         self.iconsize = 0
         self.text_width = 0
+        self.icons_loaded = False
+        self.first_run = True
 
         # Variables for the timers we need
         self.update_timer = None
@@ -172,18 +174,14 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
 
-        self.get_volume()
-
         if self.mode in ["icon", "both"] and not self.theme_path:
             logger.error("You must set the `theme_path` when using icons")
             raise confreader.ConfigError("No theme_path provided.")
 
+        # Loading icons can be slow so let's have them load in a background thread
         if self.show_icon:
-            try:
-                self.setup_images()
-            except images.LoadingError:
-                logger.error(f"Could not find volume icons at {self.theme_path}.")
-                raise confreader.ConfigError("Volume icons not found.")
+            loader = self.qtile.run_in_executor(self.setup_images)
+            loader.add_done_callback(self.loaded_images)
 
         # Minimum size needed to display text
         self.text_width = self.max_text_width()
@@ -209,6 +207,11 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
 
         # Showing icons?
         if self.show_icon:
+
+            # Hide the widget until icons have loaded
+            if not self.icons_loaded:
+                return 0
+
             width += self._icon_size + self.padding
 
         # Showing bar?
@@ -253,7 +256,10 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
             "audio-volume-high",
         )
 
-        d_images = images.Loader(self.theme_path)(*names)
+        try:
+            d_images = images.Loader(self.theme_path)(*names)
+        except images.LoadingError:
+            return False
 
         self._icon_size = self.icon_size if self.icon_size is not None else self.bar.height - 1
         self._icon_padding = (self.bar.height - self._icon_size) // 2
@@ -263,7 +269,21 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
             self.icon_width = img.width
             self.surfaces[name] = img.pattern
 
+        return True
+
+    def loaded_images(self, task):
+        self.icons_loaded = task.result()
+
+        if not self.icons_loaded:
+            logger.error(f"Could not find volume icons at {self.theme_path}.")
+            return
+
+        self.bar.draw()
+
     def draw(self):
+        if self.show_icon and not self.icons_loaded:
+            return
+
         # Define an offset for x placement
         x_offset = 0
 
@@ -374,7 +394,10 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
         # If volume or mute status has changed
         # then we need to trigger callback
         if any([self.volume != self.oldvol, self.muted != self.oldmute]):
-            self.status_change(self.volume, self.muted)
+            if not self.first_run:
+                self.status_change(self.volume, self.muted)
+            else:
+                self.first_run = False
 
             # Record old values
             self.oldvol = self.volume
