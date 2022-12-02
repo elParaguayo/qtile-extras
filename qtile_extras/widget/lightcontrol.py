@@ -26,7 +26,7 @@ from pathlib import Path
 import re
 import math
 
-from libqtile import bar, confreader, images
+from libqtile import bar
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
@@ -110,7 +110,6 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         ("limit_normal", 70, "Max percentage for normal range"),
         ("limit_high", 100, "Max percentage for high range"),
         ("update_interval", 5, "Interval to update widget (e.g. if changes made in other apps)."),
-        ("theme_path", None, "Path to theme icons."),
         ("step", 5, "Amount to increase brightness by"),
         ("device", "sysfs/backlight/intel_backlight", "Name of device found with 'Light -L'"),
         ("icon_size", None, "Size of the brightness icon"),
@@ -151,9 +150,9 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         self.show_background = True
 
         # Define some variables to prevent early errors
-        self.iconsize = 0
+        self._icon_size = 0
         self.text_width = 0
-
+        
         # Variables for the timers we need
         self.update_timer = None
         self.hide_timer = None
@@ -173,17 +172,8 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
 
         self.get_brightness()
 
-        if self.mode in ["icon", "both"] and not self.theme_path:
-            logger.error("You must set the `theme_path` when using icons")
-            raise confreader.ConfigError("No theme_path provided.")
-
-        if self.show_icon:
-            try:
-                self.setup_images()
-            except images.LoadingError:
-                logger.error(f"Could not find brightness icons at {self.theme_path}.")
-                raise confreader.ConfigError("Brightness icons not found.")
-
+        self._icon_size = self.icon_size if self.icon_size is not None else self.bar.height - 1
+        
         # Minimum size needed to display text
         self.text_width = self.max_text_width()
 
@@ -242,29 +232,12 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
         label = f"Brightness {brightness:.0%}"
         self.extended_popup.update_controls(brightness=brightness, text=label)
 
-    def setup_images(self):
-        # Load icons
-        names = (
-            "weather-clear",
-            "weather-clear-night",
-        )
-
-        d_images = images.Loader(self.theme_path)(*names)
-
-        self._icon_size = self.icon_size if self.icon_size is not None else self.bar.height - 1
-        self._icon_padding = (self.bar.height - self._icon_size) // 2
-
-        for name, img in d_images.items():
-            img.resize(height=self._icon_size)
-            self.icon_width = img.width
-            self.surfaces[name] = img.pattern
-
     def draw(self):
         # Define an offset for x placement
         x_offset = 0
-        x = (self.icon_size + self.padding) / 2
+        x = (self._icon_size + self.padding) / 2
         y = self.bar.height / 2
-        circle_size = self.icon_size - self.padding
+        circle_size = self._icon_size / 2
 
         if self.brightness <= 30:
             start = math.pi/1.5
@@ -310,7 +283,7 @@ class LightControlWidget(base._Widget, ExtendedPopupMixin):
             self.drawer.ctx.fill()
             
             # Increase offset
-            x_offset += self.icon_size
+            x_offset += self._icon_size
 
         # Does bar need to be displayed
         if self.show_bar and not self.hidden:
