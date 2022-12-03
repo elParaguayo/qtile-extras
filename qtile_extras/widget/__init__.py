@@ -41,6 +41,7 @@ widgets = {
     "LightControlWidget": "lightcontrol",
     "LiveFootballScores": "livefootballscores",
     "MemoryGraph": "graph",
+    "Mpris2": "mpris2widget",
     "NetGraph": "graph",
     "QTEMirror": "mirror",
     "ScriptExit": "scriptexit",

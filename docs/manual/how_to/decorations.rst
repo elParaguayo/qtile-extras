@@ -77,7 +77,7 @@ wrap your widget class and its configuration parameters. i.e. calling ``modify(W
     from libqtile.widget.base import _TextBox
 
     from qtile_extras.bar import Bar
-    from qtile.extras.widget import modify
+    from qtile_extras.widget import modify
 
 
     class MyTextWidget(_TextBox):
