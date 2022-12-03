@@ -17,7 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import json
 import os
 from datetime import datetime
 from pathlib import Path
@@ -46,8 +46,15 @@ class TVHJobServer:
     def _send_api_request(self, path, args=None):
         url = self.host + path
 
-        r = requests.post(url, data=args, auth=self.auth, timeout=self.timeout)
-        return r.json(strict=False)
+        try:
+            r = requests.post(url, data=args, auth=self.auth, timeout=self.timeout)
+        except (requests.ConnectionError, requests.Timeout):
+            return None
+
+        try:
+            return r.json(strict=False)
+        except json.decoder.JSONDecodeError:
+            return list()
 
     def _tidy_prog(self, prog, uuid=None):
 
@@ -71,10 +78,11 @@ class TVHJobServer:
 
     def get_upcoming(self, path, hide_duplicates=True):
         programmes = self._send_api_request(path)
-        programmes = [self._tidy_prog(x) for x in programmes["entries"]]
-        programmes = sorted(programmes, key=lambda x: x["start_epoch"])
-        if hide_duplicates:
-            programmes = [p for p in programmes if not p["duplicate"]]
+        if programmes:
+            programmes = [self._tidy_prog(x) for x in programmes["entries"]]
+            programmes = sorted(programmes, key=lambda x: x["start_epoch"])
+            if hide_duplicates:
+                programmes = [p for p in programmes if not p["duplicate"]]
         return programmes
 
 

@@ -34,16 +34,23 @@ def to_rads(degrees):
 class AnalogueClock(base._Widget):
     """
     An analogue clock for your Bar.
+
+    The size of the clock will be the size of the bar minus 2x the margin.
+    Use ``padding`` to add spacing before and after the widget. Finally, the position
+    can be fine adjusted using the ``adjust_x/y`` values.
     """
 
     orientations = base.ORIENTATION_BOTH
     defaults = [
         ("hour_size", 2, "Thickness of hour hand"),
         ("hour_length", 0.6, "Length of hour hand as percentage of radius"),
+        ("hour_colour", "ffffff", "Colour for the hour hand"),
         ("minute_size", 2, "Thickness of minute hand"),
         ("minute_length", 0.95, "Length of minute hand as percentage of radius"),
+        ("minute_colour", "ffffff", "Colour for the minute hand"),
         ("second_size", 0, "Thickness of second hand, 0 to hide."),
         ("second_length", 0.95, "Length of minute hand as percentage of radius"),
+        ("second_colour", "ffffff", "Colour for the second hand"),
         ("update_interval", 1, "Polling interval in secs."),
         ("margin", 2, "Margin around clock"),
         ("padding", 2, "Additional padding at edges of widget"),
@@ -51,6 +58,8 @@ class AnalogueClock(base._Widget):
         ("face_background", None, "Shading for clock face"),
         ("face_border_width", 1, "Thickness of clock face border"),
         ("face_border_colour", "00ffff", "Border colour for clock face"),
+        ("adjust_x", 0, "Adjust the x position of the widget"),
+        ("adjust_y", 0, "Adjust the y position of the widget"),
     ]
 
     _screenshots = [
@@ -61,14 +70,14 @@ class AnalogueClock(base._Widget):
     def __init__(self, **config):
         base._Widget.__init__(self, 0, **config)
         self.add_defaults(AnalogueClock.defaults)
-        self.hours = self.minutes = self.minutes = 0
+        self.hours = self.minutes = self.seconds = 0
         self.clock_string = ""
         self.previous_clock = ""
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
-        self.length = self.bar.size + 2 * self.padding
         self.drawer.ctx.set_antialias(cairocffi.ANTIALIAS_NONE)
+        self.length = self.bar.size + 2 * (self.padding - self.margin)
 
         if self.face_shape not in ["square", "circle", None]:
             logger.warning("Unknown clock face shape. Setting to None.")
@@ -89,13 +98,14 @@ class AnalogueClock(base._Widget):
         self.clock_string = f"{self.hours}:{self.minutes}"
         self.draw(force=False)
 
-    def _draw_hand(self, angle, thickness, length):
+    def _draw_hand(self, angle, thickness, length, colour):
         self.drawer.ctx.save()
         self.drawer.ctx.translate(
-            self.bar.size // 2 + self.padding, self.bar.size // 2 + thickness // 2
+            self.bar.size // 2 + self.padding + self.adjust_x - self.margin,
+            self.bar.size // 2 + thickness // 2 + self.adjust_y,
         )
         self.drawer.ctx.rotate(angle)
-        self.drawer.set_source_rgb("ffffff")
+        self.drawer.set_source_rgb(colour)
         self.drawer.ctx.set_line_width(thickness)
         self.drawer.ctx.move_to(0, 0)
         self.drawer.ctx.line_to((self.bar.size // 2 - self.margin) * length, 0)
@@ -105,15 +115,15 @@ class AnalogueClock(base._Widget):
     def draw_face(self):
         if self.face_shape == "square":
             self.drawer.ctx.rectangle(
-                self.padding + self.margin,
-                self.margin,
+                self.padding + self.margin + self.adjust_x,
+                self.margin + self.adjust_y,
                 self.bar.size - 2 * self.margin,
                 self.bar.size - 2 * self.margin,
             )
         else:
             self.drawer.ctx.arc(
-                self.bar.size // 2 + self.padding,
-                self.bar.size // 2,
+                self.bar.size // 2 + self.padding + self.adjust_x - self.margin,
+                self.bar.size // 2 + self.adjust_y,
                 self.bar.size // 2 - self.margin - self.face_border_width,
                 0,
                 to_rads(360),
@@ -131,17 +141,17 @@ class AnalogueClock(base._Widget):
     def draw_hours(self):
         angle = ((self.hours / 12) + (self.minutes / (60 * 12))) * 360 - 90
         angle = to_rads(angle)
-        self._draw_hand(angle, self.hour_size, self.hour_length)
+        self._draw_hand(angle, self.hour_size, self.hour_length, self.hour_colour)
 
     def draw_minutes(self):
         angle = (self.minutes / 60) * 360 - 90
         angle = to_rads(angle)
-        self._draw_hand(angle, self.minute_size, self.minute_length)
+        self._draw_hand(angle, self.minute_size, self.minute_length, self.minute_colour)
 
     def draw_seconds(self):
         angle = (self.seconds / 60) * 360 - 90
         angle = to_rads(angle)
-        self._draw_hand(angle, self.second_size, self.second_length)
+        self._draw_hand(angle, self.second_size, self.second_length, self.second_colour)
 
     def draw(self, force=True):
         """
