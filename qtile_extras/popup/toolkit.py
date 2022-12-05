@@ -948,13 +948,13 @@ class _PopupWidget(configurable.Configurable):
         if self.can_focus and self.highlight and not self._highlight:
             self.focus()
             self.draw()
-            self.container.popup.draw()
+            self.container.draw()
 
     def mouse_leave(self, x, y):
         if self.can_focus and self._highlight:
             self.unfocus()
             self.draw()
-            self.container.popup.draw()
+            self.container.draw()
 
     def info(self):
         return {
