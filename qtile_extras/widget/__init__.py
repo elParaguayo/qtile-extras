@@ -48,6 +48,7 @@ widgets = {
     "StatusNotifier": "statusnotifier",
     "StravaWidget": "strava",
     "SwapGraph": "graph",
+    "Syncthing": "syncthing",
     "Systray": "systray",
     "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",
