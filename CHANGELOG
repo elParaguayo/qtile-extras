@@ -1,3 +1,4 @@
+2022-12-22: [FEATURE] Add `Syncthing` widget
 2022-12-21: [BUGFIX] Fix issue redrawing controls after mouse focus change
 2022-12-20: [FEATURE] Add `ProgressBarMixin` and convert `ALSAWidget` and `BrightnessControl` to use mixin
 2022-12-19: [BUGFIX] Update `StravaWidget` to `stravalib v1.1.0` (NB new dependency `pint`)
