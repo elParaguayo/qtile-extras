@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import os
+from typing import Any
 
 from libqtile import bar
 from libqtile.command.base import expose_command
@@ -26,7 +27,7 @@ from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
 
 from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupSlider, PopupText
-from qtile_extras.widget.mixins import ExtendedPopupMixin
+from qtile_extras.widget.mixins import ExtendedPopupMixin, ProgressBarMixin
 
 ERROR_VALUE = -1
 
@@ -61,7 +62,7 @@ BRIGHTNESS_NOTIFICATION = PopupRelativeLayout(
 )
 
 
-class BrightnessControl(base._Widget, ExtendedPopupMixin):
+class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
     """
     This module provides basic screen brightness controls and a simple
     widget showing the brightness level for Qtile.
@@ -94,7 +95,7 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin):
 
     orientations = base.ORIENTATION_HORIZONTAL
 
-    defaults = [
+    defaults: list[tuple[str, Any, str]] = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
         ("foreground", "ffffff", "Colour of text."),
@@ -151,7 +152,9 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin):
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         ExtendedPopupMixin.__init__(self, **config)
+        ProgressBarMixin.__init__(self, **config)
         self.add_defaults(ExtendedPopupMixin.defaults)
+        self.add_defaults(ProgressBarMixin.defaults)
         self.add_defaults(BrightnessControl.defaults)
 
         if "font_colour" in config:
@@ -215,6 +218,16 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin):
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
+
+        # Now we're using ProgressBar mixin we need to make sure we set the
+        # right properties
+        for attr in ["font", "fontsize", "foreground"]:
+            if (attr in self._user_config or attr in self.global_defaults) and not (
+                f"bar_text_{attr}" in self._user_config
+                or f"bar_text_{attr}" in self.global_defaults
+            ):
+                setattr(self, f"bar_{attr}", getattr(self, attr))
+
         # Calculate how much space we need to show text
         self.text_width = self.max_text_width()
 
@@ -304,29 +317,15 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin):
             # Set colour and text to show current value
             bar_colour = self.bar_colour
             percentage = int(self.percentage * 100)
-            text = self.text_format.format(percentage=percentage)
+            bar_text = self.text_format.format(percentage=percentage)
+            value = self.percentage
         else:
             # There's been an error so display accordingly
             bar_colour = self.error_colour
-            text = "!"
+            bar_text = "!"
+            value = self.percentage or 1
 
-        # Draw the bar
-        self.drawer.set_source_rgb(bar_colour)
-        self.drawer.fillrect(0, 0, self.length * (abs(self.percentage)), self.height, 1)
-
-        # Create a text box
-        layout = self.drawer.textlayout(
-            text, self.foreground, self.font, self.fontsize, None, wrap=False
-        )
-
-        # We want to centre this vertically
-        y_offset = (self.bar.height - layout.height) / 2
-
-        # Set the layout as wide as the widget so text is centred
-        layout.width = self.length
-
-        # Add the text to our drawer
-        layout.draw(0, y_offset)
+        self.draw_bar(bar_colour=bar_colour, bar_text=bar_text, bar_value=value)
 
         # Redraw the bar
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)

@@ -1,3 +1,4 @@
+2022-12-20: [FEATURE] Add `ProgressBarMixin` and convert `ALSAWidget` and `BrightnessControl` to use mixin
 2022-12-19: [BUGFIX] Update `StravaWidget` to `stravalib v1.1.0` (NB new dependency `pint`)
 2022-12-03: [FEATURE] Add extended popup to `Mpris2`
 2022-12-02: [BUGFUX] Fix startup slowdown caused by `ALSAWidget` 
