@@ -400,3 +400,108 @@ class ExtendedPopupMixin(_BaseMixin):
             self.update_popup()
         else:
             self.show_popup()
+
+
+class ProgressBarMixin(_BaseMixin):
+    """
+    Mixin to allow widgets to display progress bars.
+
+    Bar is drawn based on a ``bar_value`` between 0.0 and 1.0 inclusive.
+
+    To use it, subclass and add this to ``__init__``:
+
+    .. code:: python
+
+        ProgressBarMixin.__init__(self, **kwargs)
+        self.add_defaults(ProgressBarMixin.defaults)
+
+    To draw the bar, you need to call ``self.bar_draw()``. The method take a
+    number of optional parameters. Where these are not set in the method call
+    then the instance version i.e. ``self.parameter_name`` will be used insted.
+
+    ``bar.draw`` optional parameters:
+
+    - ``x_offset`` (default 0): horizontal positioning of the bar
+    - ``bar_colour``: colour of the bar
+    - ``bar_background``: colour drawn behind the bar (i.e. to show extent of bar)
+    - ``bar_text``: text to draw on bar,
+    - ``bar_text_foreground``: text colour,
+    - ``bar_value``: percentage of bar to fill
+
+    .. note::
+
+        The widget should ensure that its width is sufficient to display the bar
+        (the ``bar_width`` property is relevant here).
+
+    """
+
+    defaults = [
+        ("bar_width", 75, "Width of bar."),
+        ("bar_height", None, "Height of bar (None = full bar height)."),
+        ("bar_background", None, "Colour of bar background."),
+        (
+            "bar_colour",
+            "00ffff",
+            "Colour of bar (NB this setting may be overridden by other widget settings).",
+        ),
+        ("bar_text", "", "Text to show over bar"),
+        ("bar_text_font", "sans", "Font to use for bar text"),
+        ("bar_text_fontsize", None, "Fontsize for bar text"),
+        ("bar_text_foreground", "ffffff", "Colour for bar text"),
+    ]
+
+    def __init__(self, **kwargs):
+        self.bar_value = 0
+
+    def draw_bar(
+        self,
+        x_offset=0,
+        bar_colour=None,
+        bar_background=None,
+        bar_text=None,
+        bar_text_foreground=None,
+        bar_value=None,
+    ):
+        if self.bar_height is None:
+            self.bar_height = self.bar.height
+
+        percentage = bar_value or self.bar_value
+
+        self.drawer.ctx.save()
+        self.drawer.ctx.translate(x_offset, (self.bar.height - self.bar_height) // 2)
+
+        if self.bar_background and percentage < 1:
+            self.drawer.set_source_rgb(bar_background or self.bar_background)
+            self.drawer.fillrect(0, 0, self.bar_width, self.bar_height, 1)
+
+        # Draw progress bar
+        self.drawer.set_source_rgb(bar_colour or self.bar_colour)
+        self.drawer.fillrect(0, 0, self.bar_width * percentage, self.bar_height, 1)
+
+        self.drawer.ctx.restore()
+
+        if bar_text or self.bar_text:
+            if self.bar_fontsize is None:
+                self.bar_fontsize = self.bar.height - self.bar.height / 5
+
+            self.drawer.ctx.save()
+            # Create a text box
+            layout = self.drawer.textlayout(
+                bar_text or self.bar_text,
+                bar_text_foreground or self.bar_text_foreground,
+                self.bar_font,
+                self.bar_fontsize,
+                None,
+                wrap=False,
+            )
+
+            # We want to centre this vertically
+            y_offset = (self.bar.height - layout.height) / 2
+
+            # Set the layout as wide as the widget so text is centred
+            layout.width = self.bar_width
+
+            self.drawer.ctx.translate(x_offset, y_offset)
+            layout.draw(0, 0)
+
+            self.drawer.ctx.restore()
