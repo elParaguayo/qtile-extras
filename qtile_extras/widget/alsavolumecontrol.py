@@ -22,6 +22,7 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+from typing import TYPE_CHECKING
 
 from libqtile import bar, confreader, images
 from libqtile.command.base import expose_command
@@ -29,7 +30,10 @@ from libqtile.log_utils import logger
 from libqtile.widget import base
 
 from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupSlider, PopupText
-from qtile_extras.widget.mixins import ExtendedPopupMixin
+from qtile_extras.widget.mixins import ExtendedPopupMixin, ProgressBarMixin
+
+if TYPE_CHECKING:
+    from typing import Any
 
 RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\].*\[(on|off)\]")
 
@@ -64,7 +68,7 @@ VOLUME_NOTIFICATION = PopupRelativeLayout(
 )
 
 
-class ALSAWidget(base._Widget, ExtendedPopupMixin):
+class ALSAWidget(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
     """
     The widget is very simple and, so far, just allows controls for
     volume up, down and mute.
@@ -88,7 +92,7 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
-    defaults = [
+    defaults: list[tuple[str, Any, str]] = [
         ("font", "sans", "Default font"),
         ("fontsize", None, "Font size"),
         ("foreground", "ffffff", "Font colour"),
@@ -127,7 +131,9 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         ExtendedPopupMixin.__init__(self, **config)
+        ProgressBarMixin.__init__(self, **config)
         self.add_defaults(ExtendedPopupMixin.defaults)
+        self.add_defaults(ProgressBarMixin.defaults)
         self.add_defaults(ALSAWidget.defaults)
 
         self.add_callbacks(
@@ -173,6 +179,15 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
+
+        # Now we're using ProgressBar mixin we need to make sure we set the
+        # right properties
+        for attr in ["font", "fontsize", "foreground"]:
+            if (attr in self._user_config or attr in self.global_defaults) and not (
+                f"bar_text_{attr}" in self._user_config
+                or f"bar_text_{attr}" in self.global_defaults
+            ):
+                setattr(self, f"bar_{attr}", getattr(self, attr))
 
         if self.mode in ["icon", "both"] and not self.theme_path:
             logger.error("You must set the `theme_path` when using icons")
@@ -318,31 +333,16 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin):
 
             # Text and colour depends on mute status and volume level
             if not self.muted:
-                text = self.text_format.format(volume=self.volume)
-                fill = next(x[1] for x in self.colours if self.volume <= x[0])
+                bar_text = self.text_format.format(volume=self.volume)
+                bar_colour = next(x[1] for x in self.colours if self.volume <= x[0])
             else:
-                text = "X"
-                fill = self.bar_colour_mute
+                bar_text = "X"
+                bar_colour = self.bar_colour_mute
 
-            # Set bar colours
-            self.drawer.set_source_rgb(fill)
-
-            # Draw the bar
-            self.drawer.fillrect(x_offset, 0, self.bar_size * (self.volume / 100), self.height, 1)
-
-            # Create a text box
-            layout = self.drawer.textlayout(
-                text, self.foreground, self.font, self.fontsize, None, wrap=False
+            bar_value = self.volume / 100.0
+            self.draw_bar(
+                x_offset=x_offset, bar_text=bar_text, bar_colour=bar_colour, bar_value=bar_value
             )
-
-            # We want to centre this vertically
-            y_offset = (self.bar.height - layout.height) / 2
-
-            # Set the layout as wide as the widget so text is centred
-            layout.width = self.bar_size
-
-            # Add the text to our drawer
-            layout.draw(x_offset, y_offset)
 
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
 
