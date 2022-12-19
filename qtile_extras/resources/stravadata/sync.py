@@ -23,9 +23,9 @@ import os
 import pickle
 import time
 
+from pint import Unit
 from stravalib import Client
 from stravalib.model import Activity
-from units import unit
 
 from qtile_extras.resources.stravadata.locations import AUTH, CACHE, CREDS, TIMESTAMP
 
@@ -36,7 +36,7 @@ SECRET = AUTH.get("secret", False)
 
 SHOW_EXTRA_MONTHS = 5
 
-KM = unit("km")
+KM = Unit("km")
 
 
 class ActivityHistory(object):
@@ -51,10 +51,10 @@ class ActivityHistory(object):
 
 
 class ActivitySummary(object):
-    def __init__(self, distance_unit=unit("km"), groupdate=None, child=False):
+    def __init__(self, distance_unit=KM, groupdate=None, child=False):
         self.activities = []
         self.distance_unit = distance_unit
-        self.dist = distance_unit(0)
+        self.dist = distance_unit * 0
         self.time = 0
         self._date = datetime.datetime.now()
         self.groupdate = groupdate
@@ -65,13 +65,13 @@ class ActivitySummary(object):
         self._name = ""
 
     @classmethod
-    def from_activity(cls, activity, distance_unit=unit("km"), child=False):
+    def from_activity(cls, activity, distance_unit=KM, child=False):
         act = cls(distance_unit=distance_unit, child=child)
         act.add_activity(activity)
         return act
 
     @classmethod
-    def from_activities(cls, activities, distance_unit=unit("km"), child=False):
+    def from_activities(cls, activities, distance_unit=KM, child=False):
         act = cls(distance_unit=distance_unit, child=child)
         act.add_activities(activities)
         return act
@@ -114,7 +114,7 @@ class ActivitySummary(object):
 
     @property
     def distance(self):
-        return self.dist.num
+        return self.dist.magnitude
 
     @property
     def format_pace(self):

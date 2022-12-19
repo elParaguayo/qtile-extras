@@ -25,6 +25,7 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
+from pint import Unit
 from stravalib.model import Activity
 
 from qtile_extras.widget.strava import StravaWidget
@@ -34,7 +35,7 @@ ACTIVITIES = [
     Activity(
         name="Test Activity 1",
         start_date_local=datetime(2021, 11, 20, 9, 0),
-        distance=10000,
+        distance=Unit("m") * 10000,
         elapsed_time=45 * 60,
         moving_time=45 * 60,
         type=Activity.RUN,
@@ -42,7 +43,7 @@ ACTIVITIES = [
     Activity(
         name="Test Activity 2",
         start_date_local=datetime(2021, 11, 21, 7, 10),
-        distance=21100,
+        distance=Unit("m") * 21100,
         elapsed_time=105 * 60,
         moving_time=105 * 60,
         type=Activity.RUN,

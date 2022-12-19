@@ -35,7 +35,7 @@ MOCK_MODULES = [
     'libqtile.widget.wlan',
     'stravalib',
     'stravalib.model',
-    'units',
+    'pint',
     'qtile_extras.resources.stravadata.locations',
     'libqtile._ffi_pango',
     'libqtile.backend.x11._ffi_xcursors',

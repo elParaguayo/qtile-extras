@@ -126,7 +126,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
         ),
     ]
 
-    _dependencies = ["stravalib", "units"]
+    _dependencies = ["stravalib", "pint"]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
