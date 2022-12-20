@@ -21,7 +21,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from libqtile.command.base import expose_command
-from libqtile.configurable import Configurable
+from libqtile.configurable import Configurable, ExtraFallback
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 
@@ -445,10 +445,14 @@ class ProgressBarMixin(_BaseMixin):
             "Colour of bar (NB this setting may be overridden by other widget settings).",
         ),
         ("bar_text", "", "Text to show over bar"),
-        ("bar_text_font", "sans", "Font to use for bar text"),
+        ("bar_text_font", None, "Font to use for bar text"),
         ("bar_text_fontsize", None, "Fontsize for bar text"),
         ("bar_text_foreground", "ffffff", "Colour for bar text"),
     ]
+
+    bar_text_font = ExtraFallback("bar_text_font", "font")
+    bar_text_fontsize = ExtraFallback("bar_text_fontsize", "fontsize")
+    bar_text_foreground = ExtraFallback("bar_text_foreground", "foreground")
 
     def __init__(self, **kwargs):
         self.bar_value = 0
@@ -481,16 +485,16 @@ class ProgressBarMixin(_BaseMixin):
         self.drawer.ctx.restore()
 
         if bar_text or self.bar_text:
-            if self.bar_fontsize is None:
-                self.bar_fontsize = self.bar.height - self.bar.height / 5
+            if self.bar_text_fontsize is None:
+                self.bar_text_fontsize = self.bar.height - self.bar.height / 5
 
             self.drawer.ctx.save()
             # Create a text box
             layout = self.drawer.textlayout(
                 bar_text or self.bar_text,
                 bar_text_foreground or self.bar_text_foreground,
-                self.bar_font,
-                self.bar_fontsize,
+                self.bar_text_font,
+                self.bar_text_fontsize,
                 None,
                 wrap=False,
             )
