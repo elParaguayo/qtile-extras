@@ -1547,3 +1547,9 @@ class PopupWidget(_PopupWidget):
 
     def finalize(self):
         self.widget.finalize()
+
+
+class PopupFrame(_PopupWidget):
+    """Empty container. Useful if you want to copy pixels straight to the drawer."""
+    def paint(self):
+        self.clear(self._background)
