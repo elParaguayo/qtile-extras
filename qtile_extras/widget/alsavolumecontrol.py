@@ -180,15 +180,6 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
 
-        # Now we're using ProgressBar mixin we need to make sure we set the
-        # right properties
-        for attr in ["font", "fontsize", "foreground"]:
-            if (attr in self._user_config or attr in self.global_defaults) and not (
-                f"bar_text_{attr}" in self._user_config
-                or f"bar_text_{attr}" in self.global_defaults
-            ):
-                setattr(self, f"bar_{attr}", getattr(self, attr))
-
         if self.mode in ["icon", "both"] and not self.theme_path:
             logger.error("You must set the `theme_path` when using icons")
             raise confreader.ConfigError("No theme_path provided.")
