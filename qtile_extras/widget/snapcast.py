@@ -69,10 +69,7 @@ class SnapCast(base._Widget):
         self.add_defaults(SnapCast.defaults)
         self.add_callbacks(
             {
-                "Button1": self.show_select,
                 "Button3": self.toggle_state,
-                "Button4": self.scroll_up,
-                "Button5": self.scroll_down,
             }
         )
         self._id = 0
@@ -96,7 +93,7 @@ class SnapCast(base._Widget):
         self.img.attach_drawer(self.drawer)
 
         if self.icon_size is None:
-            size = self.bar.height - 1
+            size = self.bar.height - 1 - (self.padding * 2)
         else:
             size = min(self.icon_size, self.bar.height - 1)
 
@@ -137,6 +134,7 @@ class SnapCast(base._Widget):
         status = reply.result()
 
         if not status:
+            self.streams = []
             return
 
         self._find_id(status)
@@ -170,16 +168,7 @@ class SnapCast(base._Widget):
         if self.img is None:
             return 0
 
-        return self.icon_size
-
-    def draw_highlight(self, top=False, colour="000000"):
-
-        self.drawer.set_source_rgb(colour)
-
-        y = 0 if top else self.bar.height - 2
-
-        # Draw the bar
-        self.drawer.fillrect(0, y, self.width, 2, 2)
+        return self.icon_size + 2 * self.padding
 
     def draw(self):
         # Remove background
@@ -188,15 +177,6 @@ class SnapCast(base._Widget):
         offsety = (self.bar.height - self.img.height) // 2
         self.img.draw(colour=self.status_colour, y=offsety)
         self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
-
-    def show_select(self):
-        pass
-
-    def scroll_up(self):
-        pass
-
-    def scroll_down(self):
-        pass
 
     def finalize(self):
         if self._proc:
