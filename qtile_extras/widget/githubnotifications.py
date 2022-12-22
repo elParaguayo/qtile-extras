@@ -75,6 +75,7 @@ class GithubNotifications(base._Widget):
         self.has_notifications = False
         self.error = False
         self._timer = None
+        self._polling = False
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -85,7 +86,7 @@ class GithubNotifications(base._Widget):
     def _load_token(self):
         token_file = Path(self.token_file).expanduser()
         if not token_file.is_file():
-            logger.error("No token_file provided")
+            logger.error("No token_file provided.")
             self.error = True
             return
 
@@ -118,7 +119,7 @@ class GithubNotifications(base._Widget):
             self.error = True
             logger.error("No access token provided.")
             return
-
+        self._polling = True
         future = self.qtile.run_in_executor(self._get_data)
         future.add_done_callback(self._read_data)
 
@@ -135,10 +136,12 @@ class GithubNotifications(base._Widget):
         if r.status_code != 200:
             self.error = True
             logger.warning("Github returned a %d status code.", r.status_code)
+            self._polling = False
             return
 
         self.error = False
         self.has_notifications = bool(r.json())
+        self._polling = False
 
         self._timer = self.timeout_add(self.update_interval, self.update)
         self.draw()
