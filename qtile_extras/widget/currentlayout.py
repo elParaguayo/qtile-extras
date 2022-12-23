@@ -75,21 +75,21 @@ class CurrentLayoutIcon(LayoutIcon):
                 if icon_file_path:
                     break
             else:
-                logger.warning('No icon found for layout "%s"', layout_name)
+                logger.warning('No icon found for layout "%s".', layout_name)
                 icon_file_path = self.find_icon_file_path("unknown")
 
             try:
                 img = ImgMask.from_path(icon_file_path)
                 img.attach_drawer(self.drawer)
-            except (cairocffi.Error, IOError) as e:
+                # Check if we can create a surface here
+                img.surface
+            except (cairocffi.Error, cairocffi.pixbuf.ImageLoadingError, IOError):
                 # Icon file is guaranteed to exist at this point.
                 # If this exception happens, it means the icon file contains
                 # an invalid image or is not readable.
                 self.icons_loaded = False
-                logger.exception(
-                    'Failed to load icon from file "%s", error was: %s', icon_file_path, e.message
-                )
-                return
+                logger.warning('Failed to load icon from file "%s".', icon_file_path)
+                raise
 
             # Resize the image to the bar and adjust for any scaling.
             size = int((self.bar.height - 1) * self.scale)
