@@ -71,7 +71,6 @@ class TooltipMixin(_BaseMixin):
         self._tooltip_padding = None
 
     def _show_tooltip(self, x, y):
-
         if self._tooltip_padding is None:
             if isinstance(self.tooltip_padding, int):
                 self._tooltip_padding = [self.tooltip_padding] * 2
@@ -120,11 +119,11 @@ class TooltipMixin(_BaseMixin):
 
         elif screen.left == self.bar:
             x = self.bar.width
-            y = min(self.offsety, screen.height - height)
+            y = min(self.offsety + self.bar.window.y, screen.height - height)
 
         else:
             x = screen.width - self.bar.width - width
-            y = min(self.offsety, screen.height - height)
+            y = min(self.offsety + self.bar.window.y, screen.height - height)
 
         self._tooltip.x = x
         self._tooltip.y = y
