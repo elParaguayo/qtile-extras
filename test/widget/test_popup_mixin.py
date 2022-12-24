@@ -23,6 +23,12 @@ from libqtile import widget
 
 from qtile_extras.popup.toolkit import PopupAbsoluteLayout, PopupText
 from qtile_extras.widget.mixins import ExtendedPopupMixin
+from test.helpers import Retry
+
+
+@Retry(ignore_exceptions=(AssertionError,))
+def assert_window_count(manager, number):
+    assert len(manager.c.internal_windows()) == number
 
 
 class ModdedWidget(widget.TextBox, ExtendedPopupMixin):
@@ -53,6 +59,7 @@ class PopupConfig(libqtile.confreader.Config):
                     ModdedWidget(
                         "",
                         popup_layout=PopupAbsoluteLayout(controls=[PopupText(name="textbox1")]),
+                        popup_hide_timeout=1,
                     )
                 ],
                 50,
@@ -62,9 +69,26 @@ class PopupConfig(libqtile.confreader.Config):
 
 
 @pytest.mark.parametrize("manager", [PopupConfig], indirect=True)
-def test_popup_mixin(manager):
+def test_popup_mixin(manager, backend_name):
+    number = len(manager.c.internal_windows())
     widget = manager.c.widget["moddedwidget"]
     assert not widget.info()["text"]
 
-    widget.show_popup()
+    widget.eval("self.update_or_show_popup()")
+    widget.eval("self.update_or_show_popup()")
+
+    assert_window_count(manager, number + 1)
     assert widget.info()["text"] == "Text set ok"
+
+    if backend_name == "x11":
+        pytest.xfail("X11 fails last check.")
+
+    # Popup should close automatically
+    assert_window_count(manager, number)
+
+
+def test_popup_missing_method():
+    widget = ModdedWidget("")
+    widget._update_popup = ExtendedPopupMixin._update_popup
+    with pytest.raises(NotImplementedError):
+        widget._update_popup(widget)
