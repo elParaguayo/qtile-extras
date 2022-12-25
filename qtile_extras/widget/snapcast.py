@@ -58,6 +58,11 @@ class SnapCast(base._Widget):
         ),
         ("inactive_colour", "999999", "Colour when client is inactive"),
         ("error_colour", "ffff00", "Colour when client has an error (check logs)"),
+        (
+            "server_reconnect_interval",
+            15,
+            "Interval before retrying to find player on server after failed attempt",
+        ),
     ]
 
     _screenshots = [("snapcast.png", "Snapclient active running in background")]
@@ -106,7 +111,10 @@ class SnapCast(base._Widget):
         if params:
             data["params"] = params
 
-        r = requests.post(self._url, json=data)
+        try:
+            r = requests.post(self._url, json=data)
+        except (requests.ConnectionError, requests.Timeout):
+            return False
 
         if not r.status_code == 200:
             logger.warning("Unable to connect to snapcast server.")
@@ -135,6 +143,7 @@ class SnapCast(base._Widget):
 
         if not status:
             self.streams = []
+            self.timeout_add(self.server_reconnect_interval, self._check_server)
             return
 
         self._find_id(status)
