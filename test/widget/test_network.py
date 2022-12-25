@@ -25,6 +25,8 @@ import libqtile.confreader
 import libqtile.layout
 import pytest
 
+from test.helpers import Retry
+
 try:
     import qtile_extras.widget.network
 except ImportError as e:
@@ -41,6 +43,12 @@ def get_status(interface):
         return ("Test Network", 42)
 
 
+@Retry(ignore_exceptions=(AssertionError,))
+def assert_connected(widget, state):
+    _, connected = widget.eval("self.is_connected")
+    assert connected == state
+
+
 @pytest.fixture(scope="function")
 def wifiicon(monkeypatch):
     monkeypatch.setattr("qtile_extras.widget.network.get_status", get_status)
@@ -48,7 +56,7 @@ def wifiicon(monkeypatch):
 
 
 @pytest.fixture(scope="function")
-def wifi_manager(wifiicon):
+def wifi_manager(wifiicon, request, manager_nospawn):
     class WifiConfig(libqtile.confreader.Config):
         auto_fullscreen = True
         keys = []
@@ -61,34 +69,33 @@ def wifi_manager(wifiicon):
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
-                    [wifiicon()],
+                    [wifiicon(**getattr(request, "param", dict()))],
                     30,
                 ),
             )
         ]
 
-    yield WifiConfig
+    manager_nospawn.start(WifiConfig)
+    yield manager_nospawn
 
 
-def test_wifiicon(manager_nospawn, wifi_manager):
-    manager_nospawn.start(wifi_manager)
-
-    manager_nospawn.c.widget["wifiicon"].eval("self.loop()")
+def test_wifiicon(wifi_manager):
+    wifi_manager.c.widget["wifiicon"].eval("self.loop()")
 
     # Icon width is 60 (wifi_width: 30 + 2x padding_x: 3)
-    assert manager_nospawn.c.widget["wifiicon"].info()["width"] == 36
+    assert wifi_manager.c.widget["wifiicon"].info()["width"] == 36
 
     # Click on widget to show text - width should be bigger now
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
-    assert manager_nospawn.c.widget["wifiicon"].info()["width"] > 36
+    wifi_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    assert wifi_manager.c.widget["wifiicon"].info()["width"] > 36
 
     # Hide the text
-    manager_nospawn.c.widget["wifiicon"].eval("self.hide()")
-    assert manager_nospawn.c.widget["wifiicon"].info()["width"] == 36
+    wifi_manager.c.widget["wifiicon"].eval("self.hide()")
+    assert wifi_manager.c.widget["wifiicon"].info()["width"] == 36
 
     # Call exposed command to toggle text
-    manager_nospawn.c.widget["wifiicon"].show_text()
-    assert manager_nospawn.c.widget["wifiicon"].info()["width"] > 36
+    wifi_manager.c.widget["wifiicon"].show_text()
+    assert wifi_manager.c.widget["wifiicon"].info()["width"] > 36
 
 
 def test_wifiicon_deprecated_font_colour(caplog):
@@ -102,3 +109,26 @@ def test_wifiicon_deprecated_font_colour(caplog):
     )
 
     assert widget.foreground == "ffffff"
+
+
+@pytest.mark.parametrize(
+    "wifi_manager,expected",
+    [
+        ({"check_connection_interval": 1}, "True"),
+        (
+            {
+                "check_connection_interval": 1,
+                "internet_check_timeout": 1,
+                "internet_check_host": "192.168.192.168",
+            },
+            "False",
+        ),
+    ],
+    indirect=["wifi_manager"],
+)
+def test_wifiicon_internet_check(wifi_manager, expected):
+    widget = wifi_manager.c.widget["wifiicon"]
+
+    widget.eval("self.is_connected = None")
+
+    assert_connected(widget, expected)
