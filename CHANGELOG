@@ -1,3 +1,4 @@
+2022-12-26: [FEATURE] Add decoration grouping to BorderDecorations
 2022-12-25: [BUGFIX] Catch errors where `SnapCast` widget can't retrieve ID from server
 2022-12-22: [FEATURE] Add `Syncthing` widget
 2022-12-21: [BUGFIX] Fix issue redrawing controls after mouse focus change
