@@ -21,6 +21,7 @@ import logging
 
 import libqtile.bar
 import libqtile.config
+import pytest
 from libqtile.log_utils import init_log
 
 from qtile_extras import widget
@@ -212,3 +213,65 @@ def test_decoration_extrawidth(manager_nospawn, minimal_conf_noscreen):
     assert manager_nospawn.c.widget["one"].info()["length"] == 70
     assert manager_nospawn.c.widget["two"].info()["length"] == 70
     assert manager_nospawn.c.widget["three"].info()["length"] == 80
+
+
+@pytest.mark.parametrize(
+    "dec_class,dec_config",
+    [
+        (BorderDecoration, {"border_width": 4, "colour": "ff0000"}),
+        (RectDecoration, {"radius": 5, "colour": "ff0000"}),
+    ],
+)
+def test_decoration_grouping(manager_nospawn, minimal_conf_noscreen, dec_class, dec_config):
+    def assert_first_last(widget, first, last):
+        _, ft = widget.eval("self.decorations[0].is_first")
+        _, lt = widget.eval("self.decorations[0].is_last")
+        _, gp = widget.eval("self.decorations[0]._get_parent_group()")
+        assert ft == str(first)
+        assert lt == str(last)
+
+    config = minimal_conf_noscreen
+
+    group_decoration = {"decorations": [dec_class(**dec_config, group=True)]}
+
+    group2_decoration = {"decorations": [dec_class(**dec_config, group=True, groupid=2)]}
+
+    no_group_decoration = {"decorations": [dec_class(**dec_config, group=False)]}
+
+    config.screens = [
+        libqtile.config.Screen(
+            top=libqtile.bar.Bar(
+                [
+                    widget.TextBox("Text 1", name="tb1", **group_decoration),
+                    widget.TextBox("Text 2", name="tb2", **group_decoration),
+                    widget.TextBox("Text 3", name="tb3", **group_decoration),
+                    widget.TextBox("Text 4", name="tb4", **group2_decoration),
+                    widget.TextBox("Text 5", name="tb5", **group2_decoration),
+                    widget.TextBox("Text 6", name="tb6", **no_group_decoration),
+                ],
+                10,
+            )
+        )
+    ]
+
+    manager_nospawn.start(config)
+    manager_nospawn.c.bar["top"].eval("self.draw()")
+
+    widget1 = manager_nospawn.c.widget["tb1"]
+    widget2 = manager_nospawn.c.widget["tb2"]
+    widget3 = manager_nospawn.c.widget["tb3"]
+    widget4 = manager_nospawn.c.widget["tb4"]
+    widget5 = manager_nospawn.c.widget["tb5"]
+    widget6 = manager_nospawn.c.widget["tb6"]
+
+    # First group is 3 widgets
+    assert_first_last(widget1, True, False)
+    assert_first_last(widget2, False, False)
+    assert_first_last(widget3, False, True)
+
+    # Next group has 2 widgets
+    assert_first_last(widget4, True, False)
+    assert_first_last(widget5, False, True)
+
+    # Last widget is not grouped
+    assert_first_last(widget6, True, True)

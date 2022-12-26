@@ -117,7 +117,91 @@ class _Decoration(base.PaddingMixin):
         self.drawer.set_source_rgb(colour, ctx=self.ctx)
 
 
-class RectDecoration(_Decoration):
+class GroupMixin:
+    """
+    This mixin provides some useful methods for decorations to apply grouping.
+
+    However, the decoration must still apply the relevant logic when drawing.
+    """
+
+    defaults = [
+        (
+            "group",
+            False,
+            "When set to True, the decoration will be applied as if the widgets were grouped. See documentation for more.",
+        ),
+    ]
+
+    def _get_parent_group(self):
+        """Finds the group of widgets containing the current widget."""
+
+        def in_same_group(w1, w2):
+            for dec in getattr(w1, "decorations", list()):
+                if dec.group and dec not in getattr(w2, "decorations", list()):
+                    return False
+
+            return True
+
+        widgets = self.parent.bar.widgets
+        grouped = self._get_grouped_widgets()
+
+        groups = []
+        current = [grouped[0]]
+
+        for w in grouped[1:]:
+            # If the next grouped widget is not adjacent to the previous grouped widget...
+            if widgets.index(w) != widgets.index(current[-1]) + 1 or not in_same_group(
+                w, current[-1]
+            ):
+                # Append the current group to the list of groups and start a new group with widget
+                groups.append(current)
+                current = [w]
+            # Otherwise, append the widget to the current group.
+            else:
+                current.append(w)
+
+        groups.append(current)
+
+        # Find the group containing the parent widget
+        parent_group = [g for g in groups if self.parent in g]
+
+        return parent_group[0]
+
+    def _get_grouped_widgets(self):
+        def is_grouped(widget):
+            for dec in getattr(widget, "decorations", list()):
+                if dec.group:
+                    return True
+
+            return False
+
+        widgets = self.parent.bar.widgets
+        grouped = [w for w in widgets if is_grouped(w)]
+
+        return grouped
+
+    @property
+    def parent_index(self):
+        return self.parent.bar.widgets.index(self.parent)
+
+    @property
+    def is_first(self):
+        if not self.group:
+            return True
+        grouped = self._get_parent_group()
+        visible = [w for w in grouped if w.length > 0]
+        return visible and self.parent is visible[0]
+
+    @property
+    def is_last(self):
+        if not self.group:
+            return True
+        grouped = self._get_parent_group()
+        visible = [w for w in grouped if w.length > 0]
+        return visible and self.parent is visible[-1]
+
+
+class RectDecoration(_Decoration, GroupMixin):
     """
     Widget decoration that draws a rectangle behind the widget contents.
 
@@ -209,11 +293,6 @@ class RectDecoration(_Decoration):
             "Paint the decoration using the colour from the widget's `background` property. "
             "The widget's background will then be the bar's background colour.",
         ),
-        (
-            "group",
-            False,
-            "When set to True, the decoration will be applied as if the widgets were grouped. See documentation for more.",
-        ),
         ("clip", False, "Clip contents of widget to decoration area."),
     ]  # type: list[tuple[str, Any, str]]
 
@@ -224,61 +303,9 @@ class RectDecoration(_Decoration):
 
     def __init__(self, **config):
         _Decoration.__init__(self, **config)
+        self.add_defaults(GroupMixin.defaults)
         self.add_defaults(RectDecoration.defaults)
         self.corners = self.single_or_four(self.radius, "Corner radius")
-
-    def _get_parent_group(self):
-        """Finds the group of widgets containing the current widget."""
-        widgets = self.parent.bar.widgets
-        grouped = self._get_grouped_widgets()
-
-        groups = []
-        current = [grouped[0]]
-
-        for w in grouped[1:]:
-            # If the next grouped widget is not adjacent to the previous grouped widget...
-            if widgets.index(w) != widgets.index(current[-1]) + 1:
-                # Append the current group to the list of groups and start a new group with widget
-                groups.append(current)
-                current = [w]
-            # Otherwise, append the widget to the current group.
-            else:
-                current.append(w)
-        groups.append(current)
-
-        # Find the group containing the parent widget
-        parent_group = [g for g in groups if self.parent in g]
-
-        return parent_group[0]
-
-    def _get_grouped_widgets(self):
-        def is_grouped(widget):
-            for dec in getattr(widget, "decorations", list()):
-                if dec == self and dec.group:
-                    return True
-
-            return False
-
-        widgets = self.parent.bar.widgets
-        grouped = [w for w in widgets if is_grouped(w)]
-
-        return grouped
-
-    @property
-    def parent_index(self):
-        return self.parent.bar.widgets.index(self.parent)
-
-    @property
-    def is_first(self):
-        grouped = self._get_parent_group()
-        visible = [w for w in grouped if w.length > 0]
-        return visible and self.parent is visible[0]
-
-    @property
-    def is_last(self):
-        grouped = self._get_parent_group()
-        visible = [w for w in grouped if w.length > 0]
-        return visible and self.parent is visible[-1]
 
     def _draw_path(self, clip=False):
         ctx = self.ctx if not clip else self.drawer.ctx
@@ -412,7 +439,7 @@ class RectDecoration(_Decoration):
             self.drawer.ctx.clip()
 
 
-class BorderDecoration(_Decoration):
+class BorderDecoration(_Decoration, GroupMixin):
     """
     Widget decoration that draws a straight line on the widget border.
     Padding can be used to adjust the position of the border further.
@@ -430,6 +457,7 @@ class BorderDecoration(_Decoration):
 
     def __init__(self, **config):
         _Decoration.__init__(self, **config)
+        self.add_defaults(GroupMixin.defaults)
         self.add_defaults(BorderDecoration.defaults)
         self.borders = self.single_or_four(self.border_width, "Border width")
 
@@ -441,14 +469,16 @@ class BorderDecoration(_Decoration):
         if top:
             offset = top / 2
             self._draw_border(
-                self.padding_x,  # offset not applied to x coords as seems to create a gap
+                self.padding_x
+                if self.is_first
+                else 0,  # offset not applied to x coords as seems to create a gap
                 offset + self.padding_y,
-                self.width - self.padding_x,
+                self.width - (self.padding_x if self.is_last else 0),
                 offset + self.padding_y,
                 top,
             )
 
-        if right:
+        if right and (not self.group or (self.group and self.is_last)):
             offset = right / 2
             self._draw_border(
                 self.width - offset - self.padding_x,
@@ -461,14 +491,16 @@ class BorderDecoration(_Decoration):
         if bottom:
             offset = bottom / 2
             self._draw_border(
-                self.padding_x,  # offset not applied to x coords as seems to create a gap
+                self.padding_x
+                if self.is_first
+                else 0,  # offset not applied to x coords as seems to create a gap
                 self.height - offset - self.padding_y,
-                self.width - self.padding_y,
+                self.width - (self.padding_x if self.is_last else 0),
                 self.height - offset - self.padding_y,
                 bottom,
             )
 
-        if left:
+        if left and (not self.group or (self.group and self.is_first)):
             offset = left / 2
             self._draw_border(
                 offset + self.padding_x,
