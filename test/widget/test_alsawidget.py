@@ -236,6 +236,7 @@ def test_no_theme_path(monkeypatch):
 @pytest.mark.parametrize(
     "alsa_manager", [{"theme_path": "/no/path", "mode": "icon"}], indirect=True
 )
+@pytest.mark.flaky(reruns=5)
 def test_no_icons(alsa_manager, logger):
     """Icons are loaded in background and will log a failure if not found."""
 
