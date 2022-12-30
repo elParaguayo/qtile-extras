@@ -881,3 +881,6 @@ PREMIER_LEAGUE = {
         }
     ],
 }
+
+
+NO_MATCHES = {"fixtureListMeta": {"scorersButtonShouldBeEnabled": True}, "matchData": []}
