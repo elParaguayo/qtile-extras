@@ -893,7 +893,7 @@ class _PopupWidget(configurable.Configurable):
         # TODO: OPERATOR_SOURCE replaces background with the new drawing
         # Consider whether OVERLAY is more appropriate (particularly with
         # transparency)
-        self.drawer.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+        self.drawer.ctx.set_operator(cairocffi.OPERATOR_OVERLAY)
         self.rectangle()
         self.drawer.ctx.fill()
         self.drawer.ctx.restore()
@@ -1213,6 +1213,65 @@ class PopupSlider(_PopupWidget):
         info = _PopupWidget.info(self)
         info["value"] = self.value
         return info
+
+
+class PopupCircularProgress(PopupSlider):
+    """
+    Draws a circular progress bar.
+    
+    ``colour_below`` should be used to set the colour of the progress bar while
+    ``colour_above`` will draw a background ring.
+    """
+    defaults = [d for d in PopupSlider.defaults if not d[0].startswith("bar_border")]
+    defaults += [
+        (
+            "start_angle",
+            0,
+            "Starting angle (in degrees) for progress marker. 0 is 12 o'clock and angle increases in a clockwise direction."
+        ),
+        ("clockwise", True, "Progress increases in a clockwise direction.")
+    ]
+    def __init__(self, value=None, **config):
+        PopupSlider.__init__(self, value, **config)
+        self.add_defaults(PopupCircularProgress.defaults)
+
+    def _configure(self, qtile, container):
+        PopupSlider._configure(self, qtile, container)
+        self.radius = min(self.width, self.height) // 2 - self.end_margin - self.bar_size // 2
+        self.origin = (self.width // 2, self.height // 2)
+        self._start_angle = ((self.start_angle - 90) * math.pi / 180.0) % (2 * math.pi)
+
+    def paint(self):
+        self.clear(self._background)
+        if self.percentage < 1:
+            print(f"Painting background: {self.colour_above}")
+            self._paint_arc(self.colour_above, 0, 1)
+
+        self._paint_arc(self.colour_below, self._start_angle, self.percentage)
+
+    def _paint_arc(self, colour, start, end):
+        arc_size = end * math.pi * 2
+
+        if self.clockwise:
+            step = arc_size
+        else:
+            step = math.pi * 2 - arc_size
+            if step == 0:
+                step -= math.pi * 2
+
+        ctx = self.drawer.ctx
+        arc_func = ctx.arc if self.clockwise else ctx.arc_negative
+        ctx.save()
+        self.drawer.set_source_rgb(colour)
+        ctx.set_line_width(self.bar_size)
+        arc_func(
+            *self.origin,
+            self.radius,
+            start,
+            start + step
+        )
+        ctx.stroke()
+        ctx.restore()        
 
 
 class PopupImage(_PopupWidget):

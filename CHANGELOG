@@ -1,3 +1,4 @@
+2023-01-03: [FEATURE] Add `PopupCircularProgress` control to popup toolkit
 2022-12-31: [BUGFIX] Fix bug in `LiveFootballScores` info popup with excess separators
 2022-12-26: [FEATURE] Add decoration grouping to BorderDecorations
 2022-12-25: [BUGFIX] Catch errors where `SnapCast` widget can't retrieve ID from server
