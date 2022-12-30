@@ -68,8 +68,11 @@ class MatchRequest:
             return lfs_data.CHELSEA
         elif "liverpool" in self.url:
             return lfs_data.LIVERPOOL
-        else:
+        # Ugly hack to get the premier league data when no tournament provided!
+        elif "premier-league" in self.url or "tournament/full-priority" in self.url:
             return lfs_data.PREMIER_LEAGUE
+        else:
+            return lfs_data.NO_MATCHES
 
 
 @pytest.fixture(scope="function")
@@ -115,8 +118,8 @@ def lfs_manager(lfswidget):
                     [
                         lfswidget.LiveFootballScores(
                             team="Chelsea",
-                            teams=["Liverpool"],
-                            leagues=["premier-league"],
+                            teams=["Liverpool", "Real Madrid"],
+                            leagues=["premier-league", "FIFA World Cup"],
                             startup_delay=0,
                             info_timeout=0.3,
                         )
@@ -217,12 +220,20 @@ def test_widget_info(lfs_manager, manager_nospawn):
                     4: "Watford 0-0 Manchester United (15:00)",
                     5: "Wolverhampton Wanderers 0-0 West Ham United (15:00)",
                     6: "Liverpool 0-0 Arsenal (17:30)",
-                }
+                },
+                "FIFA World Cup": {},
             },
             "team": "Chelsea 1-1 Burnley (FT)",
-            "teams": {"Liverpool": "West Ham United 3-2 Liverpool (FT)"},
+            "teams": {
+                "Liverpool": "West Ham United 3-2 Liverpool (FT)",
+                "Real Madrid": "Real Madrid are not playing today.",
+            },
         },
-        "sources": {"leagues": "premier-league", "team": "Chelsea", "teams": "Liverpool"},
+        "sources": {
+            "leagues": "premier-league, FIFA World Cup",
+            "team": "Chelsea",
+            "teams": "Liverpool, Real Madrid",
+        },
     }
 
 

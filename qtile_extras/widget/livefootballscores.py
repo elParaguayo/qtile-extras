@@ -590,9 +590,9 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
     def info(self):
         """Show information about all matches"""
         str_team = self.team
-        str_teams = ",".join(self.teams)
-        str_leagues = ",".join(self.leagues)
-        obj_team = ",".join([str(team) for team in self.sources[0]])
+        str_teams = ", ".join(self.teams)
+        str_leagues = ", ".join(self.leagues)
+        obj_team = ", ".join([str(team) for team in self.sources[0]])
 
         obj_teams = {}
         for team in self.sources[1]:
@@ -677,7 +677,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             )
 
         if self.sources[1]:
-            if lines:
+            if lines and any(m for m in self.sources[1]):
                 lines.append(PopupMenuSeparator())
 
             lines.append(PopupMenuItem(text="Selected Teams:", enabled=False))
@@ -688,7 +688,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
                 )
 
         for league in self.sources[2]:
-            if lines:
+            if lines and league:
                 lines.append(PopupMenuSeparator())
             if league:
                 lines.append(PopupMenuItem(text="{}:".format(league.league_name), enabled=False))
