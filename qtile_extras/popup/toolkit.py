@@ -1221,6 +1221,30 @@ class PopupCircularProgress(PopupSlider):
 
     ``colour_below`` should be used to set the colour of the progress bar while
     ``colour_above`` will draw a background ring.
+
+    .. image:: /_static/images/circular_progress.png
+
+    .. note::
+
+      This is a special control that is designed to be used in conjunction with
+      other controls. By default, ``clip`` is set to ``True`` which means that
+      *only* the area that would be covered by the full circular progress bar
+      is drawn i.e. there is no rectangular background to this control.
+      The result is that any control underneath the circular progress bar is visible.
+
+      To place this control above another, it should be defined *after* that control.
+      For example:
+
+      .. code:: python
+
+        layout = PopupRelativeLayout(
+            controls=[
+                PopupImage(...),  # image to display beneath progress bar
+                PopupCircularProgress(...)
+            ]
+        )
+
+
     """
 
     defaults = [d for d in PopupSlider.defaults if not d[0].startswith("bar_border")]
