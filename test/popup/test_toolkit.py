@@ -586,7 +586,9 @@ def test_popup_update_controls(manager):
     assert info["controls"][1]["value"] == 0.5
 
     # Update controls
-    _, out = manager.c.eval("self.popup.update_controls(textbox1='New Text', slider1=0.8, progress1=1)")
+    _, out = manager.c.eval(
+        "self.popup.update_controls(textbox1='New Text', slider1=0.8, progress1=1)"
+    )
     _, info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["controls"][0]["text"] == "New Text"

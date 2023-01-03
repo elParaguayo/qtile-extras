@@ -893,7 +893,7 @@ class _PopupWidget(configurable.Configurable):
         # TODO: OPERATOR_SOURCE replaces background with the new drawing
         # Consider whether OVERLAY is more appropriate (particularly with
         # transparency)
-        self.drawer.ctx.set_operator(cairocffi.OPERATOR_OVERLAY)
+        self.drawer.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
         self.rectangle()
         self.drawer.ctx.fill()
         self.drawer.ctx.restore()
@@ -1218,19 +1218,27 @@ class PopupSlider(_PopupWidget):
 class PopupCircularProgress(PopupSlider):
     """
     Draws a circular progress bar.
-    
+
     ``colour_below`` should be used to set the colour of the progress bar while
     ``colour_above`` will draw a background ring.
     """
+
     defaults = [d for d in PopupSlider.defaults if not d[0].startswith("bar_border")]
     defaults += [
         (
             "start_angle",
             0,
-            "Starting angle (in degrees) for progress marker. 0 is 12 o'clock and angle increases in a clockwise direction."
+            "Starting angle (in degrees) for progress marker. 0 is 12 o'clock and angle increases in a clockwise direction.",
         ),
-        ("clockwise", True, "Progress increases in a clockwise direction.")
+        ("clockwise", True, "Progress increases in a clockwise direction."),
+        (
+            "clip",
+            True,
+            "When ``True`` the drawing area is limited to the circular progress bar. "
+            "This allows the progress bar to be placed on top of other controls and still show their content.",
+        ),
     ]
+
     def __init__(self, value=None, **config):
         PopupSlider.__init__(self, value, **config)
         self.add_defaults(PopupCircularProgress.defaults)
@@ -1242,12 +1250,30 @@ class PopupCircularProgress(PopupSlider):
         self._start_angle = ((self.start_angle - 90) * math.pi / 180.0) % (2 * math.pi)
 
     def paint(self):
+        self.drawer.ctx.save()
+        if self.clip:
+            self._clip_area()
+
         self.clear(self._background)
+
         if self.percentage < 1:
-            print(f"Painting background: {self.colour_above}")
             self._paint_arc(self.colour_above, 0, 1)
 
         self._paint_arc(self.colour_below, self._start_angle, self.percentage)
+        self.drawer.ctx.restore()
+
+    def _clip_area(self):
+        """Clip the drawing area to just the area covered by the progress bar."""
+        self.drawer.ctx.new_sub_path()
+        self.drawer.ctx.arc(*self.origin, self.radius + self.bar_size / 2, 0, 2 * math.pi)
+
+        # We use winding to cut out the inner section rather than reduce the clip area.
+        self.drawer.ctx.new_sub_path()
+        self.drawer.ctx.arc_negative(
+            *self.origin, self.radius - self.bar_size / 2, 2 * math.pi, 0
+        )
+
+        self.drawer.ctx.clip()
 
     def _paint_arc(self, colour, start, end):
         arc_size = end * math.pi * 2
@@ -1264,14 +1290,9 @@ class PopupCircularProgress(PopupSlider):
         ctx.save()
         self.drawer.set_source_rgb(colour)
         ctx.set_line_width(self.bar_size)
-        arc_func(
-            *self.origin,
-            self.radius,
-            start,
-            start + step
-        )
+        arc_func(*self.origin, self.radius, start, start + step)
         ctx.stroke()
-        ctx.restore()        
+        ctx.restore()
 
 
 class PopupImage(_PopupWidget):
