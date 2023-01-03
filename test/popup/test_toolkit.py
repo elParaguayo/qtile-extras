@@ -584,6 +584,7 @@ def test_popup_update_controls(manager):
     info = eval(info)
     assert info["controls"][0]["text"] == "Original Text"
     assert info["controls"][1]["value"] == 0.5
+    assert info["controls"][2]["value"] == 0.25
 
     # Update controls
     _, out = manager.c.eval(
@@ -594,3 +595,64 @@ def test_popup_update_controls(manager):
     assert info["controls"][0]["text"] == "New Text"
     assert info["controls"][1]["value"] == 0.8
     assert info["controls"][2]["value"] == 1.0
+
+
+def test_bind_callbacks_and_overlap(manager):
+    """
+    Check ability to add callbacks after controls created and
+    that multiple callbacks are triggered when controls overlap.
+    """
+    layout = textwrap.dedent(
+        """
+        from libqtile import widget
+        from qtile_extras.popup.toolkit import (
+            PopupCircularProgress,
+            PopupRelativeLayout,
+            PopupText,
+            PopupSlider
+        )
+        self.popup = PopupRelativeLayout(
+            self,
+            controls=[
+                PopupSlider(
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    width=0.8,
+                    height=0.8,
+                    value=0.5,
+                    name="slider1"
+                ),
+                PopupCircularProgress(
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    width=0.8,
+                    height=0.8,
+                    value=0.25,
+                    name="progress1"
+                )
+            ],
+            margin=0
+        )
+
+        self.popup.show()
+        """
+    )
+
+    manager.c.eval(layout)
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["controls"][0]["value"] == 0.5
+    assert info["controls"][1]["value"] == 0.25
+
+    # Update controls
+    _, out = manager.c.eval(
+        "self.popup.bind_callbacks("
+        "slider1={'Button1': lambda p=self.popup: p.update_controls(slider1=0.1)},"
+        "progress1={'Button1': lambda p=self.popup: p.update_controls(progress1=0.9)}"
+        ")"
+    )
+    _, out = manager.c.eval("self.popup.process_button_click(110, 20, 1)")
+    _, info = manager.c.eval("self.popup.info()")
+    info = eval(info)
+    assert info["controls"][0]["value"] == 0.1
+    assert info["controls"][1]["value"] == 0.9

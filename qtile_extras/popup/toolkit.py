@@ -391,33 +391,34 @@ class _PopupLayout(configurable.Configurable):
         for control in self.controls:
             control.finalize()
 
-    # The below methods are lifted from `bar`
+    # The below methods are lifted from `bar` and adapted
     def get_control_in_position(self, x, y):
+        controls = []
         for c in self.controls:
             if c.mouse_in_control(x, y):
-                return c
-        return None
+                controls.insert(0, c)
+        return controls
 
     def process_button_click(self, x, y, button):  # noqa: N802
-        control = self.get_control_in_position(x, y)
-        if control:
+        controls = self.get_control_in_position(x, y)
+        for control in controls:
             control.button_press(x - control.offsetx, y - control.offsety, button)
         if self.close_on_click:
             self.kill()
 
     def process_button_release(self, x, y, button):  # noqa: N802
-        control = self.get_control_in_position(x, y)
-        if control:
+        controls = self.get_control_in_position(x, y)
+        for control in controls:
             control.button_release(x - control.offsetx, y - control.offsety, button)
 
     def process_pointer_enter(self, x, y):  # noqa: N802
-        control = self.get_control_in_position(x, y)
-        if control:
+        controls = self.get_control_in_position(x, y)
+        for control in controls:
             control.mouse_enter(
                 x - control.offsetx,
                 y - control.offsety,
             )
-        self.cursor_in = control
+        self.cursor_in = controls[0] if controls else None
         if self._hide_timer is not None:
             self._hide_timer.cancel()
             self._hide_timer = None
@@ -433,19 +434,19 @@ class _PopupLayout(configurable.Configurable):
             self._hide_timer = self.qtile.call_later(self.hide_interval, self.kill)
 
     def process_pointer_motion(self, x, y):  # noqa: N802
-        control = self.get_control_in_position(x, y)
-        if self.cursor_in and control is not self.cursor_in:
+        controls = self.get_control_in_position(x, y)
+        if self.cursor_in and self.cursor_in not in controls:
             self.cursor_in.mouse_leave(
                 x - self.cursor_in.offsetx,
                 y - self.cursor_in.offsety,
             )
-        if control:
+        for control in controls:
             control.mouse_enter(
                 x - control.offsetx,
                 y - control.offsety,
             )
 
-        self.cursor_in = control
+        self.cursor_in = controls[0] if controls else None
 
     def process_key_press(self, keycode):
         if keycode in self.keys["close"]:
