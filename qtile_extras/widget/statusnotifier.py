@@ -105,23 +105,6 @@ class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):
 
         await host.start(on_item_added=attach_menu, on_item_removed=draw, on_icon_changed=draw)
 
-    # TO BE REMOVED ONCE qtile/qtile/pr3060 is merged
-    def find_icon_at_pos(self, x, y):
-        """returns StatusNotifierItem object for icon in given position"""
-        offset = self.padding
-        val = x if self.bar.horizontal else y
-
-        if val < offset:
-            return None
-
-        for icon in self.available_icons:
-            offset += self.icon_size
-            if val < offset:
-                return icon
-            offset += self.padding
-
-        return None
-
     def show_menu(self):
         if not self.selected_item:
             return
