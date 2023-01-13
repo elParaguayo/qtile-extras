@@ -22,6 +22,13 @@ import os
 from libqtile.images import Img
 from libqtile.log_utils import logger
 
+try:
+    from xdg.IconTheme import getIconPath
+
+    has_xdg = True
+except ImportError:
+    has_xdg = False
+
 from qtile_extras.popup.toolkit import PopupGridLayout, PopupSlider, PopupText
 
 
@@ -197,10 +204,15 @@ class PopupMenu(PopupGridLayout):
                 else:
                     callbacks = {}
 
+                icon = None
+
+                if has_xdg and dbmitem.icon_name:
+                    icon = getIconPath(dbmitem.icon_name, theme=config.get("icon_theme", None))
+
                 menuitems.append(
                     PopupMenuItem(
                         text=dbmitem.label.replace("_", ""),
-                        menu_icon=dbmitem.icon_data,
+                        menu_icon=icon or dbmitem.icon_data,
                         can_focus=dbmitem.enabled,
                         toggle_box=True if dbmitem.toggle_type else False,
                         toggled=True if dbmitem.toggle_state else False,

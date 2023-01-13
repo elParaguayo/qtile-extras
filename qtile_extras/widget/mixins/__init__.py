@@ -201,6 +201,7 @@ class MenuMixin(Configurable, _BaseMixin):
         ("show_menu_icons", True, "Show icons in context menu"),
         ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
         ("opacity", 1, "Menu opactity"),
+        ("icon_theme", None, "Icon theme for DBus menu items"),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, **config):
@@ -222,6 +223,7 @@ class MenuMixin(Configurable, _BaseMixin):
             "show_menu_icons": self.show_menu_icons,
             "hide_after": self.hide_after,
             "opacity": self.opacity,
+            "icon_theme": self.icon_theme,
         }
 
         self.menu: PopupMenu | None = None
