@@ -71,7 +71,6 @@ def widget_hidden(widget):
 @pytest.fixture(scope="function")
 def brightdevice():
     with tempfile.TemporaryDirectory() as brightnessdir:
-
         with open(os.path.join(brightnessdir, "brightness"), "w") as b:
             b.write(str(600))
 

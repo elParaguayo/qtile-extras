@@ -34,7 +34,6 @@ from qtile_extras.widget.decorations import (
 
 
 def test_single_or_four():
-
     for value, expected in [
         (1, [1, 1, 1, 1]),
         ((1,), [1, 1, 1, 1]),
@@ -42,7 +41,6 @@ def test_single_or_four():
         ((1, 2, 3), [0, 0, 0, 0]),
         ("Invalid", [0, 0, 0, 0]),
     ]:
-
         assert _Decoration().single_or_four(value, "test") == expected
 
 
@@ -52,7 +50,6 @@ def test_single_or_four_logging(caplog):
     log_message = "TEST should be a single number or a list of 1 or 4 values"
 
     for value in [(1, 2, 3), "Invalid"]:
-
         _ = _Decoration().single_or_four(value, "TEST")
 
         assert caplog.record_tuples == [("libqtile", logging.INFO, log_message)]

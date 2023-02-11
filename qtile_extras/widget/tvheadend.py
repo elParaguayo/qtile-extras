@@ -57,7 +57,6 @@ class TVHJobServer:
             return list()
 
     def _tidy_prog(self, prog, uuid=None):
-
         x = prog
 
         return {
@@ -199,7 +198,6 @@ class TVHWidget(base._Widget, base.MarginMixin):
         return self.iconsize
 
     def draw_highlight(self, top=False, colour="000000"):
-
         self.drawer.set_source_rgb(colour)
 
         y = 0 if top else self.bar.height - 2

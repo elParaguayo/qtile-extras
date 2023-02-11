@@ -65,7 +65,6 @@ def bar_position(request):
 
 @pytest.fixture(scope="function")
 def tooltip_manager(request, bar_position, manager_nospawn):
-
     widget = TooltipWidget(
         "Testint", **{**{"tooltip_delay": 0.5}, **getattr(request, "param", dict())}
     )

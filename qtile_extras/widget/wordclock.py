@@ -118,7 +118,6 @@ class WordClock(base._Widget):
 
         # If it's the same as the last update then we don't need to do anything
         if tm != self.oldtime:
-
             # Morning or afternoon?
             ampm = "am" if nw.hour < 12 else "pm"
 

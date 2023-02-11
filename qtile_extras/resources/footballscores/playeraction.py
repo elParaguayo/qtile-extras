@@ -26,7 +26,6 @@ actions = {ACTION_GOAL: "GOAL", ACTION_RED_CARD: "RED CARD", ACTION_YELLOW_RED_C
 
 class PlayerAction(object):
     def __init__(self, player, action):
-
         if not type(player) == dict:
             player = dict()
 

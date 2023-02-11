@@ -499,7 +499,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         layout.draw(self.margin_x, y_offset)
 
         if m:
-
             flags = self.flags[m.home_team]
 
             if self.screen_index == 0:

@@ -138,15 +138,12 @@ class FootballMatch:
             self.update(data=data, first_run=events_on_first_run)
 
     def __nonzero__(self):
-
         return bool(self.match)
 
     def __bool__(self):
-
         return self.__nonzero__()
 
     def __repr__(self):
-
         return "<FootballMatch('%s')>" % (self.myteam)
 
     def __eq__(self, other):
@@ -176,7 +173,6 @@ class FootballMatch:
 
         def wrapper(func):
             def wrapped(self):
-
                 if self.match:
                     return func(self)
 
@@ -205,7 +201,6 @@ class FootballMatch:
 
         def wrapper(func):
             def wrapped(self):
-
                 if func(self) is None:
                     return value
 
@@ -229,7 +224,6 @@ class FootballMatch:
             return dict()
 
     def check_page(self, page):
-
         try:
             rq = requests.head(page)
             return rq.status_code == 200
@@ -237,7 +231,6 @@ class FootballMatch:
             return False
 
     def _check_match_date(self, matchdate):
-
         if matchdate is None:
             return None
 
@@ -249,11 +242,9 @@ class FootballMatch:
             raise ValueError("Invalid match date. " "Match date format must by YYYY-MM-DD.")
 
     def _can_update(self):
-
         return self.hasTeamPage
 
     def _scan_leagues(self):
-
         raw = self._get_scores_fixtures(source=ML.MORPH_FIXTURES_ALL)
 
         comps = raw.get("matchData", None)
@@ -372,7 +363,6 @@ class FootballMatch:
             return None
 
     def _last_reds(self, just_home=False, just_away=False):
-
         reds = []
         red = self._last_event(self.ACTION_RED_CARD, just_home=just_home, just_away=just_away)
         yellow = self._last_event(
@@ -403,7 +393,6 @@ class FootballMatch:
         return (old.scores.score != new.scores.score) and (new.scores.score > 0)
 
     def _check_red(self, old, new):
-
         old_reds = self._get_reds(old)
         new_reds = self._get_reds(new)
 
@@ -416,7 +405,6 @@ class FootballMatch:
         self._check_team_event(event, home=False)
 
     def _check_team_event(self, event, home=True):
-
         if home:
             old = self._old.homeTeam
         else:
@@ -451,14 +439,12 @@ class FootballMatch:
         self._matchfound = False
 
     def _fire(self, func, payload):
-
         try:
             func(payload)
         except TypeError:
             pass
 
     def _fire_events(self):
-
         if self._homegoal:
             func = self.on_goal
             payload = MatchEvent(MatchEvent.TYPE_GOAL, self, True)
@@ -501,14 +487,12 @@ class FootballMatch:
         return events
 
     def _format_events(self, events):
-
         events = self._grouped_events(events)
 
         raw = []
         out = ""
 
         for event in events:
-
             name = event[0].abbreviated_name
             times = []
 
@@ -526,7 +510,6 @@ class FootballMatch:
             raw.append((name, times))
 
         for i, (player, events) in enumerate(raw):
-
             out += player
             ev = " ("
             ev += ", ".join(events)
@@ -544,7 +527,6 @@ class FootballMatch:
         return text.format(**values)
 
     def format_match(self, fmt):
-
         for key in self.match_format:
             try:
                 fmt = fmt.replace(key, getattr(self, self.match_format[key]))
@@ -554,7 +536,6 @@ class FootballMatch:
         return fmt
 
     def format_time_to_kick_off(self, fmt):
-
         ko = self.time_to_kick_off
 
         if ko is None:
@@ -568,7 +549,6 @@ class FootballMatch:
         return fmt.format(**d)
 
     def update(self, data=None, first_run=False):
-
         if data is None and not self._can_update():
             data = self._scan_leagues()
 
@@ -583,7 +563,6 @@ class FootballMatch:
             match = data
 
         if match:
-
             if not self.match:
                 self.match = MatchDict(match, add_callbacks=True)
                 self._set_callbacks()
@@ -616,49 +595,41 @@ class FootballMatch:
 
     @property
     def on_goal(self):
-
         if self._on_goal:
             return self._on_goal
 
     @on_goal.setter
     def on_goal(self, func):
-
         if callable(func):
             self._on_goal = func
 
     @property
     def on_red(self):
-
         if self._on_red:
             return self._on_red
 
     @on_red.setter
     def on_red(self, func):
-
         if callable(func):
             self._on_red = func
 
     @property
     def on_status_change(self):
-
         if self._on_status_change:
             return self._on_status_change
 
     @on_status_change.setter
     def on_status_change(self, func):
-
         if callable(func):
             self._on_status_change = func
 
     @property
     def on_new_match(self):
-
         if self._on_new_match:
             return self._on_new_match
 
     @on_new_match.setter
     def on_new_match(self, func):
-
         if callable(func):
             self._on_new_match = func
 
@@ -711,7 +682,6 @@ class FootballMatch:
     @property
     @_no_match(str())
     def long_status(self):
-
         return self.match.eventStatusNote
 
     @property
@@ -860,7 +830,6 @@ class FootballMatch:
 
         """
         if self.match:
-
             return "%s %s-%s %s (%s)" % (
                 self.home_team,
                 self.home_score,
@@ -870,7 +839,6 @@ class FootballMatch:
             )
 
         else:
-
             return "%s are not playing today." % (self.myteam)
 
     def __str__(self):
@@ -884,13 +852,11 @@ class FootballMatch:
     @property
     @_no_match(str())
     def start_time_uk(self):
-
         return self.match.startTimeInUKHHMM
 
     @property
     @_no_match(None)
     def start_time_datetime(self):
-
         st = self.match.startTime
 
         if HAS_DATEUTIL:
@@ -906,7 +872,6 @@ class FootballMatch:
     @property
     @_no_match(None)
     def start_time(self):
-
         return self.match.startTime
 
     @property

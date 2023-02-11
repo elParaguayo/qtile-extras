@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 class MatchEvent(object):
-
     TYPE_GOAL = "GOAL"
     TYPE_RED_CARD = "RED"
     TYPE_STATUS = "STATUS"
@@ -59,7 +58,6 @@ class MatchEvent(object):
 
     @property
     def scorer(self):
-
         if self.is_goal:
             if self.home:
                 return self.match.last_home_goal
@@ -68,7 +66,6 @@ class MatchEvent(object):
 
     @property
     def red_card(self):
-
         if self.is_red:
             if self.home:
                 return self.match.last_home_red_card

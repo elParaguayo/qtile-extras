@@ -189,7 +189,6 @@ class UPowerWidget(base._Widget):
 
             # Add text width if it's being displayed
             if self.show_text:
-
                 bar_length += (self.max_text_length() + self.spacing) * num_batteries
 
         return bar_length
@@ -285,7 +284,6 @@ class UPowerWidget(base._Widget):
 
         # Loop over each battery
         for battery in self.batteries:
-
             # Get battery energy level
             percentage = battery["fraction"]
 
@@ -325,7 +323,6 @@ class UPowerWidget(base._Widget):
             offset = offset + self.spacing + self.battery_width
 
             if self.show_text:
-
                 # Generate text based on status and format time-to-full or
                 # time-to-empty
                 if self.charging:
@@ -362,7 +359,6 @@ class UPowerWidget(base._Widget):
         return "{}:{:02d}".format(h, m)
 
     def toggle_text(self):
-
         if not self.show_text:
             self.show_text = True
 
