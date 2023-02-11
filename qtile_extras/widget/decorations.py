@@ -816,7 +816,7 @@ def inject_decorations(classdef):
         """Draw decorations after clearing background."""
         if self.use_bar_background:
             colour = self.bar.background
-        self._clear(colour)
+        self.__clear(colour)
 
         for decoration in self.decorations:
             decoration.draw()
@@ -838,7 +838,7 @@ def inject_decorations(classdef):
             for dec in self.decorations:
                 dec._configure(self)
 
-            self._clear = self.drawer.clear
+            self.__clear = self.drawer.clear
             self.drawer.clear = self.new_clear
 
     def new_configure(self, qtile, bar):
