@@ -79,7 +79,6 @@ class PopupMenuItem(PopupText):
         if isinstance(icon, bytes):
             img = Img(icon)
         elif isinstance(icon, str):
-
             filename = os.path.expanduser(self.menu_icon)
 
             if not os.path.exists(filename):

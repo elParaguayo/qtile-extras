@@ -67,7 +67,6 @@ class Image(QtileImage):
             img = img_class.from_url(self.filename)
 
         else:
-
             if not os.path.exists(self.filename):
                 logger.warning("Image does not exist: %s", self.filename)
                 return

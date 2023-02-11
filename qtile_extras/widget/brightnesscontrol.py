@@ -269,7 +269,6 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             self.onbattery = onbattery
 
     def max_text_width(self):
-
         # Calculate max width of text given defined layout
         width, _ = self.drawer.max_layout_size(
             [self.text_format.format(percentage=100)], self.font, self.fontsize
@@ -304,7 +303,6 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
 
         # If the value is positive then we've succcessully set the brightness
         if self.percentage >= 0:
-
             # Set colour and text to show current value
             bar_colour = self.bar_colour
             percentage = int(self.percentage * 100)
@@ -330,13 +328,11 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         self.update_timer = self.timeout_add(self.timeout_interval, self.hide)
 
     def hide(self):
-
         # Hide the widget
         self.hidden = True
         self.bar.draw()
 
     def calculate_length(self):
-
         # If widget is hidden then width should be xero
         if self.hidden:
             return 0
@@ -347,14 +343,12 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             return max(self.text_width, self.widget_width)
 
     def change_brightness(self, step):
-
         # Get the current brightness level (we need to read this in case
         # the value has been changed elsewhere)
         self.current = self.get_current()
 
         # If we can read the value then let's process it
         if self.current and self.max:
-
             # Calculate the new value
             newval = self.current + step
 
@@ -364,14 +358,12 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             self._set_brightness(ERROR_VALUE)
 
     def _set_brightness(self, value):
-
         if value != ERROR_VALUE:
             # Limit brightness so that min <= value <= max
             newval = max(min(value, self.max), self.min)
 
             # Do we need to set value and trigger callbacks
             if newval != self.old:
-
                 # Set the new value
                 success = self._set_current(newval)
 

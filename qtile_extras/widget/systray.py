@@ -43,7 +43,6 @@ class Systray(widget.Systray):
         self.drawer.clear(self.background or self.bar.background)
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
         for pos, icon in enumerate(self.tray_icons):
-
             # Check if we're using a decoration and set backpixel colour accordingly
             rect_decs = [d for d in self.decorations if isinstance(d, RectDecoration)]
             if rect_decs:

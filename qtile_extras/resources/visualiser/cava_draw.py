@@ -82,7 +82,6 @@ def draw_bars(
     ctx = cairocffi.Context(surface)
 
     with open(pipe, "rb") as reader:
-
         out = reader.read(num_bars)
 
         while out:

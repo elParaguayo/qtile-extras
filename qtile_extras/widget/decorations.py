@@ -325,7 +325,6 @@ class RectDecoration(_Decoration, GroupMixin):
 
         else:
             if self.group and self.parent in self.parent.bar.widgets:
-
                 corners = [0, 0, 0, 0]
 
                 if self.is_first:

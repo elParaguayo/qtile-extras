@@ -213,7 +213,6 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
 
         # Showing icons?
         if self.show_icon:
-
             # Hide the widget until icons have loaded
             if not self.icons_loaded:
                 return 0
@@ -321,7 +320,6 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
 
         # Does bar need to be displayed
         if self.show_bar and not self.hidden:
-
             # Text and colour depends on mute status and volume level
             if not self.muted:
                 bar_text = self.text_format.format(volume=self.volume)
@@ -346,7 +344,6 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         self.set_refresh_timer()
 
     def set_refresh_timer(self):
-
         # Delete old timer
         if self.update_timer:
             self.update_timer.cancel()
@@ -368,7 +365,6 @@ class ALSAWidget(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         self.bar.draw()
 
     def _run(self, cmd):
-
         if not shutil.which("amixer"):
             logger.warning("'amixer' is not installed. Unable to set volume.")
             return

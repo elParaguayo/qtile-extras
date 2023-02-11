@@ -64,7 +64,6 @@ class GlobalMenu(ServiceInterface):
 
     @method()
     def GetLayout(self, parent_id: "i", recursion_depth: "i", properties: "as") -> "u(ia{sv}av)":
-
         if parent_id == 0:
             return [
                 1,
@@ -271,7 +270,6 @@ class SNItem(ServiceInterface):
 
 
 if __name__ == "__main__":
-
     # GTK consumes the `--name <class>` args
     if len(sys.argv) > 1:
         title = sys.argv[1]

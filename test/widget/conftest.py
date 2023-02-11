@@ -121,7 +121,6 @@ def dbus(monkeypatch):
 
     pid = None
     for line in result.stdout.decode().splitlines():
-
         # dbus server addresses can have multiple "=" so
         # we use partition to split by the first one onle
         var, _, val = line.partition("=")
@@ -251,7 +250,6 @@ def dbus_thread(monkeypatch):
 
     pid = None
     for line in result.stdout.decode().splitlines():
-
         # dbus server addresses can have multiple "=" so
         # we use partition to split by the first one onle
         var, _, val = line.partition("=")

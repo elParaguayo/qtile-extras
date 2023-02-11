@@ -27,7 +27,6 @@ API_BASE = "http://push.api.bbci.co.uk"
 
 
 class League:
-
     leaguelink = (
         "/proxy/data/bbc-morph-football-scores-match-list-data/"
         "endDate/{end_date}/startDate/{start_date}/"
@@ -74,11 +73,9 @@ class League:
         return self.matches[index]
 
     def __nonzero__(self):
-
         return bool(self.matches)
 
     def __bool__(self):
-
         return self.__nonzero__()
 
     def _setup(self):
@@ -134,7 +131,6 @@ class League:
         return mdata
 
     def get_matches(self):
-
         matches = []
 
         data = self._get_raw_data()
@@ -165,7 +161,6 @@ class League:
                     break
 
     def update(self):
-
         if not self.leagueid:
             self._setup()
 

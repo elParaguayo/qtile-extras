@@ -176,11 +176,9 @@ class StravaWidget(base._Widget, base.MarginMixin):
         future.add_done_callback(self._read_data)
 
     def calculate_length(self):
-
         total = 0
 
         if self.data is not None and self.text:
-
             text = self.format_text(self.text)
 
             width, _ = self.drawer.max_layout_size([text], self.font, self.fontsize)
@@ -207,7 +205,6 @@ class StravaWidget(base._Widget, base.MarginMixin):
         self.drawer.ctx.stroke()
 
     def draw_highlight(self, top=False, colour="000000"):
-
         self.drawer.set_source_rgb(colour)
 
         y = 0 if top else self.bar.height - 2

@@ -181,7 +181,6 @@ class DBusMenu:  # noqa: E303
 
         # Check if the menu needs updating or if we've never drawn it before
         if needs_update or self.no_cache_menus or root not in self._menus:
-
             menu = await self._interface.call_get_layout(
                 root,  # ParentID
                 1,  # Recursion depth
@@ -223,7 +222,6 @@ class DBusMenu:  # noqa: E303
         menu = []
 
         if update_needed == self.MENU_UPDATED:
-
             # Remember the menu revision ID so we know whether to update or not
             revision, layout = returned_menu
 
