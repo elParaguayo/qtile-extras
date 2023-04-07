@@ -174,6 +174,9 @@ async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
                 async def introspect(self, *args, **kwargs):
                     raise MockBus.error
 
+                def get_proxy_object(self, service, path, introspection):
+                    raise MockBus.error
+
             return Bus()
 
     monkeypatch.setattr("qtile_extras.resources.dbusmenu.MessageBus", MockBus)
@@ -186,9 +189,14 @@ async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
     assert caplog.record_tuples == [
         (
             "libqtile",
+            logging.INFO,
+            "Cannot find com.canonical.dbusmenu interface at test.qtile_extras.menu. Falling back to default spec.",
+        ),
+        (
+            "libqtile",
             logging.WARNING,
-            "Cannot find com.canonical.dbusmenu interface at test.qtile_extras.menu",
-        )
+            "Could not find com.canonical.dbusmenu interface at test.qtile_extras.menu and unable to use default spec.",
+        ),
     ]
 
     caplog.clear()

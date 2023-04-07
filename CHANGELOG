@@ -1,3 +1,4 @@
+2023-04-09: [BUGFIX] Fix menus in `StatusNotifier` for updated electron apps
 2023-01-13: [FEATURE] Add support for local icons in `StatusNotifier` context menus
 2023-01-03: [FEATURE] Add `PopupCircularProgress` control to popup toolkit
 2022-12-31: [BUGFIX] Fix bug in `LiveFootballScores` info popup with excess separators

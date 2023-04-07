@@ -29,6 +29,8 @@ from dbus_next.aio import MessageBus
 from dbus_next.errors import DBusError
 from libqtile.log_utils import logger
 
+from qtile_extras.resources.dbusmenu.dbusmenu import DBUS_MENU_SPEC
+
 if TYPE_CHECKING:
     from typing import Callable
 
@@ -133,25 +135,36 @@ class DBusMenu:  # noqa: E303
         try:
             introspection = await self.bus.introspect(self.service, self.path)
 
-            self._bus_object = self.bus.get_proxy_object(self.service, self.path, introspection)
+            obj = self.bus.get_proxy_object(self.service, self.path, introspection)
 
-            self._interface = self._bus_object.get_interface(MENU_INTERFACE)
-
-            # Menus work by giving each menu item an ID and actions are
-            # toggled by sending this ID back to the application. These
-            # IDs are updated regularly so we subscribe to a signal to make
-            # we can keep the menu up to date.
-            self._interface.on_layout_updated(self._layout_updated)
-
-            return True
+            self._interface = obj.get_interface(MENU_INTERFACE)
 
         # Catch errors which indicate a failure to connect to the menu interface.
         except InterfaceNotFoundError:
-            logger.warning(f"Cannot find {MENU_INTERFACE} interface at {self.service}")
-            return False
+            logger.info(
+                "Cannot find %s interface at %s. Falling back to default spec.",
+                MENU_INTERFACE,
+                self.service,
+            )
+            try:
+                obj = self.bus.get_proxy_object(self.service, self.path, DBUS_MENU_SPEC)
+                self._interface = obj.get_interface(MENU_INTERFACE)
+            except InterfaceNotFoundError:
+                logger.warning(
+                    f"Could not find {MENU_INTERFACE} interface at {self.service} and unable to use default spec."
+                )
+                return False
         except (DBusError, InvalidIntrospectionError):
             logger.warning(f"Path {self.path} does not present a valid dbusmenu object")
             return False
+
+        # Menus work by giving each menu item an ID and actions are
+        # toggled by sending this ID back to the application. These
+        # IDs are updated regularly so we subscribe to a signal to make
+        # we can keep the menu up to date.
+        self._interface.on_layout_updated(self._layout_updated)
+
+        return True
 
     def _layout_updated(self, revision, parent):
         """
@@ -170,14 +183,15 @@ class DBusMenu:  # noqa: E303
         """
         Method to retrieve the menu layout from the DBus interface.
         """
+
+        needs_update = True
+
         # Alert the app that we're about to draw a menu
         # Returns a boolean confirming whether menu should be refreshed
         try:
             needs_update = await self._interface.call_about_to_show(root)
         except (DBusError, AttributeError):
-            # Catch scenario where menu may be unavailable
-            self.menu = None
-            return self.MENU_NOT_FOUND, None
+            pass
 
         # Check if the menu needs updating or if we've never drawn it before
         if needs_update or self.no_cache_menus or root not in self._menus:
@@ -251,13 +265,20 @@ class DBusMenu:  # noqa: E303
 
     async def click(self, id):
         """Sends "clicked" event for the given item to the application."""
-        await self._interface.call_about_to_show(id)
-        await self._interface.call_event(
-            id,  # ID of clicked menu item
-            "clicked",  # Event type
-            Variant("s", ""),  # "Data"
-            int(time.time()),  # Timestamp
-        )
+        try:
+            await self._interface.call_about_to_show(id)
+        except DBusError:
+            pass
+
+        try:
+            await self._interface.call_event(
+                id,  # ID of clicked menu item
+                "clicked",  # Event type
+                Variant("s", ""),  # "Data"
+                int(time.time()),  # Timestamp
+            )
+        except DBusError:
+            logger.warning("Unable to send click event on StatusNotifier menu.")
 
         # Ugly hack: delete all stored menus if the menu has been clicked
         # This will force a reload when the menu is next generated.
