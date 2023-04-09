@@ -31,6 +31,7 @@ import qtile_extras.widget.currentlayout
 BAR_SIZE = 50
 PADDING = 3
 DEFAULT_ICON_SIZE = BAR_SIZE - 1
+DEFAULT_QTILE_SIZE = BAR_SIZE - 2  # In qtile, default size in bar height - 2
 
 
 class MissingIconLayout(libqtile.layout.Max):
@@ -91,7 +92,7 @@ def currentlayout_manager(request, layout_list, manager_nospawn):
     "currentlayout_manager,expected",
     [
         ({}, DEFAULT_ICON_SIZE + 2 * PADDING),
-        ({"use_mask": False}, DEFAULT_ICON_SIZE + 2 * PADDING),
+        ({"use_mask": False}, DEFAULT_QTILE_SIZE + 2 * PADDING),
         ({"scale": 0.5}, (BAR_SIZE - 1) // 2 + 2 * PADDING),
     ],
     indirect=["currentlayout_manager"],
