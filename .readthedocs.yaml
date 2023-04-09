@@ -8,6 +8,11 @@ build:
   os: ubuntu-20.04
   tools:
     python: "3.10"
+  jobs:
+    pre_install:
+      - pip install xcffib wheel
+      - pip install --no-cache --upgrade --no-build-isolation cairocffi
+      - pip install --no-cache --upgrade --no-build-isolation git+https://github.com/qtile/qtile.git@master#egg=qtile
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
@@ -17,6 +22,4 @@ formats:
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
-  - requirements: docs/requirements-cffi-pin.txt
   - requirements: docs/requirements.txt
-  - requirements: docs/rtd_requirements.txt
