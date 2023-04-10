@@ -27,13 +27,15 @@ from typing import TYPE_CHECKING
 import cairocffi
 from cairocffi import Context
 from libqtile import bar
-from libqtile.backend.base import Drawer
+from libqtile.backend.drawer import Drawer
 from libqtile.confreader import ConfigError
 from libqtile.log_utils import logger
 from libqtile.widget import Systray, base
 
 if TYPE_CHECKING:
     from typing import Any  # noqa: F401
+
+    from libqtile.utils import ColorsType
 
 
 class _Decoration(base.PaddingMixin):
@@ -51,13 +53,11 @@ class _Decoration(base.PaddingMixin):
         base.PaddingMixin.__init__(self, **config)
         self.add_defaults(_Decoration.defaults)
         self._extrawidth = self.extrawidth
-        self._ctx: Context | None = None
 
     def __eq__(self, other):
         return type(self) == type(other) and self._user_config == other._user_config
 
     def _configure(self, parent: base._Widget) -> None:
-        self._ctx = None
         self.parent = parent
 
     def single_or_four(self, value, name: str):
@@ -98,20 +98,7 @@ class _Decoration(base.PaddingMixin):
 
     @property
     def ctx(self) -> Context:
-        if self._ctx:
-            return self._ctx
-
-        if self.parent.qtile.core.name == "x11":
-            # We need to erase some of the background but the x11 drawer
-            # painted the background directly to the XCB surface so we've got
-            # to erase content from that surface
-            ctx = Context(self.drawer._xcb_surface)  # type: ignore
-        else:
-            ctx = Context(self.drawer._source)  # type: ignore
-
-        self._ctx = ctx
-
-        return self._ctx
+        return self.drawer.ctx
 
     def set_source_rgb(self, colour) -> None:
         self.drawer.set_source_rgb(colour, ctx=self.ctx)
@@ -413,7 +400,10 @@ class RectDecoration(_Decoration, GroupMixin):
 
             ctx.close_path()
 
-    def draw(self) -> None:
+    def draw(self, clear: bool = False, colour: ColorsType | None = None) -> None:
+        if clear:
+            self.parent._pre_clear(colour)
+
         # The widget may have resized itsef so we should reset any existing clip area
         self.drawer.ctx.reset_clip()
 
@@ -460,7 +450,10 @@ class BorderDecoration(_Decoration, GroupMixin):
         self.add_defaults(BorderDecoration.defaults)
         self.borders = self.single_or_four(self.border_width, "Border width")
 
-    def draw(self) -> None:
+    def draw(self, clear: bool = False, colour: ColorsType | None = None) -> None:
+        if clear:
+            self.parent._pre_clear(colour)
+
         top, right, bottom, left = self.borders
 
         self.set_source_rgb(self.colour)
@@ -689,68 +682,72 @@ class PowerLineDecoration(_Decoration):
         except (ValueError, IndexError, StopIteration):
             return self.parent.bar.background
 
-    def paint_background(self, background):
-        # Clear the old content
-        self.ctx.save()
-        self.ctx.set_operator(cairocffi.OPERATOR_CLEAR)
-        self.ctx.rectangle(
-            self.parent_length - self.shift + self.extrawidth,
-            0,
-            self.size,
-            self.parent.bar.height,
-        )
-        self.ctx.fill()
-        self.ctx.restore()
-
+    def paint_background(self, background, foreground):
         # Paint the new background
         self.ctx.save()
 
-        # If we have vertical padding then we paint the bar's bacground to the space
+        # If we have vertical padding then we paint the bar's background to the space
         if self.padding_y:
             self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
             self.set_source_rgb(self.parent.bar.background)
             self.ctx.rectangle(
-                self.parent_length - self.shift + self.extrawidth,
                 0,
-                self.size,
+                0,
+                self.parent.length,
                 self.parent.bar.height,
             )
             self.ctx.fill()
 
-        # Create a rectangle for the space
+            # We need to clear the part that will have the new background
+            self.ctx.rectangle(
+                0,
+                self.padding_y,
+                self.parent.length,
+                self.parent.bar.height - 2 * self.padding_y,
+            )
+            self.ctx.set_operator(cairocffi.OPERATOR_CLEAR)
+            self.ctx.fill()
+
+        self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+
         self.ctx.rectangle(
-            self.parent_length - self.shift + self.extrawidth,
+            0,
+            self.padding_y,
+            self.parent_length - self.shift,
+            self.parent.bar.height - 2 * self.padding_y,
+        )
+
+        self.set_source_rgb(background)
+        self.ctx.fill()
+
+        self.ctx.rectangle(
+            self.parent_length - self.shift,
             self.padding_y,
             self.size,
             self.parent.bar.height - 2 * self.padding_y,
         )
 
-        # If there's vertical padding then we've already painted the bar's background
-        # to this space so we need to clear the part that will have the new backgroun
-        if self.padding_y:
-            self.ctx.set_operator(cairocffi.OPERATOR_CLEAR)
-            self.ctx.fill
-
-        self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
-        self.set_source_rgb(background)
+        self.set_source_rgb(foreground)
         self.ctx.fill()
+
         self.ctx.restore()
 
     def draw_rounded(self, rotate=False):
         self.fg = self.parent_background if not rotate else self.next_background
         self.bg = self.next_background if not rotate else self.parent_background
 
-        self.paint_background(self.bg)
+        self.paint_background(self.parent_background, self.bg)
 
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
-        # Translate the surface so that the origin is in the middle of the arc
         start = (
             self.parent_length - self.shift + self.extrawidth
             if not rotate
             else self.parent.length
         )
+
+        # Translate the surface so that the origin is in the middle of the arc
         self.ctx.translate(start, self.parent.bar.height // 2)
 
         # Rotate 180 degrees if drawing curve in the other direction
@@ -779,7 +776,7 @@ class PowerLineDecoration(_Decoration):
         self.fg = self.parent_background
         self.bg = self.next_background
 
-        self.paint_background(self.bg)
+        self.paint_background(self.fg, self.bg)
 
         width = self.size
         height = self.parent.bar.height - 2 * (self.padding_y)
@@ -800,7 +797,7 @@ class PowerLineDecoration(_Decoration):
         self.ctx.fill()
         self.ctx.restore()
 
-    def draw(self):
+    def draw(self, clear: bool = False, colour: ColorsType | None = None) -> None:
         if self.width == 0:
             return
 
@@ -820,10 +817,12 @@ def inject_decorations(classdef):
         """Draw decorations after clearing background."""
         if self.use_bar_background:
             colour = self.bar.background
-        self.__clear(colour)
 
-        for decoration in self.decorations:
-            decoration.draw()
+        if not self.decorations:
+            self._pre_clear(colour)
+
+        for i, decoration in enumerate(self.decorations):
+            decoration.draw(clear=i == 0, colour=colour)
 
     def configure_decorations(self):
         if not hasattr(self, "use_bar_background"):
@@ -842,7 +841,7 @@ def inject_decorations(classdef):
             for dec in self.decorations:
                 dec._configure(self)
 
-            self.__clear = self.drawer.clear
+            self._pre_clear = self.drawer.clear
             self.drawer.clear = self.new_clear
 
     def new_configure(self, qtile, bar):
