@@ -26,7 +26,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 import cairocffi
-from libqtile.backend.base import Drawer
+from libqtile.backend.drawer import Drawer
 from libqtile.images import Img as QtileImg
 from libqtile.images import Loader as QtileLoader
 from libqtile.images import LoadingError
