@@ -641,6 +641,10 @@ class PowerLineDecoration(_Decoration):
         self.shift = max(min(self.shift, self.size), 0)
         self._extrawidth += self.size - self.shift
 
+        # This decoration doesn't use the GroupMixin but we need to set the property
+        # as False as it's used in a couple of checks when other decorations are grouped
+        self.group = False
+
     @property
     def parent_length(self):
         if self.parent.length_type == bar.CALCULATED:
