@@ -125,6 +125,9 @@ class TooltipMixin(_BaseMixin):
             x = screen.width - self.bar.width - width
             y = min(self.offsety + self.bar.window.y, screen.height - height)
 
+        x += screen.x
+        y += screen.y
+
         self._tooltip.x = x
         self._tooltip.y = y
 
