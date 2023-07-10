@@ -1,3 +1,4 @@
+2023-10-07: [BUGFIX] Tooltip position on multiple screens
 2023-10-07: [BUGFIX] Fix issue with decorations stacked on top of `PowerLineDecoration` taking wrong width.
 2023-10-01: [BREAKING CHANGE] Update `PulseVolume` and `PulseVolumeExtra` to reflect updates pushed to qtile.
                               Needs latest qtile git version. 
