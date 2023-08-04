@@ -1,3 +1,4 @@
+2023-08-06: [BREAKING CHANGE] Update imports to align with qtile codebase tidy. You need latest qtile git version.
 2023-08-04: [BREAKING CHANGE] Fix decorations to work with wlroots0.16 update in qtile.
                               Note: You must be on latest git version of qtile.
 2023-04-09: [BUGFIX] Fix menus in `StatusNotifier` for updated electron apps
