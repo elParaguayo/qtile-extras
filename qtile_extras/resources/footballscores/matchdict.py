@@ -70,7 +70,7 @@ class MatchDict(dict):
         except KeyError:
             pass
 
-        if type(value) == dict:
+        if isinstance(value, dict):
             value = MatchDict(value)
 
         super(MatchDict, self).__setitem__(item, value)

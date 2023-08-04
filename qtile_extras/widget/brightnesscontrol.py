@@ -253,9 +253,9 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             else:
                 value = self.brightness_on_mains
 
-            if type(value) == int:
+            if isinstance(value, int):
                 self.set_brightness_value(value)
-            elif type(value) == str and value.endswith("%"):
+            elif isinstance(value, str) and value.endswith("%"):
                 try:
                     percent = int(value[:-1])
                     self.set_brightness_percent(percent / 100)

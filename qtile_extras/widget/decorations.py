@@ -55,15 +55,15 @@ class _Decoration(base.PaddingMixin):
         self._extrawidth = self.extrawidth
 
     def __eq__(self, other):
-        return type(self) == type(other) and self._user_config == other._user_config
+        return type(self) is type(other) and self._user_config == other._user_config
 
     def _configure(self, parent: base._Widget) -> None:
         self.parent = parent
 
     def single_or_four(self, value, name: str):
-        if type(value) in [float, int]:
+        if isinstance(value, (float, int)):
             n = e = s = w = value
-        elif type(value) in [tuple, list]:
+        elif isinstance(value, (tuple, list)):
             if len(value) == 1:
                 n = e = s = w = value[0]
             elif len(value) == 4:

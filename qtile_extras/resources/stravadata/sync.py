@@ -77,7 +77,7 @@ class ActivitySummary(object):
         return act
 
     def _is_activity(self, activity):
-        return type(activity) == Activity and activity.type == "Run"
+        return isinstance(activity, Activity) and activity.type == "Run"
 
     def create_child(self, activity):
         if not self.child:
