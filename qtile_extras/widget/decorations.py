@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 import cairocffi
 from cairocffi import Context
 from libqtile import bar
-from libqtile.backend.drawer import Drawer
+from libqtile.backend.base import Drawer
 from libqtile.confreader import ConfigError
 from libqtile.log_utils import logger
 from libqtile.widget import Systray, base
