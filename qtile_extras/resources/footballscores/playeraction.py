@@ -26,7 +26,7 @@ actions = {ACTION_GOAL: "GOAL", ACTION_RED_CARD: "RED CARD", ACTION_YELLOW_RED_C
 
 class PlayerAction(object):
     def __init__(self, player, action):
-        if not type(player) == dict:
+        if not isinstance(player, dict):
             player = dict()
 
         nm = player.get("name", dict())
@@ -35,7 +35,7 @@ class PlayerAction(object):
         self._firstname = nm.get("first", "")
         self._lastname = nm.get("last", "")
 
-        if not type(action) == dict:
+        if not isinstance(action, dict):
             action = dict()
 
         self._actiontype = action.get("type", None)

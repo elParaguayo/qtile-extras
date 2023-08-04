@@ -153,7 +153,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         base._Widget._configure(self, qtile, bar)
         self.setup_images()
 
-        if type(self.auth) == tuple:
+        if isinstance(self.auth, tuple):
             auth = HTTPDigestAuth if self.auth_type == "digest" else HTTPBasicAuth
             self.auth = auth(*self.auth)
 
