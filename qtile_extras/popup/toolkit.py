@@ -148,7 +148,6 @@ class _PopupLayout(configurable.Configurable):
         self.popup.win.process_pointer_leave = self.process_pointer_leave
         self.popup.win.process_pointer_motion = self.process_pointer_motion
         self.popup.win.process_key_press = self.process_key_press
-        self.popup.win.process_window_expose = self.draw
 
         self.place_controls()
 

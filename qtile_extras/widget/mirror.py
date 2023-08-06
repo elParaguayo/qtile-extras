@@ -24,13 +24,9 @@ class QTEMirror(widget.Mirror):
     """
     A modified version of Qtile's Mirror widget.
 
-    The only difference is to ensure mirrored widgets are sized correctly.
-
-    ..important::
-
-        The mirror will also reflect any decorations of the original widget. Therefore,
-        if you need different decoration behaviour, you must create a new instance of the
-        widget.
+    The only difference is to ensure any decorations are drawn by the mirror and not
+    copied from the reflection as this will cause issues when powerline decorations
+    are used but mirrors are aligned next to different widgets.
 
     This widget should not be created directly by users.
     """
