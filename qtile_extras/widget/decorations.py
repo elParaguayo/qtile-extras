@@ -530,8 +530,8 @@ class PowerLineDecoration(_Decoration):
     `override_next_colour` parameters.
 
     The default behavious is to draw an arrow pointing right. To change the shape you can
-    use pre-defined paths: "arrow_left", "arrow_right", "forward_slash", "back_slash" and
-    "zig_zag". Alternatively, you can create a custom shape by defining a path. The format
+    use pre-defined paths: "arrow_left", "arrow_right", "forward_slash", "back_slash", "rounded_left",
+    "rounded_right" and "zig_zag". Alternatively, you can create a custom shape by defining a path. The format
     is a list of (x, y) tuples. x and y values should be between 0 and 1 to represent the relative position
     in the additional space created by the decoration. (0, 0) is the top left corner (on a horizontal widget)
     and (1, 1) is the bottom right corner. The first point in the list is the starting point and then a line will
