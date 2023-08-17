@@ -1,3 +1,4 @@
+2023-09-17: [TESTS] Check decorations are rendered correctly during test suite
 2023-09-16: [FEATURE] Add more popup templates for `Mpris2` widget
 2023-09-16: [FEATURE] Add `PulseVolumeExtra` widget
 2023-09-01: [BUGFIX] Fix two `RectDecoration` rendering bugs (issues #266 and #267)
