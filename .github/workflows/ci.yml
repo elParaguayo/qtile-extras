@@ -26,14 +26,25 @@ jobs:
                   libdbus-1-dev libgirepository1.0-dev gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-gudev-1.0 \
                   imagemagick libpulse-dev git xserver-xephyr xterm xvfb dbus-x11 libnotify-bin \
                   libxcb-composite0-dev libxcb-icccm4-dev libxcb-res0-dev libxcb-render0-dev libxcb-res0-dev \
-                  libxcb-xfixes0-dev libiw-dev
+                  libxcb-xfixes0-dev libiw-dev fonts-noto
                 sudo pip -q install meson PyGObject
                 pip -q install "tox<4" tox-gh-actions
             - name: Build wayland
               run:  bash -x ./scripts/ubuntu_wayland_setup
-            - name: run tests
+            - name: Run test suite
               run: |
                 tox
+            - name: Test widget decoration output
+              if: ${{ matrix.python-version == '3.11' }}
+              run: |
+                tox -e decorations
+            - name: Upload generated images
+              if: ${{ always() && matrix.python-version == '3.11' }}
+              uses: actions/upload-artifact@v3
+              with:
+                name: generated-images
+                path: decoration_images/
+                retention-days: 5
             - name: Push coverage to Coveralls
               run: |
                 pip -q install coveralls

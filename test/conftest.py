@@ -41,6 +41,15 @@ def pytest_addoption(parser):
         choices=("x11", "wayland"),
         help="Test a specific backend. Can be passed more than once.",
     )
+    parser.addoption(
+        "--generate", action="store_true", default=False, help="Generate widget decoration images"
+    )
+    parser.addoption(
+        "--generate-dir", action="store", default="", help="Location to save generated images"
+    )
+    parser.addoption(
+        "--generate-ci", action="store_true", default=False, help="Generate images for GitHub CI"
+    )
 
 
 def pytest_cmdline_main(config):
