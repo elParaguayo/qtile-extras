@@ -10,6 +10,7 @@ build:
     python: "3.10"
   apt_packages:
     - libxkbcommon-dev
+    - libpulse-dev
   jobs:
     pre_install:
       - pip install xcffib>=0.14.0 wheel

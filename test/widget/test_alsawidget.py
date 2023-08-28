@@ -223,7 +223,7 @@ def test_no_theme_path(monkeypatch):
     def no_op(*args, **kwargs):
         pass
 
-    monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.base._Widget._configure", no_op)
+    monkeypatch.setattr("qtile_extras.widget.base.base._Widget._configure", no_op)
     monkeypatch.setattr("qtile_extras.widget.alsavolumecontrol.ALSAWidget.get_volume", no_op)
     widget = qtile_extras.widget.alsavolumecontrol.ALSAWidget(mode="icon")
 
