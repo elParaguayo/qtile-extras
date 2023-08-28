@@ -8,6 +8,8 @@ exclude tox.ini
 exclude PKGBUILD
 exclude .readthedocs.yaml
 
+recursive-include qtile_extras *.py
+
 graft qtile_extras/resources
 graft test
 

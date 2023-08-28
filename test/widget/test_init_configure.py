@@ -50,7 +50,11 @@ overrides = []
 extras = [(extrawidgets.StatusNotifier, {"widgetname": "StatusNotifier"})]
 
 # To skip a test entirely, list the widget class here
-no_test = [extrawidgets.Visualiser, extrawidgets.Visualizer, extrawidgets.QTEMirror]
+no_test = [
+    extrawidgets.Visualiser,
+    extrawidgets.Visualizer,
+    extrawidgets.QTEMirror,
+]
 
 # To test a widget only under one backend, list the widget class here
 exclusive_backend = {extrawidgets.Systray: "x11", extrawidgets.GlobalMenu: "x11"}
