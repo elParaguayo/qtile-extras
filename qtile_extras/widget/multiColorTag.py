@@ -17,7 +17,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 from libqtile import widget
+from libqtile.confreader import ConfigError
 
 
 class MultiColorTag(widget.GroupBox):
@@ -25,6 +27,13 @@ class MultiColorTag(widget.GroupBox):
         super().__init__(**config)
         self.tag_colors = config.get("tag_colors", [])
         self.this_current_screen_border = config.get("this_current_screen_border", [])
+
+        if not isinstance(self.tag_colors, list):
+            raise ConfigError("MultiColorTag: tag_colors must be a list")
+        if not isinstance(self.this_current_screen_border, list):
+            raise ConfigError(
+                "MultiColorTag: this_current_screen_border must be a list"
+            )
 
     def draw(self):
         self.drawer.clear(self.background or self.bar.background)
@@ -100,4 +109,3 @@ class MultiColorTag(widget.GroupBox):
             )
             offset += bw + self.spacing
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
-
