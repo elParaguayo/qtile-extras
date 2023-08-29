@@ -17,7 +17,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 from libqtile import widget
 
 
@@ -25,12 +24,19 @@ class MultiColorTag(widget.GroupBox):
     def __init__(self, **config):
         super().__init__(**config)
         self.tag_colors = config.get("tag_colors", [])
+        self.this_current_screen_border = config.get("this_current_screen_border", [])
 
     def draw(self):
         self.drawer.clear(self.background or self.bar.background)
 
         offset = self.margin_x
+        num_colors = len(self.tag_colors)
+        num_borders = len(self.this_current_screen_border)
+
         for i, g in enumerate(self.groups):
+            effective_color_index = i % num_colors
+            effective_border_index = i % num_borders
+
             to_highlight = False
             is_block = self.highlight_method == "block"
             is_line = self.highlight_method == "line"
@@ -44,19 +50,21 @@ class MultiColorTag(widget.GroupBox):
             else:
                 text_color = self.inactive
 
-            if i < len(self.tag_colors):
-                text_color = self.tag_colors[i]
+            if effective_color_index < len(self.tag_colors):
+                text_color = self.tag_colors[effective_color_index]
 
             if g.screen:
                 if self.highlight_method == "text":
                     border = None
-                    text_color = self.this_current_screen_border[i]
+                    text_color = self.this_current_screen_border[effective_border_index]
                 else:
                     if self.block_highlight_text_color:
                         text_color = self.block_highlight_text_color
                     if self.bar.screen.group.name == g.name:
                         if self.qtile.current_screen == self.bar.screen:
-                            border = self.this_current_screen_border[i]
+                            border = self.this_current_screen_border[
+                                effective_border_index
+                            ]
                             to_highlight = True
                         else:
                             border = self.this_screen_border
@@ -92,3 +100,4 @@ class MultiColorTag(widget.GroupBox):
             )
             offset += bw + self.spacing
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
+
