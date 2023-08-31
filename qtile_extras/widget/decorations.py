@@ -293,7 +293,7 @@ class RectDecoration(_Decoration, GroupMixin):
         self.corners = self.single_or_four(self.radius, "Corner radius")
 
     def _draw_path(self, clip=False):
-        ctx = self.ctx if not clip else self.drawer.ctx
+        ctx = self.ctx
         ctx.new_path()
 
         # If we're clipping then we want the path to be inside
@@ -420,7 +420,12 @@ class RectDecoration(_Decoration, GroupMixin):
         # area defined by the decoration
         if self.clip:
             self._draw_path(clip=True)
-            self.drawer.ctx.clip()
+            self.ctx.clip()
+        # If we're not clipping then we need to clear any existing paths
+        # (fill_preserve, above, retains the path) to ensure no undesired effects
+        # for contents being rendered by widgets, e.g. using masks.
+        else:
+            self.ctx.new_path()
 
 
 class BorderDecoration(_Decoration, GroupMixin):
