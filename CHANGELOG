@@ -1,3 +1,4 @@
+2023-09-01: [BUGFIX] Fix two `RectDecoration` rendering bugs (issues #266 and #267)
 2023-08-13: [BUGFIX] Fix `PowerLineDecoration` for Wayland (and make it generally better)
 2023-08-10: [BUGFIX] X11 - fix issue with translucent decorations resulting in artefacts (needs latest qtile).
 2023-08-06: [BREAKING CHANGE] Update imports to align with qtile codebase tidy. You need latest qtile git version.
