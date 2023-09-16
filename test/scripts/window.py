@@ -33,15 +33,48 @@ import gi
 
 gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from dbus_next import Message, Variant
-from dbus_next.glib import MessageBus
+from dbus_next.glib.message_bus import _AuthLineSource, MessageBus
 from dbus_next.constants import MessageType, PropertyAccess
 from dbus_next.service import ServiceInterface, dbus_property, method, signal
 
 
 icon_path = Path(__file__).parent / ".." / "resources" / "icons" / "menuitem.png"
+
+
+# This patch is needed to address the issue described here:
+# https://github.com/altdesktop/python-dbus-next/issues/113
+# Once dbus_next 0.2.4 is released, the patch can be removed.
+class PatchedMessageBus(MessageBus):
+    def _authenticate(self, authenticate_notify):
+        self._stream.write(b"\0")
+        first_line = self._auth._authentication_start()
+        if first_line is not None:
+            if type(first_line) is not str:
+                raise AuthError("authenticator gave response not type str")
+            self._stream.write(f"{first_line}\r\n".encode())
+            self._stream.flush()
+
+        def line_notify(line):
+            try:
+                resp = self._auth._receive_line(line)
+                self._stream.write(Authenticator._format_line(resp))
+                self._stream.flush()
+                if resp == "BEGIN":
+                    self._readline_source.destroy()
+                    authenticate_notify(None)
+                    return True
+            except Exception as e:
+                authenticate_notify(e)
+                return True
+
+        readline_source = _AuthLineSource(self._stream)
+        readline_source.set_callback(line_notify)
+        readline_source.add_unix_fd(self._fd, GLib.IO_IN)
+        readline_source.attach(self._main_context)
+        self._readline_source = readline_source
 
 
 class GlobalMenu(ServiceInterface):
@@ -308,7 +341,7 @@ if __name__ == "__main__":
         win.set_type_hint(Gdk.WindowTypeHint.NORMAL)
 
     if sni:
-        bus = MessageBus().connect_sync()
+        bus = PatchedMessageBus().connect_sync()
 
         item = SNItem(win, "org.kde.StatusNotifierItem")
         menu = SNIMenu(win, Gtk.main_quit, "com.canonical.dbusmenu")
@@ -333,7 +366,7 @@ if __name__ == "__main__":
         )
 
     if global_menu:
-        bus = MessageBus().connect_sync()
+        bus = PatchedMessageBus().connect_sync()
 
         menu = GlobalMenu(win, Gtk.main_quit, "com.canonical.dbusmenu")
 
