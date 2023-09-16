@@ -8,11 +8,13 @@ build:
   os: ubuntu-20.04
   tools:
     python: "3.10"
+  apt_packages:
+    - libxkbcommon-dev
   jobs:
     pre_install:
-      - pip install xcffib wheel
-      - pip install --no-cache --upgrade --no-build-isolation cairocffi
-      - pip install --no-cache --upgrade --no-build-isolation git+https://github.com/qtile/qtile.git@master#egg=qtile
+      - pip install xcffib>=0.14.0 wheel
+      - pip install cairocffi>=0.16.0
+      - pip install -v git+https://github.com/elParaguayo/qtile.git@fixing-packaging
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
