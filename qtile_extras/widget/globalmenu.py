@@ -23,6 +23,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from libqtile import hook
+from libqtile.backend.base.window import Internal
 from libqtile.widget import base
 
 from qtile_extras.resources.dbusmenu import DBusMenu
@@ -39,8 +40,7 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
 
     Only works with apps that export their menu via DBus.
 
-    This is not currently available on Wayland backends but I may try to see
-    if I can get it working at some point!
+    Wayland support is "experimental" at best. Expect unexpected behaviour!
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
@@ -54,8 +54,6 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
     _dependencies = ["dbus-next"]
 
     _screenshots = [("globalmenu.png", "Showing VLC menu in the bar.")]
-
-    supported_backends = {"x11"}
 
     def __init__(self, **config):
         base._TextBox.__init__(self, **config)
@@ -78,6 +76,10 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
         self.set_hooks()
         self.hook_response(startup=True)
 
+    def clear(self):
+        self.items = []
+        self.bar.draw()
+
     def client_updated(self, wid):
         if wid in self.app_menus:
             del self.app_menus[wid]
@@ -91,26 +93,39 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
 
     def hook_response(self, *args, startup=False):
         if not startup and self.bar.screen != self.qtile.current_screen:
-            self.items = []
-            self.bar.draw()
+            self.clear()
             return
 
         self.current_wid = self.qtile.current_window.wid if self.qtile.current_window else None
-
-        if self.current_wid and self.current_wid in registrar.windows:
+        if self.current_wid:
             asyncio.create_task(self.get_window_menu(self.current_wid))
         elif not startup:
-            self.items = []
-            self.bar.draw()
+            self.clear()
 
     def client_killed(self, client):
         wid = client.wid
+        pid = client.get_pid()
         if wid in self.app_menus:
             registrar.window_closed(client.wid)
             del self.app_menus[wid]
 
+        if pid in registrar.pids:
+            del registrar.pids[pid]
+
     async def get_window_menu(self, wid):
-        service, path = registrar.get_menu(wid)
+        win = self.qtile.windows_map.get(wid)
+        if not win:
+            self.clear()
+            return
+        if wid in registrar.windows:
+            service, path = registrar.get_menu(wid)
+        elif not isinstance(win, Internal) and win.get_pid() in registrar.pids:
+            # If we can't find the window ID, let's try searching by PID
+            service, path = registrar.get_menu_by_pid(win.get_pid())
+        else:
+            self.clear()
+            return
+
         menu = self.app_menus.get(wid)
         if not menu:
             menu = DBusMenu(
