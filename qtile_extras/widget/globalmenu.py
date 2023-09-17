@@ -96,6 +96,7 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
             return
 
         self.current_wid = self.qtile.current_window.wid if self.qtile.current_window else None
+
         if self.current_wid and self.current_wid in registrar.windows:
             asyncio.create_task(self.get_window_menu(self.current_wid))
         elif not startup:

@@ -19,12 +19,20 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
+from dbus_next import Message, Variant
+from dbus_next.aio import MessageBus
+from dbus_next.constants import MessageType, PropertyAccess
+from dbus_next.service import ServiceInterface, dbus_property, method
+from dbus_next.service import signal as dbus_signal
 from libqtile import command, config, ipc, layout
 from libqtile.confreader import Config
 from libqtile.core.manager import Qtile
 from libqtile.lazy import lazy
 from libqtile.log_utils import init_log, logger
 from libqtile.resources import default_config
+from libqtile.utils import create_task
+
+from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText
 
 # the sizes for outputs
 WIDTH = 800
@@ -365,3 +373,332 @@ def assert_window_died(client, window_info):
     client.sync()
     wid = window_info["id"]
     assert wid not in set([x["id"] for x in client.windows()])
+
+
+icon_path = Path(__file__).parent / "resources" / "icons" / "menuitem.png"
+
+
+class GlobalMenu(ServiceInterface):
+    """
+    Simplified GlobalMenu interface.
+    """
+
+    def __init__(self, popup, *args):
+        ServiceInterface.__init__(self, *args)
+        self.popup = popup
+
+    @dbus_signal()
+    def LayoutUpdated(self) -> "ui":  # noqa: F821, N802
+        return [1, 0]
+
+    @method()
+    def AboutToShow(self, id: "i") -> "b":  # noqa: F821, N802
+        return True
+
+    @method()
+    def GetLayout(  # noqa: F722, N802
+        self, parent_id: "i", recursion_depth: "i", properties: "as"  # noqa: F821
+    ) -> "u(ia{sv}av)":  # noqa: F722, F821, N802
+        if parent_id == 0:
+            return [
+                1,
+                [
+                    1,
+                    {},
+                    [
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                1,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Qtile"),
+                                    "children-display": Variant("s", "submenu"),
+                                },
+                                [],
+                            ],
+                        ),
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                2,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Test"),
+                                },
+                                [],
+                            ],
+                        ),
+                    ],
+                ],
+            ]
+
+        elif parent_id == 1:
+            return [
+                1,
+                [
+                    1,
+                    {},
+                    [
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                10,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Item 1"),
+                                },
+                                [],
+                            ],
+                        ),
+                        Variant(
+                            "(ia{sv}av)",
+                            [
+                                11,
+                                {
+                                    "enabled": Variant("b", True),
+                                    "visible": Variant("b", True),
+                                    "label": Variant("s", "Quit"),
+                                },
+                                [],
+                            ],
+                        ),
+                    ],
+                ],
+            ]
+
+    @method()
+    def Event(self, id: "i", event_id: "s", data: "v", timestamp: "u"):  # noqa: F821, N802
+        if id == 11:
+            self.popup.bus.disconnect()
+            task = create_task(self.popup.bus.wait_for_disconnect())
+            task.add_done_callback(self.check_disconnect)
+
+    def check_disconnect(self, task):
+        if task.result() is None:
+            self.popup.kill()
+
+
+class SNIMenu(ServiceInterface):
+    """
+    Simplified DBusMenu interface.
+
+    Only exports methods, properties and signals required by
+    StatusNotifier widget.
+    """
+
+    def __init__(self, popup, name, *args):
+        ServiceInterface.__init__(self, *args)
+        self.popup = popup
+        self.servicename = name
+
+    @dbus_signal()
+    def LayoutUpdated(self) -> "ui":  # noqa: F821, N802
+        return [1, 0]
+
+    @method()
+    def AboutToShow(self, id: "i") -> "b":  # noqa: F821, N802
+        return True
+
+    @method()
+    def GetLayout(  # noqa: F722, N802
+        self, parent_id: "i", recursion_depth: "i", properties: "as"  # noqa: F722, F821
+    ) -> "u(ia{sv}av)":  # noqa: F722, F821, N802
+        with open(icon_path.as_posix(), "rb") as icon:
+            raw = icon.read()
+
+        return [
+            1,
+            [
+                1,
+                {},
+                [
+                    Variant(
+                        "(ia{sv}av)",
+                        [
+                            0,
+                            {
+                                "enabled": Variant("b", True),
+                                "visible": Variant("b", True),
+                                "label": Variant("s", "Test Menu"),
+                                "children-display": Variant("s", "submenu"),
+                                "icon-data": Variant("ay", bytes(raw)),
+                            },
+                            [],
+                        ],
+                    ),
+                    Variant(
+                        "(ia{sv}av)",
+                        [
+                            1,
+                            {
+                                "enabled": Variant("b", True),
+                                "visible": Variant("b", True),
+                                "label": Variant("s", "Quit"),
+                                "icon-data": Variant("s", icon_path.as_posix()),
+                            },
+                            [],
+                        ],
+                    ),
+                ],
+            ],
+        ]
+
+    @method()
+    def Event(self, id: "i", event_id: "s", data: "v", timestamp: "u"):  # noqa: F821, N802
+        if id == 1:
+            self.popup.bus.disconnect()
+            task = create_task(self.popup.bus.wait_for_disconnect())
+            task.add_done_callback(self.check_disconnect)
+
+    def check_disconnect(self, task):
+        if task.result() is None:
+            self.popup.kill()
+
+
+class SNItem(ServiceInterface):
+    """
+    Simplified StatusNotifierItem interface.
+
+    Only exports methods, properties and signals required by
+    StatusNotifier widget.
+    """
+
+    def __init__(self, popup, name, *args):
+        ServiceInterface.__init__(self, *args)
+        self.popup = popup
+        self.servicename = name
+
+    @method()
+    def Activate(self, x: "i", y: "i"):  # noqa: F821, N802
+        self.popup.update_controls(textbox="Activated")
+
+    @dbus_property(PropertyAccess.READ)
+    def IconName(self) -> "s":  # noqa: F821, N802
+        return ""
+
+    @dbus_property(PropertyAccess.READ)
+    def IconPixmap(self) -> "a(iiay)":  # noqa: F821, N802
+        return [[32, 32, bytes([100] * (32 * 32 * 4))]]
+
+    @dbus_property(PropertyAccess.READ)
+    def AttentionIconPixmap(self) -> "a(iiay)":  # noqa: F821, N802
+        return []
+
+    @dbus_property(PropertyAccess.READ)
+    def OverlayIconPixmap(self) -> "a(iiay)":  # noqa: F821, N802
+        return []
+
+    @dbus_property(PropertyAccess.READ)
+    def IsMenu(self) -> "b":  # noqa: F821, N802
+        return False
+
+    @dbus_property(PropertyAccess.READ)
+    def Menu(self) -> "s":  # noqa: F821, N802
+        return "/DBusMenu"
+
+    @dbus_signal()
+    def NewIcon(self):  # noqa: N802
+        pass
+
+    @dbus_signal()
+    def NewAttentionIcon(self):  # noqa: N802
+        pass
+
+    @dbus_signal()
+    def NewOverlayIcon(self):  # noqa: N802
+        pass
+
+
+class DBusPopup(PopupRelativeLayout):
+    def _configure(self, qtile=None):
+        self.killed = False
+        PopupRelativeLayout._configure(self, qtile)
+        create_task(self.start_dbus_interfaces())
+
+    async def start_dbus_interfaces(self):
+        sni = getattr(self.qtile.config, "enable_sni", False)
+        gm = getattr(self.qtile.config, "enable_global_menu", False)
+
+        if not (sni or gm):
+            return
+
+        self.bus = await MessageBus().connect()
+
+        if sni:
+            name = f"test.qtile.window-{self.popup.win.wid}"
+
+            item = SNItem(self, name, "org.kde.StatusNotifierItem")
+            menu = SNIMenu(self, name, "com.canonical.dbusmenu")
+
+            # Export interfaces on the bus
+            self.bus.export("/StatusNotifierItem", item)
+            self.bus.export("/DBusMenu", menu)
+
+            # Request the service name
+            await self.bus.request_name(name)
+
+            msg = await self.bus.call(
+                Message(
+                    message_type=MessageType.METHOD_CALL,
+                    destination="org.freedesktop.StatusNotifierWatcher",
+                    interface="org.freedesktop.StatusNotifierWatcher",
+                    path="/StatusNotifierWatcher",
+                    member="RegisterStatusNotifierItem",
+                    signature="s",
+                    body=[self.bus.unique_name],
+                )
+            )
+
+            if msg.message_type != MessageType.METHOD_RETURN:
+                raise RuntimeError("Couldn't register status notifier item.")
+
+        if gm:
+            globalmenu = GlobalMenu(self, "com.canonical.dbusmenu")
+
+            # Export interfaces on the bus
+            self.bus.export("/GlobalMenu", globalmenu)
+
+            # Request the service name
+            await self.bus.request_name(f"test.qtile.window-global-menu-{self.popup.win.wid}")
+
+            msg = await self.bus.call(
+                Message(
+                    message_type=MessageType.METHOD_CALL,
+                    destination="com.canonical.AppMenu.Registrar",
+                    interface="com.canonical.AppMenu.Registrar",
+                    path="/com/canonical/AppMenu/Registrar",
+                    member="RegisterWindow",
+                    signature="uo",
+                    body=[self.popup.win.wid, "/GlobalMenu"],
+                )
+            )
+
+            if msg.message_type != MessageType.METHOD_RETURN:
+                raise RuntimeError("Couldn't register global menu for window.")
+
+    def kill(self):
+        self.killed = True
+        PopupRelativeLayout.kill(self)
+
+
+class DBusConfig(BareConfig):
+    def show_dbus_popup(qtile):  # noqa: N805
+        dbus_window = DBusPopup(
+            qtile=qtile,
+            width=200,
+            height=200,
+            controls=[PopupText(text="Started", x=0, y=0, width=1, height=0.2, name="textbox")],
+        )
+
+        dbus_window.show()
+
+        qtile.popup = dbus_window
+
+    keys = [config.Key(["mod4"], "m", lazy.function(show_dbus_popup))]
+
+    enable_sni = False
+    enable_global_menu = False

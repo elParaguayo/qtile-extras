@@ -603,6 +603,7 @@ class _PopupLayout(configurable.Configurable):
             "width": self.popup.width,
             "height": self.popup.height,
             "controls": [control.info() for control in self.controls],
+            "id": self.popup.win.wid,
         }
 
 

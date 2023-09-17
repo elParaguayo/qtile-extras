@@ -24,11 +24,7 @@ import pytest
 
 import qtile_extras.resources.dbusmenu
 import qtile_extras.widget
-from test.helpers import Retry  # noqa: I001
-
-# Tests using glib to create a window have started to fail so let them
-# fail silently for now
-pytestmark = pytest.mark.xfail
+from test.helpers import DBusConfig, Retry  # noqa: I001
 
 
 @Retry(ignore_exceptions=(AssertionError,))
@@ -41,15 +37,12 @@ def wait_for_text(manager, hidden=True):
 
 
 @Retry(ignore_exceptions=(AssertionError,))
-def wait_for_menu(manager, hidden=True):
+def wait_for_internal(manager, count=0):
     windows = len(manager.c.internal_windows())
-    if hidden:
-        assert windows == 1
-    else:
-        assert windows == 2
+    assert windows == count
 
 
-class GlobalMenuConfig(libqtile.confreader.Config):
+class GlobalMenuConfig(DBusConfig):
     screens = [
         libqtile.config.Screen(
             top=libqtile.bar.Bar(
@@ -58,6 +51,8 @@ class GlobalMenuConfig(libqtile.confreader.Config):
             ),
         )
     ]
+
+    enable_global_menu = True
 
 
 gmconfig = pytest.mark.parametrize("manager", [GlobalMenuConfig], indirect=True)
@@ -75,22 +70,28 @@ def test_global_menu(manager, backend_name):
     assert len(manager.c.windows()) == 0
 
     # Open a window which export menu so we should see some text
-    manager.test_window("GlobalMenu", export_global_menu=True)
+    manager.c.simulate_keypress(["mod4"], "m")
+    wait_for_internal(manager, 2)
+    window = [x for x in manager.c.internal_windows() if x.get("name", "") == "dbuspopup"][0]
+    assert window
+    manager.c.widget["globalmenu"].eval(
+        f"asyncio.create_task(self.get_window_menu({window['id']}))"
+    )
     wait_for_text(manager, hidden=False)
-    assert len(manager.c.windows()) == 1
 
     # Open another window with no menu so widget should hide text
     manager.test_window("No Menu")
     wait_for_text(manager, hidden=True)
-    assert len(manager.c.windows()) == 2
 
     # Focus back on window with menu and check text appears
-    manager.c.layout.next()
+    manager.c.widget["globalmenu"].eval(
+        f"asyncio.create_task(self.get_window_menu({window['id']}))"
+    )
     wait_for_text(manager, hidden=False)
 
     # Left-click on top menu to open menu window
     manager.c.bar["top"].fake_button_press(0, "top", 10, 0, 1)
-    wait_for_menu(manager, hidden=False)
+    wait_for_internal(manager, count=3)
 
     menu = [x for x in manager.c.internal_windows() if x.get("name", "") == "popupmenu"][0]
     assert menu
@@ -98,5 +99,5 @@ def test_global_menu(manager, backend_name):
 
     # Hacky way to press menu item. Last item is "Quit"
     manager.c.widget["globalmenu"].eval("self.menu.controls[-1].button_press(0, 0, 1)")
-    wait_for_text(manager, hidden=True)
-    assert len(manager.c.windows()) == 1
+    _, killed = manager.c.eval("self.popup.killed")
+    assert killed == "True"

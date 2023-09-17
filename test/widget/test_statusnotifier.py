@@ -27,13 +27,13 @@ from dbus_next.errors import InterfaceNotFoundError, InvalidIntrospectionError
 from libqtile.log_utils import init_log
 
 import qtile_extras.resources.dbusmenu
-import qtile_extras.widget
+from qtile_extras import widget
 from qtile_extras.resources.dbusmenu import DBusMenuItem
-from test.helpers import Retry  # noqa: I001
+from test.helpers import DBusConfig, Retry  # noqa: I001
 
 # Tests using glib to create a window have started to fail so let them
 # fail silently for now
-pytestmark = pytest.mark.xfail
+# pytestmark = pytest.mark.xfail
 
 
 @Retry(ignore_exceptions=(AssertionError,))
@@ -49,9 +49,9 @@ def wait_for_icon(widget, hidden=True, prop="width"):
 def wait_for_menu(manager, hidden=True):
     windows = len(manager.c.internal_windows())
     if hidden:
-        assert windows == 1
-    else:
         assert windows == 2
+    else:
+        assert windows == 3
 
 
 @Retry(ignore_exceptions=(AssertionError,))
@@ -61,99 +61,75 @@ def check_fullscreen(windows, fullscreen=True):
 
 
 @pytest.fixture(scope="function")
-def sni_config(request, manager_nospawn):
-    """
-    Fixture provides a manager instance with StatusNotifier in the bar.
+def sni_manager(manager_nospawn, request):
+    position = getattr(request, "param", "top")
 
-    Widget can be customised via parameterize.
-    """
-
-    class SNIConfig(libqtile.confreader.Config):
-        """Config for the test."""
-
-        auto_fullscreen = True
-        keys = []
-        mouse = []
-        groups = [
-            libqtile.config.Group("a"),
-        ]
-        layouts = [libqtile.layout.Max()]
-        floating_layout = libqtile.resources.default_config.floating_layout
+    class SNIConfig(DBusConfig):
         screens = [
-            libqtile.config.Screen(
-                top=libqtile.bar.Bar(
-                    [qtile_extras.widget.StatusNotifier(**getattr(request, "param", dict()))],
-                    50,
-                ),
-            )
+            libqtile.config.Screen(**{position: libqtile.bar.Bar([widget.StatusNotifier()], 50)})
         ]
 
-    yield SNIConfig
+        bar_position = position
+        enable_sni = True
+
+    manager_nospawn.start(SNIConfig)
+    yield manager_nospawn
 
 
 @pytest.mark.usefixtures("dbus")
-def test_statusnotifier_menu(manager_nospawn, sni_config):
+def test_statusnotifier_menu(sni_manager):
     """Check `activate` method when left-clicking widget."""
-    manager_nospawn.start(sni_config)
-    widget = manager_nospawn.c.widget["statusnotifier"]
+    widget = sni_manager.c.widget["statusnotifier"]
 
-    group = manager_nospawn.c.group
     assert widget.info()["width"] == 0
 
     # Load test window and icon should appear
-    manager_nospawn.test_window("TestSNIMenu", export_sni=True)
+    sni_manager.c.simulate_keypress(["mod4"], "m")
     wait_for_icon(widget, hidden=False)
 
-    assert len(manager_nospawn.c.windows()) == 1
+    assert len(sni_manager.c.internal_windows()) == 2  # bar plus popup
 
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 10, 0, 3)
-    wait_for_menu(manager_nospawn, hidden=False)
+    sni_manager.c.bar["top"].fake_button_press(0, "top", 10, 0, 3)
+    wait_for_menu(sni_manager, hidden=False)
+    assert len(sni_manager.c.internal_windows()) == 3  # bar, popup and popupmenu
 
-    menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][
-        0
-    ]
+    menu = [x for x in sni_manager.c.internal_windows() if x.get("name", "") == "dbuspopup"][0]
     assert menu
     assert menu["controls"]
 
     # Hacky way to press menu item. Last item is "Quit"
     widget.eval("self.menu.controls[-1].button_press(0, 0, 1)")
     wait_for_icon(widget, hidden=True)
-    assert len(group.info()["windows"]) == 0
+    _, killed = sni_manager.c.eval("self.popup.killed")
+    assert killed == "True"
 
 
 @pytest.mark.parametrize(
-    "position, coords",
+    "sni_manager, coords",
     [("top", (0, 50)), ("bottom", (0, 502)), ("left", (50, 0)), ("right", (548, 0))],
+    indirect=["sni_manager"],
 )
 @pytest.mark.usefixtures("dbus")
-def test_statusnotifier_menu_positions(
-    manager_nospawn, sni_config, position, coords, backend_name
-):
+def test_statusnotifier_menu_positions(sni_manager, coords, backend_name):
     """Check menu positioning."""
-    screen = libqtile.config.Screen(
-        **{position: libqtile.bar.Bar([qtile_extras.widget.StatusNotifier()], 50)}
-    )
-
-    sni_config.screens = [screen]
-    manager_nospawn.start(sni_config)
-    widget = manager_nospawn.c.widget["statusnotifier"]
+    widget = sni_manager.c.widget["statusnotifier"]
+    _, position = sni_manager.c.eval("self.config.bar_position")
 
     # Launch window and wait for icon to appear
     try:
-        manager_nospawn.test_window("TestSNIMenuPosition", export_sni=True)
+        # Load test window and icon should appear
+        sni_manager.c.simulate_keypress(["mod4"], "m")
         prop = {"prop": "height"} if position in ["left", "right"] else {}
         wait_for_icon(widget, hidden=False, **prop)
 
         # Click the button (hacky way of doing it)
         widget.eval("self.selected_item = self.available_icons[0];self.show_menu()")
-        wait_for_menu(manager_nospawn, hidden=False)
+        wait_for_menu(sni_manager, hidden=False)
     except AssertionError:
         pytest.xfail("This test is flaky so we allow failures for now.")
 
     # Get menu and check menu positioning is adjusted
-    menu = [x for x in manager_nospawn.c.internal_windows() if x.get("name", "") == "popupmenu"][
-        0
-    ]
+    menu = [x for x in sni_manager.c.internal_windows() if x.get("name", "") == "popupmenu"][0]
     assert (menu["x"], menu["y"]) == coords
 
 
