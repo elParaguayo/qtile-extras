@@ -62,9 +62,6 @@ gmconfig = pytest.mark.parametrize("manager", [GlobalMenuConfig], indirect=True)
 @pytest.mark.usefixtures("dbus")
 def test_global_menu(manager, backend_name):
     """Check widget displays text, opens menu and triggers events."""
-    if backend_name == "wayland":
-        pytest.skip("Can't get window ID on Wayland.")
-
     # Widget has 0 width when no window open
     assert manager.c.widget["globalmenu"].info()["width"] == 0
     assert len(manager.c.windows()) == 0

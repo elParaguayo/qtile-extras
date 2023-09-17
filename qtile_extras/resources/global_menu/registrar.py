@@ -24,11 +24,13 @@ import pickle
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from dbus_next import Message
 from dbus_next.aio import MessageBus
-from dbus_next.constants import PropertyAccess
+from dbus_next.constants import MessageType, PropertyAccess
 from dbus_next.service import ServiceInterface, dbus_property, method, signal
 from libqtile.core.lifecycle import lifecycle
 from libqtile.log_utils import logger
+from libqtile.utils import create_task
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -52,6 +54,7 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
     def __init__(self):
         super().__init__(GLOBAL_MENU_INTERFACE)
         self.windows = {}
+        self.pids = {}
         self.started = False
         self.callbacks = []
         self.previously_registered = set()
@@ -74,6 +77,23 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
 
                 self.started = True
 
+    async def get_service_pid(self, wid, sender, path):
+        msg = await self.bus.call(
+            Message(
+                message_type=MessageType.METHOD_CALL,
+                destination="org.freedesktop.DBus",
+                interface="org.freedesktop.DBus",
+                path="/org/freedesktop/DBus",
+                member="GetConnectionUnixProcessID",
+                signature="s",
+                body=[sender],
+            )
+        )
+
+        if msg.message_type == MessageType.METHOD_RETURN:
+            pid = msg.body[0]
+            self.pids[pid] = (sender, path)
+
     def _message_handler(self, message):
         """Low-level message handler to retrieve sender and body of messages."""
         # Filter out messages that aren't calls to RegisterWindow
@@ -92,6 +112,10 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
             callback(wid)
 
         self.windows[wid] = [sender, path]
+
+        # Wayland windows don't really have an ID so we can try to match service to the PID
+        create_task(self.get_service_pid(wid, sender, path))
+
         self.previously_registered.add(wid)
         self.WindowRegistered(wid)
 
@@ -133,6 +157,10 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
     def get_menu(self, window_id):
         if window_id in self.windows:
             return self.windows[window_id]
+
+    def get_menu_by_pid(self, pid):
+        if pid in self.pids:
+            return self.pids[pid]
 
     def add_callback(self, callback: Callable):
         self.callbacks.append(callback)
