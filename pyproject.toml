@@ -32,3 +32,5 @@ exclude = ["test*", "docs*", "stubs*"]
 
 [tool.black]
 line-length = 98
+
+[tool.setuptools_scm]
