@@ -15,7 +15,7 @@ build:
     pre_install:
       - pip install xcffib>=0.14.0 wheel
       - pip install cairocffi>=0.16.0
-      - pip install -v git+https://github.com/elParaguayo/qtile.git@fixing-packaging
+      - pip install -v git+https://github.com/qtile/qtile.git
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
