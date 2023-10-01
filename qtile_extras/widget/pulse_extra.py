@@ -53,36 +53,9 @@ class PulseVolumeExtra(_Volume, PulseVolume):
         _Volume.__init__(self, **config)
         self._variable_defaults = {**defaults, **self._variable_defaults}
 
-        # We need a flag to ensure we only try to connect to the Pulse server once
-        self._connection_requested = False
-
     def _configure(self, qtile, bar):
         PulseVolume._configure(self, qtile, bar)
         _Volume._configure(self, qtile, bar)
-
-    async def _config_async(self):
-        if not self._connection_requested:
-            self._connection_requested = True
-            await PulseVolume._config_async(self)
-
-    def update(self):
-        """Modified version of PulseVolume.update to set variables."""
-        length = self.length
-
-        if not self.pulse.connected or not self.default_sink:
-            vol = -1
-            mute = False
-        else:
-            vol = self.get_volume()
-            mute = self.default_sink.mute
-        if vol != self.volume or mute != self.muted:
-            self.volume = vol
-            self.muted = mute
-            self.hidden = False
-            if length == self.length:
-                self.draw()
-            else:
-                self.bar.draw()
 
     @expose_command()
     def volume_up(self, value=None):
@@ -94,4 +67,9 @@ class PulseVolumeExtra(_Volume, PulseVolume):
         """Decrease volume."""
         self.decrease_vol(value)
 
-    get_volume = PulseVolume.get_volume
+    def no_op(self):
+        pass
+
+    get_vals = _Volume.status_change
+    set_refresh_timer = no_op
+    refresh = no_op

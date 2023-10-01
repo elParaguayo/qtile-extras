@@ -21,6 +21,7 @@
 from libqtile.command.base import expose_command
 from libqtile.utils import create_task
 from libqtile.widget.pulse_volume import PulseVolume as QPulseVolume
+from libqtile.widget.pulse_volume import pulse
 
 from qtile_extras.popup.menu import PopupMenuItem
 from qtile_extras.widget.mixins import MenuMixin
@@ -43,16 +44,16 @@ class PulseVolume(QPulseVolume, MenuMixin):
         self.add_callbacks({"Button2": self.select_sink})
 
     async def set_sink(self, sink):
-        if not self.pulse.connected:
+        if not pulse.pulse.connected:
             return
 
-        await self.pulse.default_set(sink)
+        await pulse.pulse.default_set(sink)
 
     async def show_sinks(self):
-        if not self.pulse.connected:
+        if not pulse.pulse.connected:
             return
 
-        sinks = await self.pulse.sink_list()
+        sinks = await pulse.pulse.sink_list()
         if not sinks:
             return
 
