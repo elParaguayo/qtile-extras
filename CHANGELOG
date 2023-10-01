@@ -1,4 +1,6 @@
-2024-09-29: [RELEASE] v0.23.0 released - compatible with qtile 0.23.0
+2023-10-01: [BREAKING CHANGE] Update `PulseVolume` and `PulseVolumeExtra` to reflect updates pushed to qtile.
+                              Needs latest qtile git version. 
+2023-09-29: [RELEASE] v0.23.0 released - compatible with qtile 0.23.0
 2023-09-18: [FEATURE] Add experimental support for `GlobalMenu` in Wayland.
 2023-09-17: [TESTS] Check decorations are rendered correctly during test suite
 2023-09-16: [FEATURE] Add more popup templates for `Mpris2` widget
