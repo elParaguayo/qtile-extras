@@ -18,6 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import libqtile.bar
 from libqtile.command.base import expose_command
 
 from qtile_extras.widget.base import _Volume
@@ -56,6 +57,7 @@ class PulseVolumeExtra(_Volume, PulseVolume):
     def _configure(self, qtile, bar):
         PulseVolume._configure(self, qtile, bar)
         _Volume._configure(self, qtile, bar)
+        self.length_type = libqtile.bar.CALCULATED
 
     @expose_command()
     def volume_up(self, value=None):
