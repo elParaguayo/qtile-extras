@@ -45,6 +45,12 @@ class _Decoration(base.PaddingMixin):
     defaults = [
         ("padding", 0, "Default padding"),
         ("extrawidth", 0, "Add additional width to the end of the decoration"),
+        (
+            "ignore_extrawidth",
+            False,
+            "Ignores additional width added by decoration. "
+            "Useful when stacking decorations on top of a PowerLineDecoration.",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, **config):
@@ -85,9 +91,18 @@ class _Decoration(base.PaddingMixin):
         return self.parent.height
 
     @property
+    def parent_length(self):
+        if self.parent.length_type == bar.CALCULATED:
+            return int(self.parent.calculate_length())
+        return self.parent._length
+
+    @property
     def width(self) -> int:
         if self.parent.bar.horizontal:
-            return self.parent.width
+            if self.ignore_extrawidth:
+                return self.parent_length
+            else:
+                return self.parent.width
         return self.parent.bar.width
 
     @property
@@ -634,12 +649,6 @@ class PowerLineDecoration(_Decoration):
         # This decoration doesn't use the GroupMixin but we need to set the property
         # as False as it's used in a couple of checks when other decorations are grouped
         self.group = False
-
-    @property
-    def parent_length(self):
-        if self.parent.length_type == bar.CALCULATED:
-            return int(self.parent.calculate_length())
-        return self.parent._length
 
     def _configure(self, parent):
         _Decoration._configure(self, parent)
