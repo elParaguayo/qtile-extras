@@ -1,3 +1,4 @@
+2023-11-11: [DOCS] Update installation instructions
 2023-11-10: [FEATURE] Add custom hooks to certain widgets (refer to docs for more)
 2023-10-16: [FEATURE] Updated `Bluetooth` widget to add context menu
 2023-10-08: [BUGFIX] Fix `BrightnessControl` text display issue in `Bar` mode

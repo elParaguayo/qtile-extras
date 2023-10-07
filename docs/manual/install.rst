@@ -41,5 +41,11 @@ from `Copr`_::
 Everyone else
 =============
 
-Clone the repo and run ``python setup.py install``.
+You can use ``pip`` to install the package e.g. ``pip install --user .``.
 
+Alternatively, you can use the ``build`` and ``installer`` modules and run:
+
+.. code::
+
+    python -m build --wheel
+    python -m installer dist/*.whl
