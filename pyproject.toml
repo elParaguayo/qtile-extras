@@ -9,9 +9,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools-git-versioning]
 enabled = true
 
-[tool.setuptools.dynamic]
-readme = {file = "README.md"}
-
 [project]
 name = "qtile-extras"
 authors = [
@@ -20,6 +17,7 @@ authors = [
 license = {text="MIT"}
 description = "Extra items for qtile that are unlikely to be maintained in the main repo."
 dynamic = ["version"]
+readme = "README.md"
 
 [project.urls]
 homepage = "https://github.com/elParaguayo/qtile-extras"
