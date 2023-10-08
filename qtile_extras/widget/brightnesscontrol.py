@@ -103,7 +103,6 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         ("bar_colour", "008888", "Colour of bar displaying brightness level."),
         ("error_colour", "880000", "Colour of bar when displaying an error"),
         ("timeout_interval", 5, "Time before widet is hidden."),
-        ("widget_width", 75, "Width of bar when widget displayed"),
         (
             "enable_power_saving",
             False,
@@ -162,6 +161,13 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             logger.warning(
                 "The use of `font_colour` is deprecated. "
                 "Please update your config to use `foreground` instead."
+            )
+
+        if "widget_width" in config:
+            self.bar_width = config["widget_width"]
+            logger.warning(
+                "The use of `widget_width` is deprecated. "
+                "Please update your config to use `bar_width` instead."
             )
 
         self.add_callbacks({"Button4": self.brightness_up, "Button5": self.brightness_down})
@@ -340,7 +346,7 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         # Otherwise widget is the greater of the minimum size needed to
         # display 100% and the user defined max
         else:
-            return max(self.text_width, self.widget_width)
+            return max(self.text_width, self.bar_width)
 
     def change_brightness(self, step):
         # Get the current brightness level (we need to read this in case
