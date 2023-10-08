@@ -43,31 +43,30 @@ class Systray(widget.Systray):
         self.drawer.clear(self.background or self.bar.background)
         self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
         for pos, icon in enumerate(self.tray_icons):
-            # Check if we're using a decoration and set backpixel colour accordingly
-            rect_decs = [d for d in self.decorations if isinstance(d, RectDecoration)]
-            if rect_decs:
-                top = rect_decs[-1]
-                if top.filled:
-                    fill_colour = top.fill_colour
-                else:
-                    fill_colour = self.background or self.bar.background
-                if fill_colour.startswith("#"):
-                    fill_colour = fill_colour[1:]
-                icon.window.set_attribute(backpixel=int(fill_colour, 16))
-            else:
-                # Back pixmap results in translation issues as it copies pixmap from 0, 0
-                icon.window.set_attribute(backpixmap=self.drawer.pixmap)
-
+            icon.window.set_attribute(backpixmap=self.drawer.pixmap)
             if self.bar.horizontal:
-                xoffset = self.offsetx + offset
-                yoffset = self.bar.height // 2 - self.icon_size // 2 + self.offsety
+                xoffset = offset
+                yoffset = self.bar.height // 2 - self.icon_size // 2
                 step = icon.width
             else:
-                xoffset = self.bar.width // 2 - self.icon_size // 2 + self.offsetx
-                yoffset = self.offsety + offset
+                xoffset = self.bar.width // 2 - self.icon_size // 2
+                yoffset = offset
                 step = icon.height
 
-            icon.place(xoffset, yoffset, icon.width, self.icon_size, 0, None)
+            if self.drawer.pseudotransparent or self.decorations:
+                icon.set_pixmap(xoffset, yoffset, self.drawer)
+            else:
+                icon.window.set_attribute(backpixmap=self.drawer.pixmap)
+
+            icon.place(
+                self.offsetx + xoffset,
+                self.offsety + yoffset,
+                icon.width,
+                self.icon_size,
+                0,
+                None,
+            )
+
             if icon.hidden:
                 icon.unhide()
                 data = [
