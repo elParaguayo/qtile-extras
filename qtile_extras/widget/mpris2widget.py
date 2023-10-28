@@ -24,6 +24,7 @@ from libqtile import widget
 from libqtile.command.base import expose_command
 from libqtile.utils import _send_dbus_message
 
+from qtile_extras import hook
 from qtile_extras.popup.templates.mpris2 import DEFAULT_IMAGE, DEFAULT_LAYOUT
 from qtile_extras.widget.mixins import ExtendedPopupMixin
 
@@ -118,12 +119,27 @@ class Mpris2(widget.Mpris2, ExtendedPopupMixin):
         ("popup_show_args", {"relative_to": 2, "relative_to_bar": True}, "Where to place popup"),
     ]
 
+    _hooks = [h.name for h in hook.mpris_hooks]
+
     def __init__(self, **config):
         widget.Mpris2.__init__(self, **config)
         ExtendedPopupMixin.__init__(self, **config)
         self.add_defaults(ExtendedPopupMixin.defaults)
         self.add_defaults(Mpris2.defaults)
         self._popup_values = {}
+
+    def get_track_info(self, metadata):
+        result = widget.Mpris2.get_track_info(self, metadata)
+        hook.fire("mpris_new_track", self.metadata)
+        return result
+
+    def parse_message(self, _interface_name, changed_properties, _invalidated_properties):
+        update_status = "PlaybackStatus" in changed_properties
+        widget.Mpris2.parse_message(
+            self, _interface_name, changed_properties, _invalidated_properties
+        )
+        if update_status:
+            hook.fire("mpris_status_change", changed_properties["PlaybackStatus"].value)
 
     def bind_callbacks(self):
         self.extended_popup.bind_callbacks(

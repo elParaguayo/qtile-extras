@@ -53,6 +53,7 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     :hidden:
 
     manual/ref/widgets
+    manual/ref/hooks
     manual/ref/popup
     manual/ref/decorations
     manual/ref/imgmask

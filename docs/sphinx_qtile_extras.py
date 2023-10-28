@@ -125,6 +125,13 @@ qtile_class_template = Template(
 
     {% endfor %}
     {% endif %}
+    {% if hooks %}
+    Available hooks:
+    {% for name in hooks %}
+    - `{{ name}} <hooks.html#qtile_extras.hook.subscribe.{{ name }}>`_
+    {% endfor %}
+
+    {% endif %}
     {% if defaults %}
     .. raw:: html
 
@@ -154,7 +161,7 @@ qtile_class_template = Template(
 
 qtile_hooks_template = Template(
     """
-.. automethod:: libqtile.hook.subscribe.{{ method }}
+.. automethod:: qtile_extras.hook.subscribe.{{ method }}
 """
 )
 
@@ -227,10 +234,11 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             "commandable": is_commandable and issubclass(obj, command.base.CommandObject),
             "is_widget": issubclass(obj, widget.base._Widget),
             "experimental": getattr(obj, "_experimental", False),
+            "hooks": getattr(obj, "_hooks", list()),
             "inactive": getattr(obj, "_inactive", False),
             "screenshots": getattr(obj, "_screenshots", list()),
             "dependencies": dependencies,
-            "compatibility": getattr(obj, "_qte_compatibility", False)
+            "compatibility": getattr(obj, "_qte_compatibility", False),
         }
         if context["commandable"]:
             context["commands"] = [
@@ -342,8 +350,19 @@ class ListWallpapers(SimpleDirectiveMixin, Directive):
             yield line
 
 
+class QtileHooks(SimpleDirectiveMixin, Directive):
+    def make_rst(self):
+        module, class_name = self.arguments[0].rsplit(".", 1)
+        obj = import_class(module, class_name)
+        for method in sorted(obj.hooks):
+            rst = qtile_hooks_template.render(method=method)
+            for line in rst.splitlines():
+                yield line
+
+
 def setup(app):
     app.add_directive("qtile_class", QtileClass)
     app.add_directive("qtile_module", QtileModule)
     app.add_directive("list_objects", ListObjects)
     app.add_directive("qte_wallpapers", ListWallpapers)
+    app.add_directive("qte_hooks", QtileHooks)

@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 import asyncio
+from enum import Enum, auto
 
 from dbus_next.aio import MessageBus
 from dbus_next.constants import BusType
@@ -26,12 +27,21 @@ from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
+from qtile_extras import hook
+
 PROPS_IFACE = "org.freedesktop.DBus.Properties"
 UPOWER_SERVICE = "org.freedesktop.UPower"
 UPOWER_INTERFACE = "org.freedesktop.UPower"
 UPOWER_PATH = "/org/freedesktop/UPower"
 UPOWER_DEVICE = UPOWER_INTERFACE + ".Device"
 UPOWER_BUS = BusType.SYSTEM
+
+
+class BatteryState(Enum):
+    NONE = auto()
+    FULL = auto()
+    LOW = auto()
+    CRITICAL = auto()
 
 
 class UPowerWidget(base._Widget):
@@ -92,6 +102,8 @@ class UPowerWidget(base._Widget):
     ]
 
     _dependencies = ["dbus-next"]
+
+    _hooks = [h.name for h in hook.upower_hooks]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
@@ -216,6 +228,7 @@ class UPowerWidget(base._Widget):
             bat["device"] = battery_dev
             bat["props"] = props
             bat["name"] = await battery_dev.get_native_path()
+            bat["flags"] = BatteryState.NONE
 
             battery_devices.append(bat)
 
@@ -241,7 +254,13 @@ class UPowerWidget(base._Widget):
         asyncio.create_task(self._upower_change())
 
     async def _upower_change(self):
-        self.charging = not await self.upower.get_on_battery()
+        charging = not await self.upower.get_on_battery()
+        if charging != self.charging:
+            if charging:
+                hook.fire("up_power_connected")
+            else:
+                hook.fire("up_power_disconnected")
+        self.charging = charging
         asyncio.create_task(self._update_battery_info())
 
     def battery_change(self, interface, changed, invalidated):
@@ -256,14 +275,31 @@ class UPowerWidget(base._Widget):
             battery["fraction"] = percentage / 100.0
             battery["percentage"] = percentage
             if self.charging:
+                if battery["flags"] in (BatteryState.LOW, BatteryState.CRITICAL):
+                    battery["flags"] = BatteryState.NONE
                 ttf = await dev.get_time_to_full()
+                if ttf == 0 and battery["flags"] != BatteryState.FULL:
+                    hook.fire("up_battery_full", battery["name"])
+                    battery["flags"] = BatteryState.FULL
                 battery["ttf"] = self.secs_to_hm(ttf)
                 battery["tte"] = ""
             else:
+                if battery["flags"] == BatteryState.FULL:
+                    battery["flags"] = BatteryState.NONE
                 tte = await dev.get_time_to_empty()
                 battery["tte"] = self.secs_to_hm(tte)
                 battery["ttf"] = ""
-            battery["status"] = next(x[1] for x in self.status if battery["fraction"] <= x[0])
+            status = next(x[1] for x in self.status if battery["fraction"] <= x[0])
+            if status == "Low":
+                if battery["flags"] != BatteryState.LOW and not self.charging:
+                    hook.fire("up_battery_low", battery["name"])
+                    battery["flags"] = BatteryState.LOW
+            elif status == "Critical":
+                if battery["flags"] != BatteryState.CRITICAL and not self.charging:
+                    hook.fire("up_battery_critical", battery["name"])
+                    battery["flags"] = BatteryState.CRITICAL
+
+            battery["status"] = status
 
         if draw:
             self.qtile.call_soon(self.bar.draw)
@@ -381,7 +417,8 @@ class UPowerWidget(base._Widget):
     def info(self):
         info = base._Widget.info(self)
         info["batteries"] = [
-            {k: v for k, v in x.items() if k not in ["device", "props"]} for x in self.batteries
+            {k: v for k, v in x.items() if k not in ["device", "props", "flags"]}
+            for x in self.batteries
         ]
         info["charging"] = self.charging
         info["levels"] = self.status

@@ -25,6 +25,7 @@ from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
+from qtile_extras import hook
 from qtile_extras.images import ImgMask
 
 GITHUB_ICON = Path(__file__).parent / ".." / "resources" / "github-icons" / "github.svg"
@@ -68,6 +69,8 @@ class GithubNotifications(base._Widget):
 
     _dependencies = ["requests"]
 
+    _hooks = [h.name for h in hook.githubnotifications_hooks]
+
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(GithubNotifications.defaults)
@@ -76,6 +79,7 @@ class GithubNotifications(base._Widget):
         self.error = False
         self._timer = None
         self._polling = False
+        self._new_notification = False
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -141,6 +145,9 @@ class GithubNotifications(base._Widget):
 
         self.error = False
         self.has_notifications = bool(r.json())
+        if self.has_notifications and not self._new_notification:
+            hook.fire("ghn_new_notification")
+        self._new_notification = self.has_notifications
         self._polling = False
 
         self._timer = self.timeout_add(self.update_interval, self.update)
