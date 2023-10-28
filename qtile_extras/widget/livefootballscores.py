@@ -24,6 +24,7 @@ from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
+from qtile_extras import hook
 from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
 from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText
 from qtile_extras.resources.footballscores import FootballMatch, FSConnectionError, League
@@ -224,6 +225,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
 
     _dependencies = ["requests"]
     _queue_time = 1
+    _hooks = [h.name for h in hook.footballscores_hooks]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
@@ -436,13 +438,16 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         if event.is_goal:
             flags.homegoal = event.home
             flags.awaygoal = not event.home
+            hook.fire("lfs_goal_scored", event.match)
 
         elif event.is_red:
             flags.homered = event.home
             flags.awayred = not event.home
+            hook.fire("lfs_red_card", event.match)
 
         elif event.is_status_change:
             flags.statuschange = True
+            hook.fire("lfs_status_change", event.match)
 
         if flags.changes:
             self.queue_update()

@@ -29,6 +29,8 @@ from libqtile.popup import Popup
 from libqtile.widget import base
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
+from qtile_extras import hook
+
 
 def icon_path():
     """Get the path to tv icon"""
@@ -42,6 +44,7 @@ class TVHJobServer:
         self.host = host
         self.auth = auth
         self.timeout = timeout
+        self.recs = set()
 
     def _send_api_request(self, path, args=None):
         url = self.host + path
@@ -75,10 +78,32 @@ class TVHJobServer:
             "duplicate": x.get("duplicate", 0) > 0,
         }
 
+    def _check_recording(self, progs):
+        dtnow = datetime.now()
+        live_recs = set()
+        for prog in progs:
+            recording = prog["start"] <= dtnow <= prog["stop"]
+            prog["recording"] = recording
+            if recording:
+                live_recs.add((prog["uuid"], prog["title"]))
+
+        # Fire hooks for new recordings
+        for _, title in live_recs - self.recs:
+            hook.fire("tvh_recording_started", title)
+
+        # Fire jooks for finished recordings
+        for _, title in self.recs - live_recs:
+            hook.fire("tvh_recording_ended", title)
+
+        self.recs = live_recs
+
+        return progs
+
     def get_upcoming(self, path, hide_duplicates=True):
         programmes = self._send_api_request(path)
         if programmes:
             programmes = [self._tidy_prog(x) for x in programmes["entries"]]
+            programmes = self._check_recording(programmes)
             programmes = sorted(programmes, key=lambda x: x["start_epoch"])
             if hide_duplicates:
                 programmes = [p for p in programmes if not p["duplicate"]]
@@ -139,6 +164,8 @@ class TVHWidget(base._Widget, base.MarginMixin):
 
     _dependencies = ["requests"]
 
+    _hooks = [h.name for h in hook.tvh_hooks]
+
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(TVHWidget.defaults)
@@ -148,6 +175,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         self.iconsize = 0
         self.popup = None
         self.add_callbacks({"Button1": self.toggle_info})
+        self._rec = None
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -225,13 +253,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
         if not self.data:
             return False
 
-        dtnow = datetime.now()
-
-        for prog in self.data:
-            if prog["start"] <= dtnow <= prog["stop"]:
-                return True
-
-        return False
+        return any(p["recording"] for p in self.data)
 
     def toggle_info(self):
         if self.popup:
