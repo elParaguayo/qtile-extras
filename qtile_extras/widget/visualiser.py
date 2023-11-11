@@ -23,6 +23,7 @@ import shutil
 import signal
 import sys
 import tempfile
+import time
 from contextlib import contextmanager
 from multiprocessing import shared_memory
 from pathlib import Path
@@ -61,6 +62,15 @@ class Visualiser(base._Widget):
 
     cava is configured through the widget. Currently, you can set the number of bars and
     the framerate.
+
+    .. warning::
+
+        Rendering the visualiser directly in qtile's bar is almost certainly not an efficient way
+        to have a visualiser in your setup. You should therefore be aware that this widget uses
+        more processing power than other widgets so you may see CPU usage increase when using this.
+        However, if the CPU usage continues to increase the longer you use the widget then that is
+        likely to be a bug and should be reported!
+
     """
 
     _experimental = True
@@ -93,6 +103,7 @@ class Visualiser(base._Widget):
         self._draw_count = 0
         self._toggling = False
         self._starting = False
+        self._last_time = time.time()
 
     def _configure(self, qtile, bar):
         if self.cava_path is None:
@@ -215,9 +226,16 @@ class Visualiser(base._Widget):
             self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
             return
 
-        self._draw_count += 1
-        if self._draw_count == 1:
-            self._draw()
+        # We need to filter out calls that happen before the next interval
+        # If we don't do this, CPU usage increases horrifically
+        # Feels like there should be a better way though!
+        t = time.time()
+        diff = t - self._last_time
+        if diff < self._interval:
+            return
+        self._last_time = t
+
+        self._draw()
 
     def _draw(self):
         with self._take_lock():
@@ -233,7 +251,6 @@ class Visualiser(base._Widget):
         self.drawer.ctx.paint()
         self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
 
-        self._draw_count = 0
         self._timer = self.timeout_add(self._interval, self.draw)
 
     def finalize(self):
