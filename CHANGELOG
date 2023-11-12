@@ -1,3 +1,4 @@
+2023-11-13: [FEATURE] Add `invert` option to `Visualiser` to draw bars from top down
 2023-11-12: [BUGFIX] (Trying to) fix increasing CPU with `Visualiser` widget
 2023-11-11: [DOCS] Update installation instructions
 2023-11-10: [FEATURE] Add custom hooks to certain widgets (refer to docs for more)
