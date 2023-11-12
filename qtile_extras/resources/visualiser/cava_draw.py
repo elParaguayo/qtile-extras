@@ -32,7 +32,7 @@ SHM = "/tmp/shm.mmap"
 LOCK = "/tmp/lock.mmap"
 
 
-def draw_cava(width, height, num_bars, pad, bar_width, spacing, pipe, background):
+def draw_cava(width, height, num_bars, pad, bar_width, spacing, pipe, background, invert):
     mem_size = width * height * 4
     init = bytearray(b"\00") * mem_size
 
@@ -61,13 +61,25 @@ def draw_cava(width, height, num_bars, pad, bar_width, spacing, pipe, background
                 pipe,
                 background,
                 mem_size,
+                invert,
             )
 
         # Files and mmaps are closed when draw_bars exits
 
 
 def draw_bars(
-    shm, lock, width, height, num_bars, pad, bar_width, spacing, pipe, background, mem_size
+    shm,
+    lock,
+    width,
+    height,
+    num_bars,
+    pad,
+    bar_width,
+    spacing,
+    pipe,
+    background,
+    mem_size,
+    invert,
 ):
     # Create a context manager to lock access to shared memory to prevent race conditions
     @contextmanager
@@ -90,18 +102,12 @@ def draw_bars(
             ctx.fill()
             ctx.set_operator(cairocffi.OPERATOR_SOURCE)
             x = pad
-            for bar in out:
-                ctx.move_to(x, height)
-                h = int(bar * height / 255)
-                ctx.line_to(x, height - h)
-                x += bar_width
-                ctx.line_to(x, height - h)
-                ctx.line_to(x, height)
-                x += spacing
-
-            ctx.close_path()
-
             ctx.set_source_rgba(*background)
+            for bar in out:
+                h = int(bar * height / 255)
+                ctx.rectangle(x, 0 if invert else height - h, bar_width, h)
+                x += spacing + bar_width
+
             ctx.fill()
 
             with lock_memory():
@@ -128,7 +134,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pipe", dest="pipe", type=str, help="Pipe for cava output", required=True
     )
-
+    parser.add_argument(
+        "--invert", dest="invert", action="store_true", help="Draw bars from top down"
+    )
     args = parser.parse_args()
 
     bar_width = args.width // args.num_bars
@@ -144,4 +152,5 @@ if __name__ == "__main__":
         args.spacing,
         args.pipe,
         args.background,
+        args.invert,
     )

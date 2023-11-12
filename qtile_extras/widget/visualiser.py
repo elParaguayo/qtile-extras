@@ -88,6 +88,7 @@ class Visualiser(base._Widget):
         ("autostart", True, "Start visualiser automatically"),
         ("hide", True, "Hide the visualiser when not active"),
         ("channels", "mono", "Visual channels. 'mono' or 'stereo'."),
+        ("invert", False, "When True, bars will draw from the top down"),
     ]
 
     _screenshots = [("visualiser.gif", "Default config.")]
@@ -143,24 +144,26 @@ class Visualiser(base._Widget):
     def _start(self):
         self._starting = True
         self.cava_proc = self.qtile.spawn([self.cava_path, "-p", self.config_file.name])
-        self.draw_proc = self.qtile.spawn(
-            [
-                PYTHON,
-                CAVA_DRAW.resolve().as_posix(),
-                "--width",
-                f"{self._config_length}",
-                "--height",
-                f"{self.bar_height}",
-                "--bars",
-                f"{self.bars}",
-                "--spacing",
-                f"{self.spacing}",
-                "--pipe",
-                f"{self.cava_pipe}",
-                "--background",
-                self.bar_colour,
-            ]
-        )
+        cmd = [
+            PYTHON,
+            CAVA_DRAW.resolve().as_posix(),
+            "--width",
+            f"{self._config_length}",
+            "--height",
+            f"{self.bar_height}",
+            "--bars",
+            f"{self.bars}",
+            "--spacing",
+            f"{self.spacing}",
+            "--pipe",
+            f"{self.cava_pipe}",
+            "--background",
+            self.bar_colour,
+        ]
+        if self.invert:
+            cmd.append("--invert")
+
+        self.draw_proc = self.qtile.spawn(cmd)
         self._timer = self.timeout_add(1, self._open_shm)
 
     def _stop(self):
