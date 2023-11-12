@@ -69,11 +69,18 @@ class CommandChecker:
 
         ignores = [r.lineno for r in raw.type_ignores]
 
+        errors = []
+
         for p in prints:
             if p.lineno in ignores:
                 continue
             self.errors += 1
-            print(f"{self.errors:>3} {fname}:{p.lineno}")
+            errors.append((f"{self.errors:>3} {fname}:{p.lineno}", p.lineno))
+        
+        errors.sort(key=lambda x: x[1])
+
+        for error in errors:
+            print(error[0])
 
 
 if __name__ == "__main__":

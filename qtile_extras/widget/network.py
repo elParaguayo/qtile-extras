@@ -163,8 +163,8 @@ class WiFiIcon(base._Widget, base.PaddingMixin):
             else:
                 self.draw()
 
-        except Exception as e:
-            logger.warning(f"Couldn't get wifi info. {e}")
+        except Exception:
+            logger.exception("Couldn't get wifi info.")
 
     def draw_wifi(self, percentage):
         offset = self.padding_x

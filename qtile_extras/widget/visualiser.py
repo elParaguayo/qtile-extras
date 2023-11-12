@@ -24,7 +24,6 @@ import signal
 import sys
 import tempfile
 from contextlib import contextmanager
-from multiprocessing import shared_memory
 from pathlib import Path
 from time import sleep
 
@@ -88,7 +87,7 @@ class Visualiser(base._Widget):
         base._Widget.__init__(self, self._config_length, **config)
         self.add_defaults(Visualiser.defaults)
         self._procs_started = False
-        self._shm: shared_memory.SharedMemory
+        self._shm = None
         self._timer = None
         self._draw_count = 0
         self._toggling = False

@@ -247,7 +247,7 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
     def message(self, message):
         self.update(*message.body)
 
-    def update(self, interface_name, changed_properties, invalidated_properties):
+    def update(self, _interface_name, changed_properties, _invalidated_properties):
         if "OnBattery" not in changed_properties:
             return
 
@@ -266,11 +266,9 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
                     percent = int(value[:-1])
                     self.set_brightness_percent(percent / 100)
                 except ValueError:
-                    err = "Incorrectly formatted brightness: {}".format(value)
-                    logger.error(err)
+                    logger.error("Incorrectly formatted brightness: %s", value)
             else:
-                err = "Unrecognised value for brightness: {}".format(value)
-                logger.warning(err)
+                logger.warning("Unrecognised value for brightness: %s", value)
 
             self.onbattery = onbattery
 
@@ -394,13 +392,13 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             with open(path, "r") as b:
                 value = int(b.read())
         except PermissionError:
-            logger.error("Unable to read {}.".format(path))
+            logger.error("Unable to read %s.", path)
             value = False
         except ValueError:
-            logger.error("Unexpected value when reading {}.".format(path))
+            logger.error("Unexpected value when reading %s.", path)
             value = False
         except Exception as e:
-            logger.error("Unexpected error when reading {}: {}.".format(path, e))
+            logger.error("Unexpected error when reading %s: %s.", path, e)  # noqa: G200
             value = False
 
         return value
@@ -428,10 +426,10 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
                 b.write(str(newval))
                 success = True
         except PermissionError:
-            logger.error("No write access to {}.".format(self.bright_path))
+            logger.error("No write access to %s.", self.bright_path)
             success = False
         except Exception as e:
-            logger.error("Unexpected error when writing " "brightness value: {}.".format(e))
+            logger.error("Unexpected error when writing brightness value: %s.", e)  # noqa: G200
             success = False
 
         return success

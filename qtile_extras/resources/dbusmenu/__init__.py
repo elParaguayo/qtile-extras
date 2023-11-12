@@ -151,11 +151,13 @@ class DBusMenu:  # noqa: E303
                 self._interface = obj.get_interface(MENU_INTERFACE)
             except InterfaceNotFoundError:
                 logger.warning(
-                    f"Could not find {MENU_INTERFACE} interface at {self.service} and unable to use default spec."
+                    "Could not find %s interface at %s and unable to use default spec.",
+                    MENU_INTERFACE,
+                    self.service,
                 )
                 return False
         except (DBusError, InvalidIntrospectionError):
-            logger.warning(f"Path {self.path} does not present a valid dbusmenu object")
+            logger.warning("Path %s does not present a valid dbusmenu object", self.path)
             return False
 
         # Menus work by giving each menu item an ID and actions are

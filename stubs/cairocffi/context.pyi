@@ -1,9 +1,14 @@
-from . import cairo as cairo, constants as constants, ffi as ffi
-from .fonts import FontFace as FontFace, FontOptions as FontOptions, ScaledFont as ScaledFont
+from typing import Any
+
+from . import cairo as cairo
+from . import constants as constants
+from . import ffi as ffi
+from .fonts import FontFace as FontFace
+from .fonts import FontOptions as FontOptions
+from .fonts import ScaledFont as ScaledFont
 from .matrix import Matrix as Matrix
 from .patterns import Pattern as Pattern
 from .surfaces import Surface as Surface
-from typing import Any
 
 PATH_POINTS_PER_TYPE: Any
 

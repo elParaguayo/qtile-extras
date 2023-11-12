@@ -1,6 +1,9 @@
-from . import cairo as cairo, constants as constants, ffi as ffi
-from .fonts import FontOptions as FontOptions
 from typing import Any
+
+from . import cairo as cairo
+from . import constants as constants
+from . import ffi as ffi
+from .fonts import FontOptions as FontOptions
 
 SURFACE_TARGET_KEY: Any
 
@@ -39,7 +42,9 @@ class Surface:
     def write_to_png(self, target: Any | None = ...): ...
 
 class ImageSurface(Surface):
-    def __init__(self, format, width, height, data: Any | None = ..., stride: Any | None = ...) -> None: ...
+    def __init__(
+        self, format, width, height, data: Any | None = ..., stride: Any | None = ...
+    ) -> None: ...
     @classmethod
     def create_for_data(cls, data, format, width, height, stride: Any | None = ...): ...
     @staticmethod

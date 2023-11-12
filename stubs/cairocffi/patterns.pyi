@@ -1,7 +1,10 @@
-from . import cairo as cairo, constants as constants, ffi as ffi
+from typing import Any
+
+from . import cairo as cairo
+from . import constants as constants
+from . import ffi as ffi
 from .matrix import Matrix as Matrix
 from .surfaces import Surface as Surface
-from typing import Any
 
 class Pattern:
     def __init__(self, pointer) -> None: ...

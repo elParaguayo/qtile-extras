@@ -1,8 +1,18 @@
-from . import cairo as cairo, ffi as ffi
 from typing import Any
 
+from . import cairo as cairo
+from . import ffi as ffi
+
 class Matrix:
-    def __init__(self, xx: int = ..., yx: int = ..., xy: int = ..., yy: int = ..., x0: int = ..., y0: int = ...) -> None: ...
+    def __init__(
+        self,
+        xx: int = ...,
+        yx: int = ...,
+        xy: int = ...,
+        yy: int = ...,
+        x0: int = ...,
+        y0: int = ...,
+    ) -> None: ...
     @classmethod
     def init_rotate(cls, radians): ...
     def as_tuple(self): ...

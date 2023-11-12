@@ -1,8 +1,9 @@
+from numbers import Number
+from typing import Any, Protocol, Union
+
 import pint
 from _typeshed import Incomplete
-from numbers import Number
 from stravalib.exc import warn_units_deprecated as warn_units_deprecated
-from typing import Any, Protocol, Union
 
 class UnitsQuantity(Protocol):
     num: float

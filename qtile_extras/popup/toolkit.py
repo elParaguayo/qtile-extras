@@ -177,8 +177,9 @@ class _PopupLayout(configurable.Configurable):
 
             if c.name in controls:
                 logger.warning(
-                    f"There is an existing control named {c.name}. "
-                    f"If you wish to update controls then they must have unique names."
+                    "There is an existing control named %s. "
+                    "If you wish to update controls then they must have unique names.",
+                    c.name,
                 )
                 continue
 
@@ -316,7 +317,7 @@ class _PopupLayout(configurable.Configurable):
                 y += scr.y + scr.height - self.popup.height
 
             else:
-                logger.warning(f"Unexpected value for 'relative_to': {relative_to}.")
+                logger.warning("Unexpected value for 'relative_to': %s", relative_to)
                 x += scr.x
                 y += scr.y
 
@@ -717,8 +718,7 @@ class PopupRelativeLayout(_PopupLayout):
                 ]
             ):
                 logger.warning(
-                    "Control {} using non relative dimensions "
-                    "in Relative layout".format(control)
+                    "Control %s using non relative dimensions " "in Relative layout", control
                 )
 
             control.offsetx = int(self._width * control.pos_x) + self.margin
@@ -940,7 +940,7 @@ class _PopupWidget(configurable.Configurable):
                     (cmd.selectors, cmd.name, cmd.args, cmd.kwargs)
                 )
                 if status in (interface.ERROR, interface.EXCEPTION):
-                    logger.error("KB command error %s: %s" % (cmd.name, val))
+                    logger.error("KB command error %s: %s", cmd.name, val)
             else:
                 cmd()
 
