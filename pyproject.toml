@@ -34,3 +34,8 @@ exclude = ["test*", "docs*", "stubs*"]
 line-length = 98
 
 [tool.setuptools_scm]
+
+[tool.vulture]
+paths = ["qtile_extras", "whitelist.py"]
+min_confidence = 100
+ignore_decorators = ["@method"]
