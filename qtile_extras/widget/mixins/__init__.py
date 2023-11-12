@@ -229,7 +229,7 @@ class MenuMixin(Configurable, _BaseMixin):
             "icon_theme": self.icon_theme,
         }
 
-        self.menu: PopupMenu | None = None
+        self.menu = None
 
     def set_menu_position(self, x: int, y: int) -> tuple[int, int]:
         """

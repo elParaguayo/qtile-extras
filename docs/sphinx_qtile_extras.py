@@ -270,16 +270,16 @@ class QtileModule(SimpleDirectiveMixin, Directive):
         module = importlib.import_module(self.arguments[0])
         exclude_base = "exclude-base" in self.options
 
-        BaseClass = None
+        base_class = None
         if "baseclass" in self.options:
-            BaseClass = import_class(*self.options["baseclass"].rsplit(".", 1))
+            base_class = import_class(*self.options["baseclass"].rsplit(".", 1))
 
         for item in dir(module):
             obj = import_class(self.arguments[0], item)
             if (
                 (not inspect.isclass(obj))
-                or (BaseClass and not issubclass(obj, BaseClass))
-                or (exclude_base and obj == BaseClass)
+                or (base_class and not issubclass(obj, base_class))
+                or (exclude_base and obj == base_class)
                 or (is_widget(obj) and item not in widgets)
             ):
                 continue
@@ -307,16 +307,16 @@ class ListObjects(SimpleDirectiveMixin, Directive):
     def make_rst(self):
         module = importlib.import_module(self.arguments[0])
 
-        BaseClass = None
+        base_class = None
         if "baseclass" in self.options:
-            BaseClass = import_class(*self.options["baseclass"].rsplit(".", 1))
+            base_class = import_class(*self.options["baseclass"].rsplit(".", 1))
         objects = []
         for item in dir(module):
             obj = import_class(self.arguments[0], item)
             if (
                 (not inspect.isclass(obj))
-                or (BaseClass and not issubclass(obj, BaseClass))
-                or (obj == BaseClass)
+                or (base_class and not issubclass(obj, base_class))
+                or (obj == base_class)
                 or (is_widget(obj) and item not in widgets)
                 or getattr(obj, "_qte_compatibility", False)
             ):

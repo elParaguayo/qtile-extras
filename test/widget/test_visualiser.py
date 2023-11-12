@@ -28,30 +28,9 @@ import qtile_extras
 from test.helpers import Retry
 
 
-class SHM:
-    def __init__(self, buf):
-        self.buf = buf
-
-    def close(self):
-        pass
-
-    def unlink(self):
-        pass
-
-
-def fake_shared_memory(name):
-    if name == "qte_cava_visualiser":
-        return SHM(bytearray([0x0] * 100 * 20 * 4))
-    else:
-        return SHM(bytearray([0x0] * 1))
-
-
 @pytest.fixture(scope="function")
 def visualiser(monkeypatch):
     monkeypatch.setattr("qtile_extras.widget.visualiser.os.kill", lambda *args: True)
-    monkeypatch.setattr(
-        "qtile_extras.widget.visualiser.shared_memory.SharedMemory", fake_shared_memory
-    )
     reload(qtile_extras)
 
     class GlobalMenuConfig(Config):

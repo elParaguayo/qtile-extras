@@ -59,8 +59,8 @@ def get_menu(self, root: int = 0, callback: Optional[Callable] = None):
         self.menu.get_menu(root, callback=callback)
 
 
-StatusNotifierItem.attach_menu = attach_menu  # type: ignore
-StatusNotifierItem.get_menu = get_menu  # type: ignore
+StatusNotifierItem.attach_menu = attach_menu
+StatusNotifierItem.get_menu = get_menu
 
 
 class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):

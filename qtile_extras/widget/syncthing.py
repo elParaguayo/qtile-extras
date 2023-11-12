@@ -141,7 +141,7 @@ class Syncthing(base._Widget, ProgressBarMixin):
             if not self._error:
                 self._error = True
                 if not self._stop_log_spam:
-                    logger.warning(f"{r.status_code} error accessing Syncthing server.")
+                    logger.warning("%s error accessing Syncthing server.", r.status_code)
                     self._stop_log_spam = True
             return {}
 

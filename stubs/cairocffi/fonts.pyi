@@ -1,6 +1,9 @@
-from . import cairo as cairo, constants as constants, ffi as ffi
-from .matrix import Matrix as Matrix
 from typing import Any
+
+from . import cairo as cairo
+from . import constants as constants
+from . import ffi as ffi
+from .matrix import Matrix as Matrix
 
 class FontFace:
     def __init__(self, pointer) -> None: ...
@@ -14,7 +17,13 @@ class ToyFontFace(FontFace):
 FONT_TYPE_TO_CLASS: Any
 
 class ScaledFont:
-    def __init__(self, font_face, font_matrix: Any | None = ..., ctm: Any | None = ..., options: Any | None = ...) -> None: ...
+    def __init__(
+        self,
+        font_face,
+        font_matrix: Any | None = ...,
+        ctm: Any | None = ...,
+        options: Any | None = ...,
+    ) -> None: ...
     def get_font_face(self): ...
     def get_font_options(self): ...
     def get_font_matrix(self): ...

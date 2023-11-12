@@ -249,7 +249,7 @@ class UPowerWidget(base._Widget):
 
         return battery_devices
 
-    def upower_change(self, interface, changed, invalidated):
+    def upower_change(self, _interface, _changed, _invalidated):
         # Update the charging status
         asyncio.create_task(self._upower_change())
 
@@ -263,7 +263,7 @@ class UPowerWidget(base._Widget):
         self.charging = charging
         asyncio.create_task(self._update_battery_info())
 
-    def battery_change(self, interface, changed, invalidated):
+    def battery_change(self, _interface, _changed, _invalidated):
         # The batteries are polled every 2 mins by DBus so let's just update
         # when we get any signal
         asyncio.create_task(self._update_battery_info())

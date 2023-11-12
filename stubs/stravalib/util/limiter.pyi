@@ -1,6 +1,7 @@
+from typing import NamedTuple
+
 from _typeshed import Incomplete
 from stravalib import exc as exc
-from typing import NamedTuple
 
 def total_seconds(td): ...
 
@@ -30,7 +31,13 @@ class SleepingRateLimitRule:
     short_limit: Incomplete
     long_limit: Incomplete
     force_limits: Incomplete
-    def __init__(self, priority: str = ..., short_limit: int = ..., long_limit: int = ..., force_limits: bool = ...) -> None: ...
+    def __init__(
+        self,
+        priority: str = ...,
+        short_limit: int = ...,
+        long_limit: int = ...,
+        force_limits: bool = ...,
+    ) -> None: ...
     def __call__(self, response_headers) -> None: ...
 
 class RateLimitRule:

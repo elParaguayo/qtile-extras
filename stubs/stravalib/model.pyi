@@ -1,8 +1,20 @@
 import abc
-from _typeshed import Incomplete
 from collections.abc import Sequence
+
+from _typeshed import Incomplete
 from stravalib import exc as exc
-from stravalib.attributes import Attribute as Attribute, ChoicesAttribute as ChoicesAttribute, DETAILED as DETAILED, DateAttribute as DateAttribute, EntityAttribute as EntityAttribute, EntityCollection as EntityCollection, LocationAttribute as LocationAttribute, META as META, SUMMARY as SUMMARY, TimeIntervalAttribute as TimeIntervalAttribute, TimestampAttribute as TimestampAttribute, TimezoneAttribute as TimezoneAttribute
+from stravalib.attributes import DETAILED as DETAILED
+from stravalib.attributes import META as META
+from stravalib.attributes import SUMMARY as SUMMARY
+from stravalib.attributes import Attribute as Attribute
+from stravalib.attributes import ChoicesAttribute as ChoicesAttribute
+from stravalib.attributes import DateAttribute as DateAttribute
+from stravalib.attributes import EntityAttribute as EntityAttribute
+from stravalib.attributes import EntityCollection as EntityCollection
+from stravalib.attributes import LocationAttribute as LocationAttribute
+from stravalib.attributes import TimeIntervalAttribute as TimeIntervalAttribute
+from stravalib.attributes import TimestampAttribute as TimestampAttribute
+from stravalib.attributes import TimezoneAttribute as TimezoneAttribute
 
 class BaseEntity(metaclass=abc.ABCMeta):
     log: Incomplete

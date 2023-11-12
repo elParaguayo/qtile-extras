@@ -147,7 +147,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
         base._Widget._configure(self, qtile, bar)
         self.timeout_add(self.startup_delay, self.refresh)
 
-    def _get_data(self, queue=None):
+    def _get_data(self):
         return get_strava_data()
 
     def _read_data(self, future):
@@ -157,7 +157,7 @@ class StravaWidget(base._Widget, base.MarginMixin):
             success, data = results
 
             if not success:
-                logger.warning(f"Error retrieving data: {data}.")
+                logger.warning("Error retrieving data: %s.", data)
             else:
                 self.data = data
                 self.formatted_data = {}
@@ -249,8 +249,8 @@ class StravaWidget(base._Widget, base.MarginMixin):
     def format_text(self, text):
         try:
             return text.format(**self.formatted_data)
-        except Exception as e:
-            logger.warning(e)
+        except Exception:
+            logger.exception("Exception when trying to format text.")
             return "Error"
 
     def show_popup_summary(self):

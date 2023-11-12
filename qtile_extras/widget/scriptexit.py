@@ -53,6 +53,6 @@ class ScriptExit(QuickExit):
                 subprocess.run(self.exit_script, check=True)
             except subprocess.CalledProcessError:
                 raw = " ".join(self.exit_script)
-                logger.error("Exit script ({}) failed to run.".format(raw))
+                logger.error("Exit script (%s) failed to run.", raw)
 
         QuickExit.update(self)

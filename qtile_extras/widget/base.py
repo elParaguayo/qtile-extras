@@ -233,7 +233,7 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         self.icons_loaded = task.result()
 
         if not self.icons_loaded:
-            logger.error(f"Could not find volume icons at {self.theme_path}.")
+            logger.error("Could not find volume icons at %s.", self.theme_path)
             return
 
         self.bar.draw()

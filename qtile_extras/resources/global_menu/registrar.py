@@ -125,7 +125,7 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
     def RegisterWindow(self, windowId: "u", menuObjectPath: "o"):  # type: ignore  # noqa: F821, N802, N803
         # This is silly, the spec says that apps should only provide
         # windowId and menuObjectPath but we need to be able to return
-        # the the host service too but this isn't explicityly provided
+        # the host service too but this isn't explicityly provided
         # and dbus-next's high-level service doesn't expose this part of
         # the message. So... we expose the method here but don't do anything
         # with it. We actually deal with the call in a low-level message

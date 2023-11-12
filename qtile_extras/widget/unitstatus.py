@@ -171,7 +171,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         self.draw()
 
-    def _changed(self, interface, changed, invalidated):
+    def _changed(self, _interface, changed, _invalidated):
         state = changed.get("ActiveState")
 
         if state:

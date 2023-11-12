@@ -1,6 +1,7 @@
+from typing import NamedTuple
+
 from _typeshed import Incomplete
 from stravalib.unithelper import is_quantity_type as is_quantity_type
-from typing import NamedTuple
 
 META: int
 SUMMARY: int
@@ -11,7 +12,9 @@ class Attribute:
     resource_states: Incomplete
     data: Incomplete
     units: Incomplete
-    def __init__(self, type_, resource_states: Incomplete | None = ..., units: Incomplete | None = ...) -> None: ...
+    def __init__(
+        self, type_, resource_states: Incomplete | None = ..., units: Incomplete | None = ...
+    ) -> None: ...
     def __get__(self, obj, clazz): ...
     def __set__(self, obj, val) -> None: ...
     @property

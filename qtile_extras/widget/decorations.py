@@ -73,10 +73,10 @@ class _Decoration(base.PaddingMixin):
             elif len(value) == 4:
                 n, e, s, w = value
             else:
-                logger.info(f"{name} should be a single number or a list of 1 or 4 values")
+                logger.info("%s should be a single number or a list of 1 or 4 values", name)
                 n = e = s = w = 0
         else:
-            logger.info(f"{name} should be a single number or a list of 1 or 4 values")
+            logger.info("%s should be a single number or a list of 1 or 4 values", name)
             n = e = s = w = 0
 
         return [n, e, s, w]

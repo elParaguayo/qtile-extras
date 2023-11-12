@@ -34,7 +34,6 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, GLib, Gtk
 
-
 if __name__ == "__main__":
     # GTK consumes the `--name <class>` args
     if len(sys.argv) > 1:

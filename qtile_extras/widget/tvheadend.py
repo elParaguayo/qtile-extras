@@ -189,7 +189,7 @@ class TVHWidget(base._Widget, base.MarginMixin):
 
         self.timeout_add(self.startup_delay, self.refresh)
 
-    def _get_data(self, queue=None):
+    def _get_data(self):
         try:
             data = self.tvh.get_upcoming(
                 path=self.upcoming_recordings_path, hide_duplicates=self.hide_duplicates
