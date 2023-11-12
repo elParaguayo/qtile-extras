@@ -2,6 +2,8 @@ include CHANGELOG
 include LICENSE
 include README.md
 include MANIFEST.in
+include .pre-commit-config.yaml
+include whitelist.py
 
 exclude coverage.xml
 exclude tox.ini
