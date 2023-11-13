@@ -229,6 +229,7 @@ class UPowerWidget(base._Widget):
             bat["props"] = props
             bat["name"] = await battery_dev.get_native_path()
             bat["flags"] = BatteryState.NONE
+            bat["fraction"] = 0.5
 
             battery_devices.append(bat)
 
