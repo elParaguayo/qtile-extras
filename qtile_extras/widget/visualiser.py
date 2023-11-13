@@ -26,6 +26,7 @@ import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
+from threading import Lock
 from time import sleep
 
 import cairocffi
@@ -50,6 +51,8 @@ method = raw
 raw_target = {pipe}
 bit_format = 8bit
 """
+
+fps_lock = Lock()
 
 
 class Visualiser(base._Widget):
@@ -188,6 +191,9 @@ class Visualiser(base._Widget):
         self._lock.close()
         self._lockfile.close()
 
+        if fps_lock.locked():
+            fps_lock.release()
+
         self._set_length()
 
     def _open_shm(self):
@@ -228,14 +234,13 @@ class Visualiser(base._Widget):
             self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
             return
 
-        # We need to filter out calls that happen before the next interval
-        # If we don't do this, CPU usage increases horrifically
-        # Feels like there should be a better way though!
-        t = time.time()
-        diff = t - self._last_time
-        if diff < self._interval:
+        # We need to lock the redraw to our set framerate. We can't rely solely on timers
+        # as any call to bar.draw() by another widget will trigger a draw of the widget.
+        # We use a non-blocking lock and only allow the widget to draw if the lock was
+        # successfully acquired. The lock is only released after the required interval has
+        # elapsed.
+        if not fps_lock.acquire(blocking=False):
             return
-        self._last_time = t
 
         self._draw()
 
@@ -253,7 +258,12 @@ class Visualiser(base._Widget):
         self.drawer.ctx.paint()
         self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
 
-        self._timer = self.timeout_add(self._interval, self.draw)
+        self._timer = self.timeout_add(self._interval, self.loop)
+
+    def loop(self):
+        # Release the lock and redraw.
+        fps_lock.release()
+        self.draw()
 
     def finalize(self):
         self._stop()
