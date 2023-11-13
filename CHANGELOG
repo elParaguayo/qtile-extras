@@ -1,3 +1,4 @@
+2023-11-13: [BUGFIX] A neater fix for the `Visualiser` CPU bug
 2023-11-13: [BUGFIX] Fix `fraction` KeyError in `UpowerWidget`
 2023-11-13: [FEATURE] Add `invert` option to `Visualiser` to draw bars from top down
 2023-11-12: [BUGFIX] (Trying to) fix increasing CPU with `Visualiser` widget
