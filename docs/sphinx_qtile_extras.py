@@ -133,22 +133,18 @@ qtile_class_template = Template(
 
     {% endif %}
     {% if defaults %}
-    .. raw:: html
+    .. list-table::
+        :widths: 20 20 60
+        :header-rows: 1
 
-        <table class="colwidths-auto docutils align-default">
-        <tr>
-        <td><b>key</b></td>
-        <td><b>default</b></td>
-        <td><b>description</b></td>
-        </tr>
+        * - key
+          - default
+          - description
         {% for key, default, description in defaults %}
-        <tr>
-        <td><code class="docutils literal notranslate">{{ key }}</code></td>
-        <td><code class="docutils literal notranslate">{{ default }}</code></td>
-        <td>{{ description[1:-1] }}</td>
-        </tr>
+        * - ``{{ key }}``
+          - ``{{ default }}``
+          - {{ description[1:-1] }}
         {% endfor %}
-        </table>
     {% endif %}
     {% if commandable %}
     {% for cmd in commands %}
