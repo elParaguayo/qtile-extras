@@ -127,10 +127,14 @@ class Mpris2(widget.Mpris2, ExtendedPopupMixin):
         self.add_defaults(ExtendedPopupMixin.defaults)
         self.add_defaults(Mpris2.defaults)
         self._popup_values = {}
+        self._last_meta = {}
+        self._last_status = ""
 
     def get_track_info(self, metadata):
         result = widget.Mpris2.get_track_info(self, metadata)
-        hook.fire("mpris_new_track", self.metadata)
+        if self.metadata != self._last_meta:
+            hook.fire("mpris_new_track", self.metadata)
+            self._last_meta = self.metadata.copy()
         return result
 
     def parse_message(self, _interface_name, changed_properties, _invalidated_properties):
@@ -139,7 +143,10 @@ class Mpris2(widget.Mpris2, ExtendedPopupMixin):
             self, _interface_name, changed_properties, _invalidated_properties
         )
         if update_status:
-            hook.fire("mpris_status_change", changed_properties["PlaybackStatus"].value)
+            status = changed_properties["PlaybackStatus"].value
+            if status != self._last_status:
+                hook.fire("mpris_status_change", status)
+                self._last_status = status
 
     def bind_callbacks(self):
         self.extended_popup.bind_callbacks(
