@@ -168,14 +168,14 @@ Below is a quick example for displaying a number of graph widgets in a popup:
                 pos_x=0.05,
                 pos_y=0.05
             ),
-            tk.PopupWidget(
+            PopupWidget(
                 widget=widget.NetGraph(),
                 width=0.45,
                 height=0.45,
                 pos_x=0.5,
                 pos_y=0.05
             ),
-            tk.PopupWidget(
+            PopupWidget(
                 widget=widget.MemoryGraph(),
                 width=0.9,
                 height=0.45,
@@ -184,7 +184,7 @@ Below is a quick example for displaying a number of graph widgets in a popup:
             )
         ]
 
-        layout = tk.PopupRelativeLayout(
+        layout = PopupRelativeLayout(
             qtile,
             width=1000,
             height=200,
@@ -220,12 +220,12 @@ be updated in the same call.
 
     def create_text_popup(qtile):
         global text_popup
-        text_popup = tk.PopupRelativeLayout(
+        text_popup = PopupRelativeLayout(
             qtile,
             width=400,
             height=200,
             controls=[
-                tk.PopupText(
+                PopupText(
                     text="Original Text",
                     width=0.9,
                     height=0.9,
@@ -278,11 +278,11 @@ For example, to make the ``Clock`` widget show the long date when clicked:
             self.extended_popup.update_controls(longdate=longdate)
 
 
-    clock_layout = tk.PopupRelativeLayout(
+    clock_layout = PopupRelativeLayout(
         width=250,
         height=250,
         controls=[
-            tk.PopupText(
+            PopupText(
                 name="longdate",
                 pos_x=0.1,
                 pos_y=0.05,
@@ -290,7 +290,7 @@ For example, to make the ``Clock`` widget show the long date when clicked:
                 height=0.05,
                 h_align="center",
             ),
-            tk.PopupWidget(
+            PopupWidget(
                 widget=extrawidgets.AnalogueClock(
                     second_size=2,
                     minute_size=4,
