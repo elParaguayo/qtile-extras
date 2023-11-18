@@ -215,6 +215,7 @@ control (as set by the ``name`` parameter) as a keyword. Multiple controls can
 be updated in the same call.
 
 .. code:: python
+
     from qtile_extras.popup.toolkit import (
         PopupRelativeLayout,
         PopupText
