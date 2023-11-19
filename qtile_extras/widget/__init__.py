@@ -39,6 +39,7 @@ widgets = {
     "HDDGraph": "graph",
     "HDDBusyGraph": "graph",
     "Image": "image",
+    "LightControlWidget": "lightcontrol",
     "LiveFootballScores": "livefootballscores",
     "MemoryGraph": "graph",
     "Mpris2": "mpris2widget",
