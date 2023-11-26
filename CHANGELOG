@@ -1,4 +1,5 @@
-2-23-11-17: [BUGFIX] Prevent double hooks for Mpris2 widget
+2023-12-21: [FEATURE] Add `IWD` widget
+2023-11-17: [BUGFIX] Prevent double hooks for Mpris2 widget
 2023-11-13: [BUGFIX] A neater fix for the `Visualiser` CPU bug
 2023-11-13: [BUGFIX] Fix `fraction` KeyError in `UpowerWidget`
 2023-11-13: [FEATURE] Add `invert` option to `Visualiser` to draw bars from top down
