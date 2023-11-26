@@ -1,7 +1,7 @@
 cffi
 setuptools_scm
 sphinx
-sphinx_rtd_theme
+furo
 sphinxcontrib-seqdiag
 dbus-next
 pulsectl-asyncio
