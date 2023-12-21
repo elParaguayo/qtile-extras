@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import math
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -29,6 +30,13 @@ from qtile_extras.popup.menu import PopupMenu
 
 if TYPE_CHECKING:
     from typing import Any, Callable  # noqa: F401
+
+
+PI = math.pi
+
+
+def to_rads(degrees):
+    return degrees * PI / 180.0
 
 
 class _BaseMixin:
@@ -513,3 +521,84 @@ class ProgressBarMixin(_BaseMixin):
             layout.draw(0, 0)
 
             self.drawer.ctx.restore()
+
+
+class GraphicalWifiMixin(_BaseMixin):
+    defaults = [
+        ("wifi_arc", 75, "Angle of arc in degrees."),
+        ("wifi_rectangle_width", 5, "Width of rectangle in pixels."),
+        ("wifi_shape", "arc", "'arc' or 'rectangle'"),
+    ]
+
+    def __init__(self):
+        self.wifi_width = 0
+
+    def set_wifi_sizes(self):
+        self.wifi_padding_x = getattr(self, "padding_x", getattr(self, "padding", 0))
+        self.wifi_padding_y = getattr(self, "padding_y", getattr(self, "padding", 0))
+        self.wifi_height = self.bar.height - (self.wifi_padding_y * 2)
+        width_ratio = math.sin(to_rads(self.wifi_arc / 2))
+        if self.wifi_shape == "arc":
+            self.wifi_width = (self.wifi_height * width_ratio) * 2
+            self.wifi_width = math.ceil(self.wifi_width)
+        else:
+            self.wifi_width = self.wifi_rectangle_width
+
+        self.icon_size = self.wifi_height
+
+    def draw_wifi(self, percentage, foreground="ffffff", background="777777"):
+        if self.wifi_shape == "arc":
+            func = self._draw_wifi_arc
+        else:
+            func = self._draw_wifi_rectangle
+
+        func(percentage, foreground, background)
+
+    def _draw_wifi_arc(self, percentage, foreground, background):
+        offset = self.wifi_padding_x
+
+        half_arc = self.wifi_arc / 2
+        x_offset = int(self.wifi_height * math.sin(to_rads(half_arc)))
+
+        self.drawer.ctx.new_sub_path()
+
+        self.drawer.ctx.move_to(
+            self.wifi_padding_x + x_offset, self.wifi_padding_y + self.wifi_height
+        )
+        self.drawer.ctx.arc(
+            offset + x_offset,
+            self.wifi_padding_y + self.wifi_height,
+            self.wifi_height,
+            to_rads(270 - half_arc),
+            to_rads(270 + half_arc),
+        )
+        self.drawer.set_source_rgb(background)
+        self.drawer.ctx.fill()
+
+        self.drawer.ctx.new_sub_path()
+        self.drawer.ctx.move_to(offset + x_offset, self.wifi_padding_y + self.wifi_height)
+        self.drawer.ctx.arc(
+            offset + x_offset,
+            self.wifi_padding_y + self.wifi_height,
+            self.wifi_height * percentage,
+            to_rads(270 - half_arc),
+            to_rads(270 + half_arc),
+        )
+        self.drawer.set_source_rgb(foreground)
+        self.drawer.ctx.fill()
+
+    def _draw_wifi_rectangle(self, percentage, foreground, background):
+        ctx = self.drawer.ctx
+        ctx.save()
+        ctx.translate(self.wifi_padding_x, self.wifi_padding_y)
+        ctx.rectangle(0, 0, self.wifi_width, self.wifi_height)
+        self.drawer.set_source_rgb(background)
+        ctx.fill()
+
+        ctx.rectangle(
+            0, self.wifi_height * (1 - percentage), self.wifi_width, self.wifi_height * percentage
+        )
+        self.drawer.set_source_rgb(foreground)
+        ctx.fill()
+
+        ctx.restore()

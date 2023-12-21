@@ -31,7 +31,7 @@ from libqtile.utils import create_task
 from libqtile.widget import base
 
 from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
-from qtile_extras.widget.mixins import MenuMixin
+from qtile_extras.widget.mixins import GraphicalWifiMixin, MenuMixin
 
 IWD_SERVICE = "net.connman.iwd"
 IWD_DEVICE = IWD_SERVICE + ".Device"
@@ -240,7 +240,7 @@ class Network:
         await self.network.call_connect()
 
 
-class IWD(base._TextBox, base.MarginMixin, MenuMixin):
+class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin):
     """
     This widget provides information about your wireless connection using iwd.
 
@@ -268,14 +268,18 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin):
             "Additional args to pass to password entry command.",
         ),
         ("format", "{ssid} ({quality}%)", "Text format. Available fields: ssid, rssi, quality"),
+        ("show_text", True, "Displays text in bar."),
+        ("show_image", False, "Shows a graphical representation of signal strength."),
     ]
 
     def __init__(self, **config):
         base._TextBox.__init__(self, **config)
         self.add_defaults(MenuMixin.defaults)
+        self.add_defaults(GraphicalWifiMixin.defaults)
         self.add_defaults(IWD.defaults)
         self.add_defaults(base.MarginMixin.defaults)
         MenuMixin.__init__(self, **config)
+        GraphicalWifiMixin.__init__(self)
         self.bus = None
         self.device = None
         self.networks = {}
@@ -286,9 +290,26 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin):
         self._setting_up = False
         self.add_callbacks({"Button1": self.do_menu})
         self._can_connect = False
+        self.percentage = 0
 
     def _configure(self, qtile, bar):
         base._TextBox._configure(self, qtile, bar)
+        self.set_wifi_sizes()
+
+    def calculate_length(self):
+        width = 0
+        text_width = base._TextBox.calculate_length(self)
+        image_width = self.wifi_width + 2 * self.actual_padding
+
+        if self.show_text:
+            width += text_width
+
+        if self.show_image:
+            width += image_width
+            if self.show_text:
+                width -= self.actual_padding
+
+        return width
 
     async def _config_async(self):
         await self._connect()
@@ -474,18 +495,43 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin):
         task.add_done_callback(self.refresh)
 
     def refresh(self, *args):
-        if self.device is None:
-            self.update("Error")
-            return
+        old_width = self.layout.width
 
-        self.update(
-            self.format.format(
+        if self.device is None:
+            self.text = "Error"
+            self.percentage = 0
+
+        else:
+            self.text = self.format.format(
                 ssid=self.networks[self.device.connected_network].name,
                 quality=self.device.quality,
                 rssi=self.device.rssi,
-            ),
-        )
+            )
+            self.percentage = self.device.quality / 100.0
+
+        if old_width != self.layout.width:
+            self.bar.draw()
+        else:
+            self.draw()
+
         self.timeout_add(self.update_interval, self.get_stats)
+
+    def draw(self):
+        if not self.can_draw:
+            return
+
+        self.drawer.clear(self.background or self.bar.background)
+        offset = self.wifi_padding_x
+        if self.show_image:
+            self.draw_wifi(self.percentage)
+            offset += self.wifi_width + self.wifi_padding_x
+
+        if self.show_text:
+            self.layout.draw(offset, int(self.bar.height / 2.0 - self.layout.height / 2.0) + 1)
+
+        self.drawer.draw(
+            offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
+        )
 
     def do_menu(self):
         menu_items = []
