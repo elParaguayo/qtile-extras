@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import math
+import socket
+from contextlib import contextmanager
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -33,6 +35,15 @@ if TYPE_CHECKING:
 
 
 PI = math.pi
+
+
+@contextmanager
+def socket_context(*args, **kwargs):
+    s = socket.socket(*args, **kwargs)
+    try:
+        yield s
+    finally:
+        s.close()
 
 
 def to_rads(degrees):
@@ -524,6 +535,37 @@ class ProgressBarMixin(_BaseMixin):
 
 
 class GraphicalWifiMixin(_BaseMixin):
+    """
+    Provides the ability to draw a graphical representation of wifi signal strength.
+
+    To use the mixin, your code needs to include the following:
+
+    .. code:: python
+
+        class MyGraphicalInternetWidget(GraphicalWifiMixin):
+            def __init__(self):
+                self.add_defaults(GraphicalWifiMixin.defaults)
+                GraphicalWifiMixin.__init__(self)
+
+            def _configure(self, qtile, bar):
+                ... # other configuration lines here
+
+                self.set_wifi_sizes()
+
+            def draw(self):
+                # To draw the icon you need the following parameters:
+                # - percentage: a value between 0 and 1
+                # - foreground: the colour of the indicator
+                # - background: the colour of the indicator background
+                self.draw_wifi(percentage=percentage, foreground=foreground, background=background)
+
+    .. note::
+
+        This mixin does not set the width of your widget but does provide a
+        ``self.wifi_width`` attribute which can be used for this purpose.
+
+    """
+
     defaults = [
         ("wifi_arc", 75, "Angle of arc in degrees."),
         ("wifi_rectangle_width", 5, "Width of rectangle in pixels."),
@@ -602,3 +644,64 @@ class GraphicalWifiMixin(_BaseMixin):
         ctx.fill()
 
         ctx.restore()
+
+
+class ConnectionCheckMixin(_BaseMixin):
+    """
+    Mixin to periodically check for internet connection and set the
+    ``self.is_connected`` flag depending on status.
+
+    Your code should include the following lines to use the mixin.
+
+    .. code:: python
+
+        class MyInternetWidget(ConnectionCheckMixin):
+            def __init__(self):
+                self.add_defaults(ConnectionCheckMixin.defaults)
+                ConnectionCheckMixin.__init__(self)
+
+            def _configure(self, qtile, bar):
+                ConnectionCheckMixin._configure(self)
+
+    """
+
+    defaults = [
+        (
+            "check_connection_interval",
+            0,
+            "Interval to check if device connected to internet (0 to disable)",
+        ),
+        ("disconnected_colour", "aa0000", "Colour when device has no internet connection"),
+        ("internet_check_host", "8.8.8.8", "IP adddress to check for internet connection"),
+        ("internet_check_port", 53, "Port to check for internet connection"),
+        (
+            "internet_check_timeout",
+            5,
+            "Period before internet check times out and widget reports no internet connection.",
+        ),
+    ]
+
+    def __init__(self):
+        # If we're checking the internet connection then we assume we're disconnected
+        # until we've verified the connection
+        self.is_connected = not bool(self.check_connection_interval)
+
+    def _configure(self, *args):
+        if self.check_connection_interval:
+            self.timeout_add(self.check_connection_interval, self._check_connection)
+
+    def _check_connection(self):
+        self.qtile.run_in_executor(self._check_internet).add_done_callback(self._check_connected)
+
+    def _check_internet(self):
+        with socket_context(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(self.internet_check_timeout)
+            try:
+                s.connect((self.internet_check_host, self.internet_check_port))
+                return True
+            except (TimeoutError, OSError):
+                return False
+
+    def _check_connected(self, result):
+        self.is_connected = result.result()
+        self.timeout_add(self.check_connection_interval, self._check_connection)

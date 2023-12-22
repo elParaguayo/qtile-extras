@@ -17,28 +17,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import socket
-from contextlib import contextmanager
-
 from libqtile import bar
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 from libqtile.widget.wlan import get_status
 
-from qtile_extras.widget.mixins import GraphicalWifiMixin
+from qtile_extras.widget.mixins import ConnectionCheckMixin, GraphicalWifiMixin
 
 
-@contextmanager
-def socket_context(*args, **kwargs):
-    s = socket.socket(*args, **kwargs)
-    try:
-        yield s
-    finally:
-        s.close()
-
-
-class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin):
+class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin, ConnectionCheckMixin):
     """
     An simple graphical widget that shows WiFi status.
 
@@ -63,19 +51,6 @@ class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin):
             5,
             "Time in secs for expanded information to display when clicking on icon.",
         ),
-        (
-            "check_connection_interval",
-            0,
-            "Interval to check if device connected to internet (0 to disable)",
-        ),
-        ("disconnected_colour", "aa0000", "Colour when device has no internet connection"),
-        ("internet_check_host", "8.8.8.8", "IP adddress to check for internet connection"),
-        ("internet_check_port", 53, "Port to check for internet connection"),
-        (
-            "internet_check_timeout",
-            5,
-            "Period before internet check times out and widget reports no internet connection.",
-        ),
         ("show_ssid", False, "Show SSID and signal strength."),
     ]
 
@@ -91,7 +66,9 @@ class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin):
         self.add_defaults(WiFiIcon.defaults)
         self.add_defaults(base.PaddingMixin.defaults)
         self.add_defaults(GraphicalWifiMixin.defaults)
+        self.add_defaults(ConnectionCheckMixin.defaults)
         GraphicalWifiMixin.__init__(self)
+        ConnectionCheckMixin.__init__(self)
 
         self.add_callbacks({"Button1": self.show_text})
 
@@ -109,10 +86,6 @@ class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin):
         self.essid = ""
         self.percent = 0
 
-        # If we're checking the internet connection then we assume we're disconnected
-        # until we've verified the connection
-        self.is_connected = not bool(self.check_connection_interval)
-
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
 
@@ -121,24 +94,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin):
         if self.update_interval:
             self.timeout_add(self.update_interval, self.loop)
 
-        if self.check_connection_interval:
-            self.timeout_add(self.update_interval, self.check_connection)
-
-    def check_connection(self):
-        self.qtile.run_in_executor(self._check_internet).add_done_callback(self._check_connected)
-
-    def _check_internet(self):
-        with socket_context(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(self.internet_check_timeout)
-            try:
-                s.connect((self.internet_check_host, self.internet_check_port))
-                return True
-            except (TimeoutError, OSError):
-                return False
-
-    def _check_connected(self, result):
-        self.is_connected = result.result()
-        self.timeout_add(self.check_connection_interval, self.check_connection)
+        ConnectionCheckMixin._configure(self)
 
     def loop(self):
         self.timeout_add(self.update_interval, self.loop)

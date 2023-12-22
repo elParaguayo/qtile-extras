@@ -31,7 +31,7 @@ from libqtile.utils import create_task
 from libqtile.widget import base
 
 from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
-from qtile_extras.widget.mixins import GraphicalWifiMixin, MenuMixin
+from qtile_extras.widget.mixins import ConnectionCheckMixin, GraphicalWifiMixin, MenuMixin
 
 IWD_SERVICE = "net.connman.iwd"
 IWD_DEVICE = IWD_SERVICE + ".Device"
@@ -240,7 +240,7 @@ class Network:
         await self.network.call_connect()
 
 
-class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin):
+class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, ConnectionCheckMixin):
     """
     This widget provides information about your wireless connection using iwd.
 
@@ -270,16 +270,21 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin):
         ("format", "{ssid} ({quality}%)", "Text format. Available fields: ssid, rssi, quality"),
         ("show_text", True, "Displays text in bar."),
         ("show_image", False, "Shows a graphical representation of signal strength."),
+        ("active_colour", "ffffff", "Colour for wifi strength."),
+        ("inactive_colour", "666666", "Colour for wifi background."),
+        ("scanning_colour", "3abb3a", "Colour to use for image when scanning is active."),
     ]
 
     def __init__(self, **config):
         base._TextBox.__init__(self, **config)
         self.add_defaults(MenuMixin.defaults)
         self.add_defaults(GraphicalWifiMixin.defaults)
+        self.add_defaults(ConnectionCheckMixin.defaults)
         self.add_defaults(IWD.defaults)
         self.add_defaults(base.MarginMixin.defaults)
         MenuMixin.__init__(self, **config)
         GraphicalWifiMixin.__init__(self)
+        ConnectionCheckMixin.__init__(self)
         self.bus = None
         self.device = None
         self.networks = {}
@@ -295,6 +300,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin):
     def _configure(self, qtile, bar):
         base._TextBox._configure(self, qtile, bar)
         self.set_wifi_sizes()
+        ConnectionCheckMixin._configure(self)
 
     def calculate_length(self):
         width = 0
@@ -523,7 +529,15 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin):
         self.drawer.clear(self.background or self.bar.background)
         offset = self.wifi_padding_x
         if self.show_image:
-            self.draw_wifi(self.percentage)
+            if self.device is not None and self.device.scanning:
+                foreground = self.scanning_colour
+            elif not self.is_connected:
+                foreground = self.disconnected_colour
+            else:
+                foreground = self.active_colour
+            self.draw_wifi(
+                self.percentage, foreground=foreground, background=self.inactive_colour
+            )
             offset += self.wifi_width + self.wifi_padding_x
 
         if self.show_text:
