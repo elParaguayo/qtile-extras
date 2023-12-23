@@ -23,7 +23,7 @@ import shutil
 
 from dbus_next.aio import MessageBus
 from dbus_next.constants import BusType
-from dbus_next.errors import DBusError
+from dbus_next.errors import DBusError, InterfaceNotFoundError
 from dbus_next.service import ServiceInterface, method
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
@@ -43,7 +43,7 @@ OBJECT_MANAGER_INTERFACE = "org.freedesktop.DBus.ObjectManager"
 PROPERTIES_INTERFACE = "org.freedesktop.DBus.Properties"
 
 
-def retry(message, retries=10, interval=0.5, exceptions=list()):
+def retry(message, retries=10, interval=0.5, exceptions=list(), check_interface=""):
     retries = max(retries, 1)
     exceptions = tuple([DBusError, BlockingIOError] + exceptions)
 
@@ -58,7 +58,14 @@ def retry(message, retries=10, interval=0.5, exceptions=list()):
                         await asyncio.sleep(interval)
                         count += 1
                     else:
-                        logger.warning("%s (%s).", message, e)  # noqa: G200
+                        if check_interface:
+                            proxy = await self._widget.get_proxy(self.path)
+                            try:
+                                proxy.get_interface(check_interface)
+                            except InterfaceNotFoundError:
+                                return False
+
+                        logger.exception("%s (%s).", message, e)  # noqa: G200
                         return False
 
         return f
@@ -121,7 +128,8 @@ class ConnectionAgent(ServiceInterface):  # noqa: E303
 class Device:
     """Represents a wireless device."""
 
-    def __init__(self, path, bus, callback=None):
+    def __init__(self, widget, path, bus, callback=None):
+        self._widget = widget
         self.path = path
         self.bus = bus
         self.name = "<unknown wirelesss device>"
@@ -177,7 +185,12 @@ class Device:
             self.connected_network = ""
         return True
 
-    @retry("Unable to get signal strength", retries=5, interval=0.1)
+    @retry(
+        "Unable to get signal strength",
+        retries=5,
+        interval=0.1,
+        check_interface=IWD_STATION_DIAGNOSTIC,
+    )
     async def get_signal_strength(self):
         diagnostics = await self.diagnostics.call_get_diagnostics()
         self.rssi = diagnostics["RSSI"].value
@@ -191,7 +204,8 @@ class Device:
 class Network:
     """Represents a wireless network."""
 
-    def __init__(self, path, bus, callback=None):
+    def __init__(self, widget, path, bus, callback=None):
+        self._widget = widget
         self.path = path
         self.bus = bus
         self.name = ""
@@ -411,14 +425,14 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         task = None
 
         if IWD_DEVICE in interfaces and IWD_STATION in interfaces:
-            device = Device(path, self.bus, self.refresh)
+            device = Device(self, path, self.bus, self.refresh)
             self.devices[path] = device
             task = create_task(device.setup())
             task.add_done_callback(self.task_completed)
             task.obj = device
 
         elif IWD_NETWORK in interfaces:
-            network = Network(path, self.bus, self.refresh)
+            network = Network(self, path, self.bus, self.refresh)
             self.networks[path] = network
             task = create_task(network.setup())
             task.add_done_callback(self.task_completed)
