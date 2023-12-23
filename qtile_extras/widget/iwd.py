@@ -296,6 +296,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         self.add_callbacks({"Button1": self.do_menu})
         self._can_connect = False
         self.percentage = 0
+        self._refresh_timer = None
 
     def _configure(self, qtile, bar):
         base._TextBox._configure(self, qtile, bar)
@@ -498,6 +499,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
 
     def get_stats(self):
         task = create_task(self.device.get_signal_strength())
+        self._refresh_timer = None
         task.add_done_callback(self.refresh)
 
     def refresh(self, *args):
@@ -520,7 +522,11 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         else:
             self.draw()
 
-        self.timeout_add(self.update_interval, self.get_stats)
+        # We only want to set a new timer if the previous timer has run
+        # Refresh() can be called by callbacks from the dbus objects
+        # so we clear the timer in get_stats which is only called by the timer
+        if self._refresh_timer is None:
+            self._refresh_timer = self.timeout_add(self.update_interval, self.get_stats)
 
     def draw(self):
         if not self.can_draw:
