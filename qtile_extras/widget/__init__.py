@@ -36,6 +36,7 @@ widgets = {
     "CPUGraph": "graph",
     "GithubNotifications": "githubnotifications",
     "GlobalMenu": "globalmenu",
+    "GroupBox2": "groupbox2",
     "HDDGraph": "graph",
     "HDDBusyGraph": "graph",
     "Image": "image",

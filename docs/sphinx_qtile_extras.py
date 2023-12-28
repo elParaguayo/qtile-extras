@@ -18,6 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import html
 import importlib
 import inspect
 import json
@@ -260,7 +261,8 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             widget_shots = {}
 
         widget_shots = {
-            f"../../widgets/{class_name.lower()}/{k}.png": v for k, v in widget_shots.items()
+            f"../../widgets/{class_name.lower()}/{k}.png": html.escape(v)
+            for k, v in widget_shots.items()
         }
 
         context = {
