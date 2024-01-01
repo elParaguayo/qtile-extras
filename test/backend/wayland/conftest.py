@@ -2,8 +2,16 @@ import contextlib
 import os
 import textwrap
 
-from libqtile.backend.wayland.core import Core
+import pytest
 
+from test.helpers import BareConfig, TestManager
+
+try:
+    from libqtile.backend.wayland.core import Core
+
+    has_wayland = True
+except ImportError:
+    has_wayland = False
 from test.helpers import Backend
 
 wlr_env = {
@@ -21,6 +29,22 @@ def wayland_environment(outputs):
     env = wlr_env.copy()
     env["WLR_HEADLESS_OUTPUTS"] = str(outputs)
     yield env
+
+
+@pytest.fixture(scope="function")
+def wmanager(request, wayland_session):
+    """
+    This replicates the `manager` fixture except that the Wayland backend is hard-coded.
+    We cannot parametrize the `backend_name` fixture module-wide because it gets
+    parametrized by `pytest_generate_tests` in test/conftest.py and only one of these
+    parametrize calls can be used.
+    """
+    config = getattr(request, "param", BareConfig)
+    backend = WaylandBackend(wayland_session)
+
+    with TestManager(backend, request.config.getoption("--debuglog")) as manager:
+        manager.start(config)
+        yield manager
 
 
 class WaylandBackend(Backend):
@@ -57,12 +81,18 @@ class WaylandBackend(Backend):
 
     def get_all_windows(self):
         """Get a list of all windows in ascending order of Z position"""
-        success, result = self.manager.c.eval(
-            textwrap.dedent(
-                """
-            [win.wid for win in self.core.mapped_windows]
-        """
-            )
-        )
-        assert success
-        return eval(result)
+        return self.manager.c.core.query_tree()
+
+
+def new_xdg_client(wmanager, name="xdg"):
+    """Helper to create 'regular' windows in the XDG shell"""
+    pid = wmanager.test_window(name)
+    wmanager.c.sync()
+    return pid
+
+
+def new_layer_client(wmanager, name="layer"):
+    """Helper to create layer shell windows, which are always static"""
+    pid = wmanager.test_notification(name)
+    wmanager.c.sync()
+    return pid
