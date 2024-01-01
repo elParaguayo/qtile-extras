@@ -137,3 +137,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Widgets screenshots
+docs/_static/screenshots/
