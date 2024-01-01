@@ -13,7 +13,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+.PHONY: help Makefile genwidgetscreenshots
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -22,3 +22,10 @@ html:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+genwidgetscreenshots:
+	rm -rf screenshots/widgets
+	@echo "Generating screenshots for widgets using pytest fixtures."
+	pytest -o python_files="ss_*.py" -o python_functions="ss_*" ../test
+	@echo
+	@echo "Generated widget screenshots"

@@ -20,7 +20,11 @@
 # SOFTWARE.
 import importlib
 import inspect
+import json
+import os
 import pprint
+from pathlib import Path
+from subprocess import CalledProcessError, run
 from unittest.mock import MagicMock
 
 from docutils import nodes
@@ -125,6 +129,27 @@ qtile_class_template = Template(
 
     {% endfor %}
     {% endif %}
+    {% if is_widget and widget_screenshots %}
+    .. raw:: html
+
+        <table class="docutils">
+        <tr>
+        <td width="50%"><b>example</b></td>
+        <td width="50%"><b>config</td>
+        </tr>
+    {% for sshot, conf in widget_screenshots.items() %}
+        <tr>
+        <td><img src="{{ sshot }}" /></td>
+        {% if conf %}
+        <td><code class="docutils literal notranslate">{{ conf }}</code></td>
+        {% else %}
+        <td><i>default</i></td>
+        {% endif %}
+        </tr>
+    {% endfor %}
+        </table>
+
+    {% endif %}
     {% if hooks %}
     Available hooks:
     {% for name in hooks %}
@@ -220,6 +245,24 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         deps = [f"``{d}``" for d in getattr(obj, "_dependencies", list())]
         dependencies = ", ".join(deps)
 
+        is_widget = issubclass(obj, widget.base._Widget)
+
+        if is_widget:
+            index = Path(__file__).parent / "_static" / "screenshots" / "widgets" / "shots.json"
+            try:
+                with open(index, "r") as f:
+                    shots = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                shots = {}
+
+            widget_shots = shots.get(class_name.lower(), dict())
+        else:
+            widget_shots = {}
+
+        widget_shots = {
+            f"../../widgets/{class_name.lower()}/{k}.png": v for k, v in widget_shots.items()
+        }
+
         context = {
             "module": module,
             "class_name": class_name,
@@ -228,13 +271,14 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             "defaults": defaults,
             "configurable": is_configurable and issubclass(obj, configurable.Configurable),
             "commandable": is_commandable and issubclass(obj, command.base.CommandObject),
-            "is_widget": issubclass(obj, widget.base._Widget),
             "experimental": getattr(obj, "_experimental", False),
             "hooks": getattr(obj, "_hooks", list()),
             "inactive": getattr(obj, "_inactive", False),
             "screenshots": getattr(obj, "_screenshots", list()),
             "dependencies": dependencies,
             "compatibility": getattr(obj, "_qte_compatibility", False),
+            "widget_screenshots": widget_shots,
+            "is_widget": is_widget,
         }
         if context["commandable"]:
             context["commands"] = [
@@ -356,7 +400,21 @@ class QtileHooks(SimpleDirectiveMixin, Directive):
                 yield line
 
 
+def generate_widget_screenshots():
+    this_dir = os.path.dirname(__file__)
+    try:
+        run(["make", "-C", this_dir, "genwidgetscreenshots"], check=True)
+    except CalledProcessError:
+        raise Exception("Widget screenshots failed to build.")
+
+
 def setup(app):
+    # screenshots will be skipped unless QTILE_BUILD_SCREENSHOTS environment variable is set
+    # Variable is set for ReadTheDocs at https://readthedocs.org/dashboard/qtile/environmentvariables/
+    if os.getenv("QTILE_BUILD_SCREENSHOTS", False):
+        generate_widget_screenshots()
+    else:
+        print("Skipping screenshot builds...")
     app.add_directive("qtile_class", QtileClass)
     app.add_directive("qtile_module", QtileModule)
     app.add_directive("list_objects", ListObjects)

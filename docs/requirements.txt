@@ -5,3 +5,5 @@ sphinx_rtd_theme
 sphinxcontrib-seqdiag
 dbus-next
 pulsectl-asyncio
+pytest
+PyGObject
