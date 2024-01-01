@@ -11,6 +11,15 @@ build:
   apt_packages:
     - libxkbcommon-dev
     - libpulse-dev
+    - libdbus-1-dev
+    - libgirepository1.0-dev
+    - gir1.2-gtk-3.0
+    - gir1.2-notify-0.7
+    - gir1.2-gudev-1.0
+    - imagemagick
+    - xserver-xephyr
+    - xvfb
+    - dbus-x11
   jobs:
     pre_install:
       - pip install xcffib>=0.14.0 wheel
