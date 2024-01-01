@@ -252,7 +252,6 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             try:
                 with open(index, "r") as f:
                     shots = json.load(f)
-                    print(shots)
             except (FileNotFoundError, json.JSONDecodeError):
                 shots = {}
 
@@ -263,7 +262,6 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         widget_shots = {
             f"../../widgets/{class_name.lower()}/{k}.png": v for k, v in widget_shots.items()
         }
-        print(widget_shots)
 
         context = {
             "module": module,
