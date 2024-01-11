@@ -139,7 +139,7 @@ class Visualiser(base._Widget):
         else:
             new = 0
 
-        if old != new:
+        if old != new or not self.hide:
             self.bar.draw()
 
         self.length = new

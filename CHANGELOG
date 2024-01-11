@@ -1,3 +1,4 @@
+2024-01-20: [BUGFIX] Fix `Visualiser` bug with `hide=True`
 2024-01-20: [FEATURE] Add `GroupBox2` widget
 2023-12-21: [FEATURE] Add `IWD` widget
 2023-11-17: [BUGFIX] Prevent double hooks for Mpris2 widget
