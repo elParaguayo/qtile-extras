@@ -19,10 +19,8 @@
 # SOFTWARE.
 import asyncio
 
-from dbus_next.constants import MessageType
 from libqtile import widget
 from libqtile.command.base import expose_command
-from libqtile.utils import _send_dbus_message
 
 from qtile_extras import hook
 from qtile_extras.popup.templates.mpris2 import DEFAULT_IMAGE, DEFAULT_LAYOUT
@@ -159,10 +157,7 @@ class Mpris2(widget.Mpris2, ExtendedPopupMixin):
     def _set_popup_text(self, task):
         if task.exception():
             return
-        bus, msg = task.result()
-
-        if bus:
-            bus.disconnect()
+        msg = task.result()
 
         result = msg.body[0]
 
@@ -220,9 +215,7 @@ class Mpris2(widget.Mpris2, ExtendedPopupMixin):
             self.extended_popup.bound_callbacks = True
 
         task = asyncio.create_task(
-            _send_dbus_message(
-                True,
-                MessageType.METHOD_CALL,
+            self._send_message(
                 self._current_player,
                 "org.freedesktop.DBus.Properties",
                 "/org/mpris/MediaPlayer2",
