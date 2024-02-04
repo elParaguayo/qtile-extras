@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import contextlib
 import shlex
 import subprocess
 from pathlib import Path
@@ -169,6 +170,9 @@ class SnapCast(base._Widget):
             )
         else:
             self._proc.terminate()
+            # Use wait() to prevent zombie process but don't block indefinitely
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                self._proc.wait(timeout=2)
             self._proc = None
 
         self.draw()
