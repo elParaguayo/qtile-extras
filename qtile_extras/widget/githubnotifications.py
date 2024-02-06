@@ -24,6 +24,7 @@ from libqtile import bar
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
+from requests.exceptions import ConnectionError
 
 from qtile_extras import hook
 from qtile_extras.images import ImgMask
@@ -118,7 +119,9 @@ class GithubNotifications(base._Widget):
         else:
             return self.inactive_colour
 
+    @expose_command()
     def update(self):
+        """Trigger a check for new notifications."""
         if not self.token:
             self.error = True
             logger.error("No access token provided.")
@@ -126,6 +129,8 @@ class GithubNotifications(base._Widget):
         self._polling = True
         future = self.qtile.run_in_executor(self._get_data)
         future.add_done_callback(self._read_data)
+        if self._timer is not None and not self._timer.cancelled():
+            self._timer.cancel()
 
     def _get_data(self):
         headers = {
@@ -135,20 +140,32 @@ class GithubNotifications(base._Widget):
         return requests.get(NOTIFICATIONS, headers=headers)
 
     def _read_data(self, reply):
-        r = reply.result()
-
-        if r.status_code != 200:
-            self.error = True
-            logger.warning("Github returned a %d status code.", r.status_code)
-            self._polling = False
-            return
-
-        self.error = False
-        self.has_notifications = bool(r.json())
-        if self.has_notifications and not self._new_notification:
-            hook.fire("ghn_new_notification")
-        self._new_notification = self.has_notifications
+        self.error = True
         self._polling = False
+
+        # Check if an exception was raised when trying to retrieve data
+        exc = reply.exception()
+        if exc:
+            if isinstance(exc, ConnectionError):
+                logger.error("Unable to connect to Github API.")
+            else:
+                logger.error(  # noqa: G201
+                    "Unexpected error when connecting to Github.", exc_info=exc
+                )
+
+        # If not, get the result
+        else:
+            r = reply.result()
+
+            if r.status_code != 200:
+                logger.warning("Github returned a %d status code.", r.status_code)
+
+            else:
+                self.error = False
+                self.has_notifications = bool(r.json())
+                if self.has_notifications and not self._new_notification:
+                    hook.fire("ghn_new_notification")
+                self._new_notification = self.has_notifications
 
         self._timer = self.timeout_add(self.update_interval, self.update)
         self.draw()
