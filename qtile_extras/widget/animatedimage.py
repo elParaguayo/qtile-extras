@@ -132,12 +132,16 @@ class AnimatedImage(base._Widget, base.MarginMixin):
             return self.max_height + (self.margin_y * 2) + (self.padding * 2)
 
     def _queue_next(self):
+        # Are we in the middle of a loop?
         if self.index < len(self.images) - 1:
             self._timer = self.timeout_add(self.frame_interval, self._next_frame)
 
+        # Or are we at end of loop?
         elif self.index == len(self.images) - 1:
+            # Do we need another loop?
             if not self.loop_count or self.loop_index + 1 < self.loop_count:
                 self._timer = self.timeout_add(self.loop_interval, self._next_loop)
+            # Or have we finished?
             else:
                 self._timer = self.timeout_add(self.loop_interval, self._loop_finished)
 
@@ -146,19 +150,31 @@ class AnimatedImage(base._Widget, base.MarginMixin):
         self.draw()
 
     def _next_loop(self):
+        # Go back to first frame but increment loop counter
         self.index = 0
         self.loop_index += 1
         self.draw()
 
     def _loop_finished(self):
+        # Set the flag to say we're not looping
         self._do_loop = False
+
+        # Reset indexes to first frame
         self.index = 0
         self.loop_index = 0
         self.draw()
 
     @expose_command
     def animate(self):
+        """Start the animation."""
         self._do_loop = True
         self.index = 0
         self.loop_index = 0
         self.draw()
+
+    @expose_command
+    def stop(self):
+        """Stop the animation."""
+        if self._timer is not None and not self._timer.cancelled():
+            self._timer.cancel()
+        self._loop_finished()
