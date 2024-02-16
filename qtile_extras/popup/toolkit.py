@@ -1034,6 +1034,7 @@ class PopupText(_PopupWidget):
         ("h_align", "left", "Text alignment: left, center or right."),
         ("v_align", "middle", "Vertical alignment: top, middle or bottom."),
         ("wrap", False, "Wrap text in layout"),
+        ("markup", False, "Enable pango markup"),
     ]
 
     def __init__(self, text="", **config):
@@ -1049,7 +1050,7 @@ class PopupText(_PopupWidget):
             self.font,
             self.fontsize,
             None,
-            markup=False,
+            markup=self.markup,
             wrap=self.wrap,
         )
         self.layout.layout.set_alignment(pangocffi.ALIGNMENTS[self.h_align])

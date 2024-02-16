@@ -1,3 +1,4 @@
+2024-02-16: [FEATURE] Allow pango markup in `PopupText` controls
 2024-02-09: [BUGFIX] Handle connection errors in `GithubNotifications` widget
 2024-01-20: [RELEASE] v0.24.0 - compatible with qtile 0.24.0
 2024-01-20: [PYPI] Enable release workflow to push future releases to PyPI
