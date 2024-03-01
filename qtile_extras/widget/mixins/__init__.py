@@ -28,7 +28,7 @@ from libqtile.configurable import Configurable, ExtraFallback
 from libqtile.log_utils import logger
 from libqtile.popup import Popup
 
-from qtile_extras.popup.menu import PopupMenu
+from qtile_extras.popup.menu import PopupMenu, PopupMenuItem, PopupMenuSeparator
 
 if TYPE_CHECKING:
     from typing import Any, Callable  # noqa: F401
@@ -210,7 +210,7 @@ class MenuMixin(Configurable, _BaseMixin):
             "0060A0",
             "Colour of highlight for menu items (None for no highlight)",
         ),
-        ("highlight_radius", 0, "Radius for menu highlight"),
+        ("highlight_radius", 5, "Radius for menu highlight"),
         (
             "menu_row_height",
             None,
@@ -308,6 +308,20 @@ class MenuMixin(Configurable, _BaseMixin):
         y += self.menu_offset_y
 
         self.menu.show(x, y)
+
+    def create_menu_item(self, text, **config):
+        """
+        Create a PopupMenuItem with parameters specified here taking preference over default.
+        """
+        item_config = {**self.menu_config, **config}
+        return PopupMenuItem(text, **item_config)
+
+    def create_menu_separator(self, **config):
+        """
+        Create a PopupMenuSeparator with parameters specified here taking preference over default.
+        """
+        item_config = {**self.menu_config, **config}
+        return PopupMenuSeparator(**item_config)
 
 
 class DbusMenuMixin(MenuMixin):

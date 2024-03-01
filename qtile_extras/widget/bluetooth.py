@@ -22,7 +22,7 @@ from libqtile.utils import create_task
 from libqtile.widget.bluetooth import Bluetooth as QBluetooth
 from libqtile.widget.bluetooth import DeviceState
 
-from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
+from qtile_extras.popup.menu import PopupMenuSeparator
 from qtile_extras.widget.mixins import MenuMixin
 
 
@@ -45,11 +45,14 @@ class Bluetooth(QBluetooth, MenuMixin):
         """Show menu with available adapters and devices."""
         menu_items = []
 
+        item = self.create_menu_item
+        separator = self.create_menu_separator
+
         for adapter in self.adapters.values():
-            menu_items.append(PopupMenuItem(f"Adapter: {adapter.name}", enabled=False))
+            menu_items.append(item(f"Adapter: {adapter.name}", enabled=False))
             for text, action in self._get_adapter_menu(adapter)[:2]:  # Remove the "exit" option
-                menu_items.append(PopupMenuItem(text, mouse_callbacks={"Button1": action}))
-            menu_items.append(PopupMenuSeparator())
+                menu_items.append(item(text, mouse_callbacks={"Button1": action}))
+            menu_items.append(separator())
 
         def action(device):
             return {
@@ -69,11 +72,11 @@ class Bluetooth(QBluetooth, MenuMixin):
         for devices, header in all_devices:
             if devices:
                 if menu_items and not isinstance(menu_items[-1], PopupMenuSeparator):
-                    menu_items.append(PopupMenuSeparator())
+                    menu_items.append(separator)
 
-                menu_items.append(PopupMenuItem(f"{header} devices:", enabled=False))
+                menu_items.append(item(f"{header} devices:", enabled=False))
 
             for device in devices:
-                menu_items.append(PopupMenuItem(device.name, **action(device)))
+                menu_items.append(item(device.name, **action(device)))
 
         self.display_menu(menu_items=menu_items)
