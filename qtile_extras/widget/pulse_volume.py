@@ -23,7 +23,6 @@ from libqtile.utils import create_task
 from libqtile.widget.pulse_volume import PulseVolume as QPulseVolume
 from libqtile.widget.pulse_volume import pulse
 
-from qtile_extras.popup.menu import PopupMenuItem
 from qtile_extras.widget.mixins import MenuMixin
 
 
@@ -57,7 +56,9 @@ class PulseVolume(QPulseVolume, MenuMixin):
         if not sinks:
             return
 
-        menu_items = [PopupMenuItem(text="Select output sink:", enabled=False)]
+        pmi = self.create_menu_item
+
+        menu_items = [pmi(text="Select output sink:", enabled=False)]
 
         def _callback(team):
             return {
@@ -65,7 +66,7 @@ class PulseVolume(QPulseVolume, MenuMixin):
             }
 
         for sink in sinks:
-            menu_items.append(PopupMenuItem(text=sink.description, **_callback(sink)))
+            menu_items.append(pmi(text=sink.description, **_callback(sink)))
 
         self.display_menu(menu_items)
 

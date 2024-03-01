@@ -45,14 +45,14 @@ class Bluetooth(QBluetooth, MenuMixin):
         """Show menu with available adapters and devices."""
         menu_items = []
 
-        item = self.create_menu_item
-        separator = self.create_menu_separator
+        pmi = self.create_menu_item
+        pms = self.create_menu_separator
 
         for adapter in self.adapters.values():
-            menu_items.append(item(f"Adapter: {adapter.name}", enabled=False))
+            menu_items.append(pmi(f"Adapter: {adapter.name}", enabled=False))
             for text, action in self._get_adapter_menu(adapter)[:2]:  # Remove the "exit" option
-                menu_items.append(item(text, mouse_callbacks={"Button1": action}))
-            menu_items.append(separator())
+                menu_items.append(pmi(text, mouse_callbacks={"Button1": action}))
+            menu_items.append(pms())
 
         def action(device):
             return {
@@ -72,11 +72,11 @@ class Bluetooth(QBluetooth, MenuMixin):
         for devices, header in all_devices:
             if devices:
                 if menu_items and not isinstance(menu_items[-1], PopupMenuSeparator):
-                    menu_items.append(separator)
+                    menu_items.append(pms())
 
-                menu_items.append(item(f"{header} devices:", enabled=False))
+                menu_items.append(pmi(f"{header} devices:", enabled=False))
 
             for device in devices:
-                menu_items.append(item(device.name, **action(device)))
+                menu_items.append(pmi(device.name, **action(device)))
 
         self.display_menu(menu_items=menu_items)
