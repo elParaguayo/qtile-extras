@@ -571,13 +571,20 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         menu_items = []
 
         if self.device.connected_network:
-            menu_items.extend(
-                [
-                    PopupMenuItem("Connected to:"),
-                    PopupMenuItem(self.networks[self.device.connected_network].name),
-                    PopupMenuSeparator(),
-                ]
-            )
+            # We can get a KeyError here if the deivce was suspended while connected
+            # nut resumed when the network is no longer visible.
+            try:
+                name = self.networks[self.device.connected_network].name
+            except KeyError:
+                self.device.connected_network = ""
+            else:
+                menu_items.extend(
+                    [
+                        PopupMenuItem("Connected to:"),
+                        PopupMenuItem(name),
+                        PopupMenuSeparator(),
+                    ]
+                )
 
         networks = []
 
