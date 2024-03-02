@@ -30,7 +30,6 @@ from libqtile.log_utils import logger
 from libqtile.utils import create_task
 from libqtile.widget import base
 
-from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
 from qtile_extras.widget.mixins import ConnectionCheckMixin, GraphicalWifiMixin, MenuMixin
 
 IWD_SERVICE = "net.connman.iwd"
@@ -569,6 +568,8 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
 
     def do_menu(self):
         menu_items = []
+        pmi = self.create_menu_item
+        pms = self.create_menu_separator
 
         if self.device.connected_network:
             # We can get a KeyError here if the deivce was suspended while connected
@@ -580,9 +581,9 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
             else:
                 menu_items.extend(
                     [
-                        PopupMenuItem("Connected to:"),
-                        PopupMenuItem(name),
-                        PopupMenuSeparator(),
+                        pmi("Connected to:"),
+                        pmi(name),
+                        pms(),
                     ]
                 )
 
@@ -598,7 +599,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
 
             enabled = (self._can_connect and not network.type == "8021x") or network.known
 
-            item = PopupMenuItem(
+            item = pmi(
                 f"{network.name} ({network.type})",
                 mouse_callbacks={"Button1": lambda n=network: connect(n)} if enabled else {},
                 enabled=enabled,
@@ -606,14 +607,14 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
             networks.append(item)
 
         if networks:
-            networks.insert(0, PopupMenuItem("Visible networks:"))
-            networks.append(PopupMenuSeparator())
+            networks.insert(0, pmi("Visible networks:"))
+            networks.append(pms())
             menu_items.extend(networks)
 
         if self.device.scanning:
-            device_item = PopupMenuItem("Scanning...", enabled=False)
+            device_item = pmi("Scanning...", enabled=False)
         else:
-            device_item = PopupMenuItem(
+            device_item = pmi(
                 "Scan for networks",
                 mouse_callbacks={"Button1": self.scan},
             )

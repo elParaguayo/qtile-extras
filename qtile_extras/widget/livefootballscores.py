@@ -25,7 +25,6 @@ from libqtile.log_utils import logger
 from libqtile.widget import base
 
 from qtile_extras import hook
-from qtile_extras.popup.menu import PopupMenuItem, PopupMenuSeparator
 from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText
 from qtile_extras.resources.footballscores import FootballMatch, FSConnectionError, League
 from qtile_extras.widget.mixins import ExtendedPopupMixin, MenuMixin
@@ -669,40 +668,39 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
     def _get_match_list(self):
         lines = []
 
+        pmi = self.create_menu_item
+        pms = self.create_menu_separator
+
         def _callback(team):
             return {"mouse_callbacks": {"Button1": lambda team=team: self.select_match(team)}}
 
         for team in [m for m in self.sources[0] if m]:
             lines.extend(
                 [
-                    PopupMenuItem(text=team.competition, enabled=False),
-                    PopupMenuItem(text=team.format_text(self.popup_text), **_callback(team)),
+                    pmi(text=team.competition, enabled=False),
+                    pmi(text=team.format_text(self.popup_text), **_callback(team)),
                 ]
             )
 
         if self.sources[1]:
             if lines and any(m for m in self.sources[1]):
-                lines.append(PopupMenuSeparator())
+                lines.append(pms())
 
-            lines.append(PopupMenuItem(text="Selected Teams:", enabled=False))
+            lines.append(pmi(text="Selected Teams:", enabled=False))
 
             for team in [m for m in self.sources[1] if m]:
-                lines.append(
-                    PopupMenuItem(text=team.format_text(self.popup_text), **_callback(team))
-                )
+                lines.append(pmi(text=team.format_text(self.popup_text), **_callback(team)))
 
         for league in self.sources[2]:
             if lines and league:
-                lines.append(PopupMenuSeparator())
+                lines.append(pms())
             if league:
-                lines.append(PopupMenuItem(text="{}:".format(league.league_name), enabled=False))
+                lines.append(pmi(text="{}:".format(league.league_name), enabled=False))
                 for team in league:
-                    lines.append(
-                        PopupMenuItem(text=team.format_text(self.popup_text), **_callback(team))
-                    )
+                    lines.append(pmi(text=team.format_text(self.popup_text), **_callback(team)))
 
         if not lines:
-            lines.append(PopupMenuItem(text="No matches today", enabled=False))
+            lines.append(pmi(text="No matches today", enabled=False))
 
         return lines
 
