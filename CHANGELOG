@@ -1,4 +1,4 @@
-2024-03-01: [BUGFIX] Fix popup menus ignoring config
+2024-03-02: [BUGFIX] Fix popup menus ignoring config
 2024-02-17: [FEATURE] Add `AnimatedImage` widget
 2024-02-16: [FEATURE] Allow pango markup in `PopupText` controls
 2024-02-09: [BUGFIX] Handle connection errors in `GithubNotifications` widget
