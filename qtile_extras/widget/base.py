@@ -276,7 +276,10 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             # Text and colour depends on mute status and volume level
             if not self.muted:
                 bar_text = self.text_format.format(volume=self.volume)
-                bar_colour = next(x[1] for x in self.colours if self.volume <= x[0])
+                bar_colour = next(
+                    (x[1] for x in self.colours if self.volume <= x[0]),
+                    self.colours[-1][1],  # Default if volume > 100%
+                )
             else:
                 bar_text = "X"
                 bar_colour = self.bar_colour_mute
