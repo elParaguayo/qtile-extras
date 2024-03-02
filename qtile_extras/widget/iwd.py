@@ -582,7 +582,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
                 menu_items.extend(
                     [
                         pmi("Connected to:"),
-                        pmi(self.networks[self.device.connected_network].name),
+                        pmi(name),
                         pms(),
                     ]
                 )
