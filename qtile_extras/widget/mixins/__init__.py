@@ -222,7 +222,7 @@ class MenuMixin(Configurable, _BaseMixin):
         ("menu_width", 200, "Context menu width"),
         ("show_menu_icons", True, "Show icons in context menu"),
         ("hide_after", 0.5, "Time in seconds before hiding menu atfer mouse leave"),
-        ("opacity", 1, "Menu opactity"),
+        ("opacity", 1, "Menu opacity"),
         ("icon_theme", None, "Icon theme for DBus menu items"),
     ]  # type: list[tuple[str, Any, str]]
 
