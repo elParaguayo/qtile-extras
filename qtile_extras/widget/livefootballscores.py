@@ -198,7 +198,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             "monospace",
             "Font to use for displaying upcoming recordings. A monospace font " "is recommended",
         ),
-        ("opacity", 0.8, "Opacity for popup window."),
         ("popup_display_timeout", 10, "Seconds to show recordings."),
         ("menu_width", 300, "Width of menu showing all matches"),
         ("popup_layout", DETAILED_LAYOUT, "Layout to use for extended match information"),
