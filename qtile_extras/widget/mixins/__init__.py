@@ -17,6 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import annotations
+
 import math
 import socket
 from contextlib import contextmanager
@@ -29,6 +31,7 @@ from libqtile.log_utils import logger
 from libqtile.popup import Popup
 
 from qtile_extras.popup.menu import PopupMenu, PopupMenuItem, PopupMenuSeparator
+from qtile_extras.resources.dbusmenu import DBusMenuItem
 
 if TYPE_CHECKING:
     from typing import Any, Callable  # noqa: F401
@@ -250,24 +253,17 @@ class MenuMixin(Configurable, _BaseMixin):
 
         self.menu = None
 
-    def set_menu_position(self, x: int, y: int) -> tuple[int, int]:
-        """
-        Set the x and y coordinates of the menu.
-
-        The method receivs and x and y value which is calculated during
-        ``self.display_menu``. The x and y coordinates place the menu at
-        the start of the widget and adjacent to the bar. The values have also
-        already been adjusted to ensure that the menu will fit on the screen.
-
-        This method can be overriden if menus need to adjust the placement of the menu
-        e.g. if the widget has multiple items with separate menus.
-
-        NB: if a user has defined ``menu_offset_x`` or ``menu_offset_y`` these will
-        be applied after this method and so should not be included here.
-        """
-        return x, y
-
-    def display_menu(self, menu_items):
+    def display_menu(
+        self,
+        menu_items: list[PopupMenuItem | PopupMenuSeparator | DBusMenuItem] = list(),
+        x: int | float | None = None,
+        y: int | float | None = None,
+        centered: bool = False,
+        warp_pointer: bool = False,
+        relative_to: int = 1,
+        relative_to_bar: bool = False,
+        hide_on_timeout: int | float | None = None,
+    ):
         """
         Method to display the menu.
 
@@ -285,29 +281,48 @@ class MenuMixin(Configurable, _BaseMixin):
 
         screen = self.bar.screen
 
-        if screen.top == self.bar:
-            x = min(self.offsetx, self.bar.width - self.menu.width - 2 * self.menu_border_width)
-            y = self.bar.height
+        custom_x = x
+        custom_y = y
+
+        if screen.top is self.bar:
+            x = min(self.offsetx, screen.width - self.menu.width - 2 * self.menu_border_width)
+            y = self.bar.height + self.bar.margin[0]
 
         elif screen.bottom == self.bar:
-            x = min(self.offsetx, self.bar.width - self.menu.width - 2 * self.menu_border_width)
-            y = screen.height - self.bar.height - self.menu.height - 2 * self.menu_border_width
+            x = min(self.offsetx, screen.width - self.menu.width - 2 * self.menu_border_width)
+            y = (
+                screen.height
+                - (self.bar.height + self.bar.margin[2])
+                - self.menu.height
+                - 2 * self.menu_border_width
+            )
 
         elif screen.left == self.bar:
-            x = self.bar.width
+            x = self.bar.width + self.bar.margin[3]
             y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
 
         else:
-            x = screen.width - self.bar.width - self.menu.width - 2 * self.menu_border_width
+            x = (
+                screen.width
+                - (self.bar.width + self.bar.margin[1])
+                - self.menu.width
+                - 2 * self.menu_border_width
+            )
             y = min(self.offsety, screen.height - self.menu.height - 2 * self.menu_border_width)
-
-        x, y = self.set_menu_position(x, y)
 
         # Adjust the position for any user-defined settings
         x += self.menu_offset_x
         y += self.menu_offset_y
 
-        self.menu.show(x, y)
+        self.menu.show(
+            x=custom_x if custom_x is not None else x,
+            y=custom_y if custom_y is not None else y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
 
     def create_menu_item(self, text, **config):
         """

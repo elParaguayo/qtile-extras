@@ -41,8 +41,29 @@ class Bluetooth(QBluetooth, MenuMixin):
         self.add_callbacks({"Button3": self.show_devices})
 
     @expose_command
-    def show_devices(self):
+    def show_devices(
+        self,
+        x=None,
+        y=None,
+        centered=False,
+        warp_pointer=False,
+        relative_to=1,
+        relative_to_bar=False,
+        hide_on_timeout=None,
+    ):
         """Show menu with available adapters and devices."""
+        self.display_menu(
+            menu_items=self._get_menu_items(),
+            x=x,
+            y=y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
+
+    def _get_menu_items(self):
         menu_items = []
 
         pmi = self.create_menu_item
@@ -79,4 +100,4 @@ class Bluetooth(QBluetooth, MenuMixin):
             for device in devices:
                 menu_items.append(pmi(device.name, **action(device)))
 
-        self.display_menu(menu_items=menu_items)
+        return menu_items

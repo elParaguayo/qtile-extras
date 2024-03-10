@@ -306,7 +306,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         self._network_tasks = []
         self.timer = None
         self._setting_up = False
-        self.add_callbacks({"Button1": self.do_menu})
+        self.add_callbacks({"Button1": self.show_networks})
         self._can_connect = False
         self.percentage = 0
         self._refresh_timer = None
@@ -566,7 +566,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
             offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
         )
 
-    def do_menu(self):
+    def _get_menu_items(self):
         menu_items = []
         pmi = self.create_menu_item
         pms = self.create_menu_separator
@@ -621,7 +621,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
 
         menu_items.append(device_item)
 
-        self.display_menu(menu_items)
+        return menu_items
 
     def connect_response(self, task):
         exc = task.exception()
@@ -630,6 +630,29 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
                 logger.info("Password entry cancelled.")
             else:
                 logger.warning("Could not connect: %s", exc)
+
+    @expose_command
+    def show_networks(
+        self,
+        x=None,
+        y=None,
+        centered=False,
+        warp_pointer=False,
+        relative_to=1,
+        relative_to_bar=False,
+        hide_on_timeout=None,
+    ):
+        """Show menu with available networks."""
+        self.display_menu(
+            menu_items=self._get_menu_items(),
+            x=x,
+            y=y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
 
     @expose_command
     def scan(self):

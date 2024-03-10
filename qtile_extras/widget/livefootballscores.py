@@ -271,7 +271,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         self.add_callbacks(
             {
                 "Button1": self.loop_match_info,
-                "Button3": self.show_menu,
+                "Button3": self.show_matches,
                 "Button4": self.scroll_up,
                 "Button5": self.scroll_down,
             }
@@ -625,7 +625,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         if self.menu and not self.menu._killed:
             self.menu.kill()
         else:
-            self.show_menu()
+            self.show_matches()
 
     @expose_command()
     def popup(self):
@@ -703,5 +703,25 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
 
         return lines
 
-    def show_menu(self):
-        self.display_menu(self._get_match_list())
+    @expose_command
+    def show_matches(
+        self,
+        x=None,
+        y=None,
+        centered=False,
+        warp_pointer=False,
+        relative_to=1,
+        relative_to_bar=False,
+        hide_on_timeout=None,
+    ):
+        """Show menu with followed matchs."""
+        self.display_menu(
+            menu_items=self._get_match_list(),
+            x=x,
+            y=y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
