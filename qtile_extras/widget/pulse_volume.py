@@ -48,7 +48,16 @@ class PulseVolume(QPulseVolume, MenuMixin):
 
         await pulse.pulse.default_set(sink)
 
-    async def show_sinks(self):
+    async def show_sinks(
+        self,
+        x=None,
+        y=None,
+        centered=False,
+        warp_pointer=False,
+        relative_to=1,
+        relative_to_bar=False,
+        hide_on_timeout=None,
+    ):
         if not pulse.pulse.connected:
             return
 
@@ -68,9 +77,36 @@ class PulseVolume(QPulseVolume, MenuMixin):
         for sink in sinks:
             menu_items.append(pmi(text=sink.description, **_callback(sink)))
 
-        self.display_menu(menu_items)
+        self.display_menu(
+            menu_items,
+            x=x,
+            y=y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
 
     @expose_command()
-    def select_sink(self):
+    def select_sink(
+        self,
+        x=None,
+        y=None,
+        centered=False,
+        warp_pointer=False,
+        relative_to=1,
+        relative_to_bar=False,
+        hide_on_timeout=None,
+    ):
         """Select output sink from available sinks."""
-        create_task(self.show_sinks())
+        task = self.show_sinks(
+            x=x,
+            y=y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
+        create_task(task)
