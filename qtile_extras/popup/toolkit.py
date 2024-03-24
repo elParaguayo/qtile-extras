@@ -251,6 +251,9 @@ class _PopupLayout(configurable.Configurable):
         positive x value will shift the popup to the right and a positive y value will shift
         the popup down.
 
+        Setting ``relative_to=0`` is a special case which positions the top left corner of the
+        popup at the mouse's current location.
+
         Setting ``relative_to_bar=True`` will automatically adjust the offset by the width of
         the bar or gap (including any margin) nearest the point on the above grid
         i.e. if ``relative_to=1`` then the y coordinate would be adjusted for any bar on the
@@ -282,7 +285,10 @@ class _PopupLayout(configurable.Configurable):
             if isinstance(y, float):
                 y = int(scr.height * y)
 
-            if relative_to == 1:
+            if relative_to == 0:
+                x, y = self.qtile.core.get_mouse_position()
+
+            elif relative_to == 1:
                 x += scr.x
                 y += scr.y
 
