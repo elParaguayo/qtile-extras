@@ -117,6 +117,8 @@ class _PopupLayout(configurable.Configurable):
         self._hide_timer = None
         self._killed = False
 
+        self._clicked = None
+
     def _configure(self, qtile: Qtile | None = None):
         """
         This method creates an instances of a Popup window which serves as the
@@ -403,6 +405,8 @@ class _PopupLayout(configurable.Configurable):
 
     def process_button_click(self, x, y, button):  # noqa: N802
         controls = self.get_control_in_position(x, y)
+        if self._clicked is None:
+            self._clicked = next(iter(controls), None)
         for control in controls:
             control.button_press(x - control.offsetx, y - control.offsety, button)
         if self.close_on_click:
@@ -410,6 +414,11 @@ class _PopupLayout(configurable.Configurable):
 
     def process_button_release(self, x, y, button):  # noqa: N802
         controls = self.get_control_in_position(x, y)
+        if self._clicked is not None:
+            self._clicked.button_release(
+                x - self._clicked.offsetx, y - self._clicked.offsety, button
+            )
+            self._clicked = None
         for control in controls:
             control.button_release(x - control.offsetx, y - control.offsety, button)
 
@@ -437,6 +446,11 @@ class _PopupLayout(configurable.Configurable):
 
     def process_pointer_motion(self, x, y):  # noqa: N802
         controls = self.get_control_in_position(x, y)
+        if self._clicked:
+            self._clicked.pointer_motion(
+                x - self._clicked.offsetx,
+                y - self._clicked.offsety,
+            )
         if self.cursor_in and self.cursor_in not in controls:
             self.cursor_in.mouse_leave(
                 x - self.cursor_in.offsetx,
@@ -959,6 +973,9 @@ class _PopupWidget(configurable.Configurable):
             self.draw()
             self.container.draw()
 
+    def pointer_motion(self, x, y):
+        pass
+
     def info(self):
         return {
             "name": self.name or self.__class__.__name__.lower(),
@@ -1121,12 +1138,18 @@ class PopupSlider(_PopupWidget):
         ("bar_border_colour", "ffffff", "Colour of border drawn around bar"),
         ("bar_border_size", 0, "Thickness of border around bar"),
         ("bar_border_margin", 0, "Size of gap between border and bar"),
+        (
+            "drag_callback",
+            None,
+            "Callback to run after dragging slider. Callback should take a single argument ``new_value``.",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, value=None, **config):
         _PopupWidget.__init__(self, **config)
         self.add_defaults(PopupSlider.defaults)
         self._value = self._check_value(value)
+        self._drag = False
 
     def _check_value(self, val):
         if val is None or type(val) not in (int, float):
@@ -1186,6 +1209,33 @@ class PopupSlider(_PopupWidget):
 
         ctx.restore()
 
+    def button_press(self, x, y, button):
+        if not self._drag:
+            self._drag = True
+            self._old_value = self.value
+            _PopupWidget.button_press(self, x, y, button)
+
+    def button_release(self, x, y, button):
+        if self._drag:
+            if self.drag_callback:
+                try:
+                    self.drag_callback(self.value)
+                except Exception:
+                    logger.exception("Error calling drag_callback.")
+
+            self._drag = False
+        _PopupWidget.button_release(self, x, y, button)
+
+    def pointer_motion(self, x, y):
+        if self._drag:
+            if self.horizontal:
+                percent = (x - self.end_margin) / self.bar_length
+            else:
+                percent = (y - self.end_margin) / self.bar_length
+            percent = max(min(percent, 1), 0)
+
+            self.value = ((self.max_value - self.min_value) * percent) + self.min_value
+
     @property
     def value(self):
         return self._value
@@ -1194,6 +1244,7 @@ class PopupSlider(_PopupWidget):
     def value(self, val):
         self._value = self._check_value(val)
         self.draw()
+        self.container.popup.draw()
 
     @property
     def percentage(self):
