@@ -8,12 +8,12 @@ jobs:
         runs-on: ubuntu-20.04
         name: "Check CHANGELOG"
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Install dependencies
               run: |
                 sudo apt update
                 sudo apt install --no-install-recommends jq
-            - uses: lots0logs/gh-action-get-changed-files@2.1.4
+            - uses: lots0logs/gh-action-get-changed-files@2.2.2
               with:
                 token: ${{ secrets.GITHUB_TOKEN }}
             - name: Check changed files
