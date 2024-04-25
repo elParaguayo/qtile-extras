@@ -937,7 +937,7 @@ class _PopupWidget(configurable.Configurable):
             cmd = self.mouse_callbacks[name]
             if isinstance(cmd, LazyCall):
                 status, val = self.qtile.server.call(
-                    (cmd.selectors, cmd.name, cmd.args, cmd.kwargs)
+                    (cmd.selectors, cmd.name, cmd.args, cmd.kwargs, False)
                 )
                 if status in (interface.ERROR, interface.EXCEPTION):
                     logger.error("KB command error %s: %s", cmd.name, val)
