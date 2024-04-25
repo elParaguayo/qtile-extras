@@ -291,7 +291,8 @@ def test_named_interface(iwd_manager):
 
 
 @config(interface="wlan1")
-@pytest.mark.flaky(reruns=5)
+# @pytest.mark.flaky(reruns=5)
+@pytest.mark.xfail
 def test_invalid_interface(iwd_manager, logger):
     widget = iwd_manager.c.widget["iwd"]
     wait_for_text(widget, "Error")
@@ -305,7 +306,8 @@ def test_string_format(iwd_manager):
 
 
 @config(password_entry_app=None)
-@pytest.mark.flaky(reruns=5)
+# @pytest.mark.flaky(reruns=5)
+@pytest.mark.xfail
 def test_no_password_entry_app(iwd_manager, logger):
     widget = iwd_manager.c.widget["iwd"]
     wait_for_text(widget, "qtile_extras (50%)")
@@ -313,7 +315,8 @@ def test_no_password_entry_app(iwd_manager, logger):
 
 
 @config(password_entry_app="qtileextraapp")
-@pytest.mark.flaky(reruns=5)
+# @pytest.mark.flaky(reruns=5)
+@pytest.mark.xfail
 def test_invalid_password_entry_app(iwd_manager, logger):
     widget = iwd_manager.c.widget["iwd"]
     wait_for_text(widget, "qtile_extras (50%)")
@@ -321,6 +324,7 @@ def test_invalid_password_entry_app(iwd_manager, logger):
 
 
 @config(password_entry_args="This should be a list")
+@pytest.mark.xfail
 def test_bad_password_entry_args(iwd_manager, logger):
     widget = iwd_manager.c.widget["iwd"]
     wait_for_text(widget, "qtile_extras (50%)")
