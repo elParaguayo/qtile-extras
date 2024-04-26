@@ -1,3 +1,4 @@
+2024-04-26: [FEATURE] Add hooks to `ALSAWidget` and `PulseVolumeExtra`
 2024-04-25: [FEATURE] Add ability to drag `PopupSlider` and `PopupCircularProgress` controls (NB experimental)
 2024-04-25: [BREAKING CHANGE] Update to using lazy calls in popups. Needs latest qtile.
 2024-04-08: [RELEASE] v0.25.0 release - compatible with qtile 0.25.0

@@ -376,6 +376,56 @@ mpris_hooks = [
 
 hooks.extend(mpris_hooks)
 
+# Volume hooks
+volume_hooks = [
+    Hook(
+        "volume_change",
+        """
+        Fired when the volume value changes.
+
+        Receives an integer volume percentage (0-100) and boolean muted status.
+
+        .. code:: python
+
+          from libqtile import qtile
+          from libqtile.utils import send_notification
+
+          import qtile_extras.hook
+
+          @qtile_extras.hook.subscribe.volume_change
+          def vol_change(volume, muted):
+              send_notification("Volume change", f"Volume is now {volume}%")
+
+        """,
+    ),
+    Hook(
+        "volume_mute_change",
+        """
+        Fired when the volume mute status changes.
+
+        Receives an integer volume percentage (0-100) and boolean muted status.
+
+        The signature is the same as ``volume_change`` to allow the same function to be
+        used for both hooks.
+
+        .. code:: python
+
+          from libqtile import qtile
+          from libqtile.utils import send_notification
+
+          import qtile_extras.hook
+
+          @qtile_extras.hook.subscribe.volume_mute_change
+          def mute_change(volume, muted):
+              if muted:
+                send_notification("Volume change", "Volume is now muted.")
+
+        """,
+    ),
+]
+
+hooks.extend(volume_hooks)
+
 # Build the registry and expose helpful entrypoints
 qte = Registry("qtile-extras", hooks)
 
