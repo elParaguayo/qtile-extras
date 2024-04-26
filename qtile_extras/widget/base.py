@@ -26,6 +26,7 @@ from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
 
+from qtile_extras import hook
 from qtile_extras.popup.templates.volume import VOLUME_NOTIFICATION
 from qtile_extras.widget.mixins import ExtendedPopupMixin, ProgressBarMixin
 
@@ -84,6 +85,8 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
             "Control position of popup",
         ),
     ]
+
+    _hooks = [h.name for h in hook.volume_hooks]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
@@ -186,6 +189,12 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         # Something's changed so let's update display
         # Unhide bar
         self.hidden = False
+
+        # Fire any hooks
+        if muted != self.muted:
+            hook.fire("volume_mute_change", int(vol), bool(muted))
+        elif vol != self.volume:
+            hook.fire("volume_change", int(vol), bool(muted))
 
         # Get new values
         self.volume = vol
