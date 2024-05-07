@@ -1,3 +1,4 @@
+2024-05-10: [FEATURE] Add window border decorations (NB experimental)
 2024-04-26: [FEATURE] Add hooks to `ALSAWidget` and `PulseVolumeExtra`
 2024-04-25: [FEATURE] Add ability to drag `PopupSlider` and `PopupCircularProgress` controls (NB experimental)
 2024-04-25: [BREAKING CHANGE] Update to using lazy calls in popups. Needs latest qtile.
