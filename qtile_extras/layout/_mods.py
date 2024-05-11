@@ -17,6 +17,4 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from libqtile.layout import *  # noqa: F401, F403
-
-from qtile_extras.layout._mods import *  # noqa: F401, F403
+from qtile_extras.layout.plasma import Plasma  # noqa: F401

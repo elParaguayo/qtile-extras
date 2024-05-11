@@ -25,6 +25,13 @@ I've also added some "eye candy" in the form of:
   - :ref:`Window Border Decorations <border-decorations>`
   - :ref:`Wallpapers <wallpapers>`
 
+Next up, we have modified layouts to benefit from the new window border
+decorations. See :ref:`here<layouts>` for more details.
+
+The modified layouts are:
+
+.. list_objects:: qtile_extras.layout._mods
+
 Lastly, I've created a new ``ImgMask`` class which, rather than drawing the source image,
 uses the source as a mask for the drawing. This can be used to change the colour of icons
 without needing to recrate the icons themselves. You can see the class :ref:`here <img-mask>`.
@@ -46,6 +53,7 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     manual/how_to/popup
     manual/how_to/decorations
     manual/how_to/borders
+    manual/how_to/layouts
     manual/how_to/img-mask
     manual/how_to/tooltips
 
@@ -58,6 +66,7 @@ without needing to recrate the icons themselves. You can see the class :ref:`her
     manual/ref/hooks
     manual/ref/popup
     manual/ref/decorations
+    manual/ref/layouts
     manual/ref/borders
     manual/ref/imgmask
 
