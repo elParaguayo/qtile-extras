@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import cairocffi
+import xcffib.xproto
 from libqtile import qtile
 from libqtile.configurable import Configurable
 from libqtile.confreader import ConfigError
@@ -25,9 +26,11 @@ from libqtile.utils import rgb
 
 try:
     from libqtile.backend.wayland._ffi import ffi, lib
+    from libqtile.backend.wayland.window import _rgb
     from wlroots import ffi as wlr_ffi
     from wlroots import lib as wlr_lib
     from wlroots.wlr_types import Buffer, SceneBuffer
+    from wlroots.wlr_types.scene import SceneRect
 
     HAS_WAYLAND = True
 except (ImportError, ModuleNotFoundError):
@@ -48,6 +51,13 @@ class _BorderStyle(Configurable):
     """
 
     needs_surface = True
+
+    def _check_colours(self):
+        for colour in self.colours:
+            try:
+                rgb(colour)
+            except ValueError:
+                raise ConfigError(f"Invalid colour value in border decoration: {colour}.")
 
     def _create_xcb_surface(self):
         root = self.window.conn.conn.get_setup().roots[0]
@@ -77,11 +87,20 @@ class _BorderStyle(Configurable):
 
         return image_buffer, surface
 
+    def _get_edges(self, bw, x, y, width, height):
+        return [
+            (x, y, width, bw),
+            (self.outer_w - bw - x, bw + y, bw, height - 2 * bw),
+            (x, self.outer_h - y - bw, width, bw),
+            (x, bw + y, bw, height - bw * 2),
+        ]
+
     def _x11_draw(
         self, window, depth, pixmap, gc, outer_w, outer_h, borderwidth, x, y, width, height
     ):
         self.visual = window.get_attributes().visual
         self.window = window
+        self.core = window.conn.conn.core
         self.wid = window.wid
         self.depth = depth
         self.pixmap = pixmap
@@ -106,33 +125,28 @@ class _BorderStyle(Configurable):
         self.wid = window.wid
         self.outer_w = outer_w
         self.outer_h = outer_h
-        bw = borderwidth
-        self.rects = [
-            (x, y, width, bw),
-            (outer_w - bw - x, bw + y, bw, height - 2 * bw),
-            (x, outer_h - y - bw, width, bw),
-            (x, bw + y, bw, height - bw * 2),
-        ]
+        self.rects = self._get_edges(borderwidth, x, y, width, height)
         if self.needs_surface:
             image_buffer, surface = self._new_buffer()
         else:
             image_buffer = None
             surface = None
 
-        self.wayland_draw(borderwidth, x, y, width, height, surface)
+        scenes = self.wayland_draw(borderwidth, x, y, width, height, surface)
 
-        scenes = []
-        for x, y, w, h in self.rects:
-            scene_buffer = SceneBuffer.create(self.window.container, Buffer(image_buffer))
-            scene_buffer.node.set_position(x, y)
-            wlr_lib.wlr_scene_buffer_set_dest_size(scene_buffer._ptr, w, h)
-            fbox = wlr_ffi.new("struct wlr_fbox *")
-            fbox.x = x
-            fbox.y = y
-            fbox.width = w
-            fbox.height = h
-            wlr_lib.wlr_scene_buffer_set_source_box(scene_buffer._ptr, fbox)
-            scenes.append(scene_buffer)
+        if self.needs_surface:
+            scenes = []
+            for x, y, w, h in self.rects:
+                scene_buffer = SceneBuffer.create(self.window.container, Buffer(image_buffer))
+                scene_buffer.node.set_position(x, y)
+                wlr_lib.wlr_scene_buffer_set_dest_size(scene_buffer._ptr, w, h)
+                fbox = wlr_ffi.new("struct wlr_fbox *")
+                fbox.x = x
+                fbox.y = y
+                fbox.width = w
+                fbox.height = h
+                wlr_lib.wlr_scene_buffer_set_source_box(scene_buffer._ptr, fbox)
+                scenes.append(scene_buffer)
 
         return scenes, image_buffer, surface
 
@@ -188,10 +202,15 @@ class GradientBorder(_BorderStyle):
         _BorderStyle.__init__(self, **config)
         self.add_defaults(GradientBorder.defaults)
 
+        if not isinstance(self.colours, (list, tuple)):
+            raise ConfigError("colours must be a list or tuple.")
+
         if self.offsets is None:
             self.offsets = [x / (len(self.colours) - 1) for x in range(len(self.colours))]
         elif len(self.offsets) != len(self.colours):
             raise ConfigError("'offsets' must be same length as 'colours'.")
+
+        self._check_colours()
 
     def draw(self, surface, bw, x, y, width, height):
         def pos(point):
@@ -238,6 +257,11 @@ class GradientFrame(_BorderStyle):
         _BorderStyle.__init__(self, **config)
         self.add_defaults(GradientFrame.defaults)
         self.offsets = [x / (len(self.colours) - 1) for x in range(len(self.colours))]
+
+        if not isinstance(self.colours, (list, tuple)):
+            raise ConfigError("colours must be a list or tuple.")
+
+        self._check_colours()
 
     def draw(self, surface, bw, x, y, width, height):
         with cairocffi.Context(surface) as ctx:
@@ -357,3 +381,50 @@ class ScreenGradientBorder(GradientBorder):
             ctx.set_source(gradient)
             ctx.paint()
             ctx.restore()
+
+
+class SolidEdge(_BorderStyle):
+    """
+    A decoration that renders a solid border. Colours can be specified for
+    each edge.
+    """
+
+    _screenshots = [("max_solid_edge.png", 'SolidEdge(colours=["00f", "0ff", "00f", "0ff"])')]
+
+    needs_surface = False
+
+    defaults = [
+        (
+            "colours",
+            ["00f", "00f", "00f", "00f"],
+            "List of colours for each edge of the window [N, E, S, W].",
+        )
+    ]
+
+    def __init__(self, **config):
+        _BorderStyle.__init__(self, **config)
+        self.add_defaults(SolidEdge.defaults)
+
+        if not (isinstance(self.colours, (list, tuple)) and len(self.colours) == 4):
+            raise ConfigError("colours must have 4 values.")
+
+        self._check_colours()
+
+    def x11_draw(self, borderwidth, x, y, width, height, surface):
+        edges = self._get_edges(borderwidth, x, y, width, height)
+        for (x, y, w, h), c in zip(edges, self.colours):
+            self.core.ChangeGC(
+                self.gc, xcffib.xproto.GC.Foreground, [self.window.conn.color_pixel(c)]
+            )
+            rect = xcffib.xproto.RECTANGLE.synthetic(x, y, w, h)
+            self.core.PolyFillRectangle(self.pixmap, self.gc, 1, [rect])
+
+    def wayland_draw(self, borderwidth, x, y, width, height, surface):
+        scene_rects = []
+        edges = self._get_edges(borderwidth, x, y, width, height)
+        for (x, y, w, h), c in zip(edges, self.colours):
+            rect = SceneRect(self.window.container, w, h, _rgb(c))
+            rect.node.set_position(x, y)
+            scene_rects.append(rect)
+
+        return scene_rects
