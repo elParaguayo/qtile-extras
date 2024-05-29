@@ -112,11 +112,18 @@ def wayland_paint_borders(self, colors: ColorsType | None, width: int) -> None:
             if old_borders:
                 rects = old_borders.pop(0)
                 for (x, y, w, h), rect in zip(geometries, rects):
-                    rect.set_color(color_)
-                    rect.set_size(w, h)
-                    rect.node.set_position(x, y)
-
+                    if isinstance(rect, SceneRect):
+                        rect.set_color(color_)
+                        rect.set_size(w, h)
+                        rect.node.set_position(x, y)
+                        needs_new_rects = False
+                    else:
+                        rect.node.destroy()
+                        needs_new_rects = True
             else:
+                needs_new_rects = True
+
+            if needs_new_rects:
                 rects = []
                 for x, y, w, h in geometries:
                     rect = SceneRect(self.container, w, h, color_)
