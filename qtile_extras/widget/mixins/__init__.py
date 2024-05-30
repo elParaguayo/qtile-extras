@@ -117,6 +117,8 @@ class TooltipMixin(_BaseMixin):
             vertical_padding=self._tooltip_padding[0],
             horizontal_padding=self._tooltip_padding[1],
             wrap=False,
+            width=self.bar.screen.width // 2,
+            height=self.bar.screen.height // 2,
         )
 
         # Size the popup
@@ -153,7 +155,6 @@ class TooltipMixin(_BaseMixin):
         self._tooltip.x = x
         self._tooltip.y = y
 
-        self._tooltip.clear()
         self._tooltip.place()
         self._tooltip.draw_text()
         self._tooltip.unhide()
