@@ -76,7 +76,7 @@ class DBusMenuItem:  # noqa: E303
 
     def __repr__(self):
         """Custom repr to help debugging."""
-        txt = f"'{self.label.replace('_','')}'" if self.label else self.item_type
+        txt = f"'{self.label.replace('_', '')}'" if self.label else self.item_type
         if self.children_display == "submenu":
             txt += "*"
         return f"<DBusMenuItem ({self.id}:{txt})>"
@@ -119,6 +119,7 @@ class DBusMenu:  # noqa: E303
         self.path = path
         self.bus = bus
         self._menus: dict[int, dict[str, int | list[DBusMenuItem]]] = {}
+        self._interface = None
         self.no_cache_menus = no_cache_menus
         self.layout_callbacks = []
         self.display_menu_callback = display_menu_callback
@@ -186,6 +187,9 @@ class DBusMenu:  # noqa: E303
         Method to retrieve the menu layout from the DBus interface.
         """
 
+        if self._interface is None:
+            return None, None
+
         needs_update = True
 
         # Alert the app that we're about to draw a menu
@@ -237,7 +241,10 @@ class DBusMenu:  # noqa: E303
         update_needed, returned_menu = task.result()
         menu = []
 
-        if update_needed == self.MENU_UPDATED:
+        if update_needed is None:
+            return
+
+        elif update_needed == self.MENU_UPDATED:
             # Remember the menu revision ID so we know whether to update or not
             revision, layout = returned_menu
 
@@ -285,3 +292,6 @@ class DBusMenu:  # noqa: E303
         # Ugly hack: delete all stored menus if the menu has been clicked
         # This will force a reload when the menu is next generated.
         self._menus = {}
+
+    def stop(self):
+        self._interface.off_layout_updated(self._layout_updated)

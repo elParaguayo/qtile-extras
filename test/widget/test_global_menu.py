@@ -71,9 +71,7 @@ def test_global_menu(manager, backend_name):
     wait_for_internal(manager, 2)
     window = [x for x in manager.c.internal_windows() if x.get("name", "") == "dbuspopup"][0]
     assert window
-    manager.c.widget["globalmenu"].eval(
-        f"asyncio.create_task(self.get_window_menu({window['id']}))"
-    )
+    manager.c.widget["globalmenu"].eval(f"create_task(self.get_window_menu({window['id']}))")
     wait_for_text(manager, hidden=False)
 
     # Open another window with no menu so widget should hide text
@@ -81,9 +79,7 @@ def test_global_menu(manager, backend_name):
     wait_for_text(manager, hidden=True)
 
     # Focus back on window with menu and check text appears
-    manager.c.widget["globalmenu"].eval(
-        f"asyncio.create_task(self.get_window_menu({window['id']}))"
-    )
+    manager.c.widget["globalmenu"].eval(f"create_task(self.get_window_menu({window['id']}))")
     wait_for_text(manager, hidden=False)
 
     # Left-click on top menu to open menu window

@@ -19,11 +19,11 @@
 # SOFTWARE.
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 from libqtile import hook
 from libqtile.backend.base.window import Internal
+from libqtile.utils import create_task
 from libqtile.widget import base
 
 from qtile_extras.resources.dbusmenu import DBusMenu
@@ -85,11 +85,15 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
             del self.app_menus[wid]
 
         if wid == self.current_wid:
-            asyncio.create_task(self.get_window_menu(wid))
+            create_task(self.get_window_menu(wid))
 
     def set_hooks(self):
         hook.subscribe.focus_change(self.hook_response)
         hook.subscribe.client_killed(self.client_killed)
+
+    def clear_hooks(self):
+        hook.unsubscribe.focus_change(self.hook_response)
+        hook.unsubscribe.client_killed(self.client_killed)
 
     def hook_response(self, *args, startup=False):
         if not startup and self.bar.screen != self.qtile.current_screen:
@@ -98,7 +102,7 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
 
         self.current_wid = self.qtile.current_window.wid if self.qtile.current_window else None
         if self.current_wid:
-            asyncio.create_task(self.get_window_menu(self.current_wid))
+            create_task(self.get_window_menu(self.current_wid))
         elif not startup:
             self.clear()
 
@@ -228,4 +232,8 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
         registrar.finalize()
         for item in self.items:
             item.finalize()
+        for menu in self.app_menus.values():
+            menu.stop()
+        self.app_menus.clear()
+        self.clear_hooks()
         base._TextBox.finalize(self)
