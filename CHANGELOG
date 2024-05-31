@@ -1,3 +1,4 @@
+2024-06-01: [BUGFIX] Fix `GlobalMenu` crash after reloading config
 2024-05-29: [BUGFIX] Fix bug with border decorations when using both standard and decorated borders
 2024-05-22: [RELEASE] v0.26.0 release - compatible with qtile 0.26.0
 2024-05-19: [FEATURE] Add modified `Plasma` layout to include border highlighting
