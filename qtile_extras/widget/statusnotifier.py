@@ -24,8 +24,8 @@ import os
 from typing import TYPE_CHECKING
 
 from libqtile.log_utils import logger
+from libqtile.widget.helpers.status_notifier import StatusNotifierItem, host
 from libqtile.widget.statusnotifier import StatusNotifier as QtileStatusNotifier
-from libqtile.widget.statusnotifier import StatusNotifierItem, host
 
 from qtile_extras.resources.dbusmenu import DBusMenu
 from qtile_extras.widget.mixins import DbusMenuMixin
