@@ -18,11 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import pytest
-from libqtile.config import Screen
+from libqtile.config import Match, Screen
 from libqtile.confreader import Config, ConfigError
 from libqtile.layout import Matrix
 
 from qtile_extras.layout.decorations import (
+    ConditionalBorder,
     GradientBorder,
     GradientFrame,
     ScreenGradientBorder,
@@ -59,8 +60,17 @@ def manager(request, manager_nospawn):
         ScreenGradientBorder(colours=["f00", "0f0", "00f"], points=[(0, 0), (1, 0)]),
         ScreenGradientBorder(colours=["f00", "0f0", "00f"], offsets=[0, 0.1, 1]),
         ScreenGradientBorder(colours=["f00", "0f0", "00f"], radial=True),
-        # SolidEdge(),
-        # SolidEdge(colours=["f00", "00f", "f00", "00f"])
+        SolidEdge(),
+        SolidEdge(colours=["f00", "00f", "f00", "00f"]),
+        ConditionalBorder(),
+        ConditionalBorder(matches=[(Match(title="one"), "f00")]),
+        ConditionalBorder(matches=[(Match(title="one"), GradientBorder())]),
+        ConditionalBorder(matches=[(Match(title="three"), "f00")]),
+        ConditionalBorder(
+            matches=[(Match(title="three"), "f00"), (Match(wm_class="vlc"), "f60")]
+        ),
+        ConditionalBorder(matches=[(Match(title="three"), "f00")], fallback="00f"),
+        ConditionalBorder(matches=[(Match(title="three"), "f00")], fallback=GradientBorder()),
     ],
     indirect=True,
 )

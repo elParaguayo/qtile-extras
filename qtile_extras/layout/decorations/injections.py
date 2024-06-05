@@ -23,10 +23,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import xcffib
+from libqtile import qtile
 from libqtile.backend.wayland.window import SceneRect, Window, _rgb
 from xcffib.wrappers import GContextID, PixmapID
 
-from qtile_extras.layout.decorations.borders import _BorderStyle
+from qtile_extras.layout.decorations.borders import ConditionalBorder, _BorderStyle
 
 if TYPE_CHECKING:
     from libqtile.backend.wayland.window import Core, Qtile, S
@@ -48,6 +49,8 @@ def wayland_paint_borders(self, colors: ColorsType | None, width: int) -> None:
 
     if not isinstance(colors, list):
         colors = [colors]
+
+    colors = [c.compare(self) if isinstance(c, ConditionalBorder) else c for c in colors]
 
     if self.tree:
         self.tree.node.set_position(width, width)
@@ -162,6 +165,11 @@ def x11_paint_borders(self, depth, colors, borderwidth, width, height):
 
     if len(colors) > borderwidth:
         colors = colors[:borderwidth]
+
+    win = qtile.windows_map.get(self.wid)
+
+    colors = [c.compare(win) if isinstance(c, ConditionalBorder) else c for c in colors]
+
     core = self.conn.conn.core
     outer_w = width + borderwidth * 2
     outer_h = height + borderwidth * 2

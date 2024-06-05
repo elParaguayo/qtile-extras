@@ -20,6 +20,7 @@
 from libqtile import hook
 
 from qtile_extras.layout.decorations.borders import (  # noqa: F401
+    ConditionalBorder,
     GradientBorder,
     GradientFrame,
     ScreenGradientBorder,
