@@ -428,3 +428,69 @@ class SolidEdge(_BorderStyle):
             scene_rects.append(rect)
 
         return scene_rects
+
+
+class ConditionalBorder(_BorderStyle):
+    """
+    A decoration that allows finer control as to which border is applied to which window.
+
+    To configure the decoration, you need to provide two parameters:
+
+      * ``matches``: a list of tuples of (Match rules, border style)
+      * ``fallback``: border style to apply if no matches
+
+    Example:
+
+    .. code:: python
+
+        from qtile_extras.layout.decorations import ConditionalBorder, GradientBorder
+
+        layouts = [
+            layout.MonadTall(
+                border_focus=ConditionalBorder(
+                    matches=[
+                        (Match(wm_class="vlc"), GradientBorder(colours=["e85e00", "e80000", "e85e00"])),
+                        (Match(wm_class="firefox"), "f0f")
+                    ],
+                    fallback="00f"),
+                border_width=4
+            ),
+        ]
+
+    The above code will draw an orange/red gradient border when VLC is focused, a solid purple border when
+    firefox is focused and a solid blue border when any other window is focused.
+
+    Matches can be provided as single rule or a list of rules. The advanced combination of rules (using
+    ``&``, ``|``, ``~``) is also supported here.
+
+    """
+
+    needs_surface = False
+
+    defaults = [
+        ("matches", [], "List of tuples of match rules and applicable"),
+        (
+            "fallback",
+            "fff",
+            "Border to be applied if no matches",
+        ),
+    ]
+
+    def __init__(self, **config):
+        _BorderStyle.__init__(self, **config)
+        self.add_defaults(ConditionalBorder.defaults)
+
+    def compare(self, win):
+        if not win:
+            return self.fallback
+
+        for match, colour in self.matches:
+            if isinstance(match, (list, str)):
+                matched = any(m.compare(win) for m in match)
+            else:
+                matched = match.compare(win)
+
+            if matched:
+                return colour
+
+        return self.fallback
