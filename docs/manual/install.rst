@@ -17,8 +17,8 @@ Installation
 PyPi
 ====
 
-I have no current intentions to package this on PyPi. This means
-installation may be a bit more "manual" than for other packages.
+Tagged releases of qtile-extras are available on PyPi and can be installed with
+``pip install qtile-extras``.
 
 Arch users
 ==========
@@ -37,6 +37,12 @@ from `Copr`_::
     dnf install qtile-extras
 
 .. _Copr: https://copr.fedorainfracloud.org/
+
+pipx
+====
+
+If you've installed qtile with ``pipx`` then you can add qtile-extras to the same environment by running
+``pipx inject qtile qtile-extras`` (assuming the pipx environment was called ``qtile``).
 
 Everyone else
 =============
