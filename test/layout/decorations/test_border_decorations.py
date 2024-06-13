@@ -24,6 +24,7 @@ from libqtile.layout import Matrix
 
 from qtile_extras.layout.decorations import (
     ConditionalBorder,
+    CustomBorder,
     GradientBorder,
     GradientFrame,
     ScreenGradientBorder,
@@ -71,6 +72,7 @@ def manager(request, manager_nospawn):
         ),
         ConditionalBorder(matches=[(Match(title="three"), "f00")], fallback="00f"),
         ConditionalBorder(matches=[(Match(title="three"), "f00")], fallback=GradientBorder()),
+        CustomBorder(func=lambda ctx, bw, x, y: None),
     ],
     indirect=True,
 )
@@ -100,6 +102,9 @@ def test_window_decoration(manager):
         (SolidEdge, {"colours": ["f00", "f00"]}),  # not enough values
         (SolidEdge, {"colours": "f00"}),  # not a list
         (SolidEdge, {"colours": [1, 2, 3, 4]}),  # not a valid color
+        (CustomBorder, {}),  # No draw function
+        (CustomBorder, {"func": 1}),  # func not callable
+        (CustomBorder, {"func": lambda ctx: None}),  # Func takes wrong number of arguments
     ],
 )
 def test_decoration_config_errors(classname, config):
