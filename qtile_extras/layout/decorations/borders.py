@@ -17,6 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import inspect
+
 import cairocffi
 import xcffib.xproto
 from libqtile import qtile
@@ -494,3 +496,77 @@ class ConditionalBorder(_BorderStyle):
                 return colour
 
         return self.fallback
+
+
+class CustomBorder(_BorderStyle):
+    """
+    Decoration to allow users to create custom borders.
+
+    To use this border, you need to define a function that takes four arguments:
+
+        - ``ctx``: A ``cairocffi.Context`` object for the drawing operations
+        - ``border_width``: the width of the border to be drawn
+        - ``width``: the width of the area to be drawn
+        - ``height``: the height of the area to be drawn
+
+    ``width`` and ``height`` are defined that the top left corner of the border is
+    at (0, 0) in the context. The bottom right corner is (width, height).
+
+    For example:
+
+    .. code:: python
+
+        from qtile_extras.layout.decorations import CustomBorder
+
+
+        def stripey_red_border(ctx, bw, w, h):
+            ctx.set_source_rgb(1,0,0)
+            for x in range(0, h, 10):
+                ctx.new_path()
+                ctx.move_to(0, x)
+                ctx.line_to(w, x)
+                ctx.set_line_width(4)
+                ctx.stroke()
+
+
+        layouts = [
+            layout.Max(
+                margin=5,
+                border_width=10,
+                border_focus=CustomBorder(func=stipey_red_border)
+            ),
+        ]
+
+    .. note::
+
+        The decoration will not clip the drawing to the area within the specified border
+        width. Therefore, if you draw outside this area and have defined multiple borders,
+        this drawing may overlap those borders.
+
+    """
+
+    needs_surface = True
+
+    defaults = [
+        ("func", None, "Custom function to render border. See docstring for more."),
+    ]
+
+    _screenshots = [
+        ("border_red_stripe.png", "Red stripey border"),
+    ]
+
+    def __init__(self, **config):
+        _BorderStyle.__init__(self, **config)
+        self.add_defaults(CustomBorder.defaults)
+
+        if self.func is None:
+            raise ConfigError("Draw function is not set.")
+        elif not callable(self.func):
+            raise ConfigError("Draw function is not callable.")
+        elif len(inspect.signature(self.func).parameters) != 4:
+            raise ConfigError("Draw function must take 4 arguments.")
+
+    def draw(self, surface, bw, x, y, width, height):
+        with cairocffi.Context(surface) as ctx:
+            ctx.translate(x, y)
+            self.func(ctx, bw, width, height)

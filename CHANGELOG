@@ -1,3 +1,4 @@
+2024-06-13: [FEATURE] Add new `CustomBorder` to draw window borders with user-defined functions
 2024-06-06: [FEATURE] Add new `ConditionalBorder` to set window border depending on window conditions (name, class etc.)
 2024-06-01: [BUGFIX] Fix `GlobalMenu` crash after reloading config
 2024-05-29: [BUGFIX] Fix bug with border decorations when using both standard and decorated borders
