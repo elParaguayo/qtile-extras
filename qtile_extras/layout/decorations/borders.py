@@ -533,7 +533,7 @@ class CustomBorder(_BorderStyle):
             layout.Max(
                 margin=5,
                 border_width=10,
-                border_focus=CustomBorder(func=stipey_red_border)
+                border_focus=CustomBorder(func=stripey_red_border)
             ),
         ]
 
@@ -553,6 +553,7 @@ class CustomBorder(_BorderStyle):
 
     _screenshots = [
         ("border_red_stripe.png", "Red stripey border"),
+        ("border_green_diagonal.png", "Diagonal green border"),
     ]
 
     def __init__(self, **config):
