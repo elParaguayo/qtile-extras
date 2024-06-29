@@ -38,7 +38,7 @@ ACTIVITIES = [
         distance=Unit("m") * 10000,
         elapsed_time=45 * 60,
         moving_time=45 * 60,
-        type=Activity.RUN,
+        sport_type="Run",
     ),
     Activity(
         name="Test Activity 2",
@@ -46,7 +46,7 @@ ACTIVITIES = [
         distance=Unit("m") * 21100,
         elapsed_time=105 * 60,
         moving_time=105 * 60,
-        type=Activity.RUN,
+        sport_type="Run",
     ),
 ]
 
