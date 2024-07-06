@@ -571,3 +571,60 @@ class CustomBorder(_BorderStyle):
         with cairocffi.Context(surface) as ctx:
             ctx.translate(x, y)
             self.func(ctx, bw, width, height)
+
+
+class ConditionalBorderWidth(Configurable):
+    """
+    A class that allows finer control as to which border width is applied to which window.
+
+    To configure the border width, you need to provide two parameters:
+
+      * ``matches``: a list of tuples of (Match rules, border width)
+      * ``default``: border width to apply if no matches
+
+    Matches are applied in order and will return a border width as soon as a rule matches.
+
+    It can be used in place of the integer border width layout when defining layouts in your
+    config. For example:
+
+    .. code:: python
+
+        from qtile_extras.layout.decorations import ConditionalBorderWidth
+
+        layouts = [
+            layout.Columns(
+                border_focus_stack=["#d75f5f", "#8f3d3d"],
+                border_width=ConditionalBorderWidth(
+                    default=2,
+                    matches=[(Match(wm_class="vlc"), 0)])
+            ),
+            ...
+        ]
+
+    The above code will default to a border width of 2 but will apply a border width of zero
+    for VLC windows.
+
+    """
+
+    defaults = [
+        ("default", 0, "Default border width value if no rule is matched"),
+        ("matches", [], "List of rules to apply border widths. See docs for more details."),
+    ]
+
+    def __init__(self, **config):
+        Configurable.__init__(self, **config)
+        self.add_defaults(ConditionalBorderWidth.defaults)
+
+    def get_border_for_window(self, win):
+        for rule, value in self.matches:
+            if rule.compare(win):
+                return value
+        return self.default
+
+    # Layouts size windows by subtracting the border width so we
+    # need to allow the multiplication to work on the custom class
+    # The size will be fixed with the injected window.place code.
+    def __mul__(self, other):
+        return other * self.default
+
+    __rmul__ = __mul__

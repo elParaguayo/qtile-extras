@@ -24,6 +24,7 @@ from libqtile.layout import Matrix
 
 from qtile_extras.layout.decorations import (
     ConditionalBorder,
+    ConditionalBorderWidth,
     CustomBorder,
     GradientBorder,
     GradientFrame,
@@ -110,3 +111,20 @@ def test_window_decoration(manager):
 def test_decoration_config_errors(classname, config):
     with pytest.raises(ConfigError):
         classname(**config)
+
+
+def test_conditional_border_width_default():
+    bw = ConditionalBorderWidth(default=2)
+    assert 2 * bw == 4
+    assert bw * 2 == 4
+
+
+def test_conditional_border_width_matching():
+    bw = ConditionalBorderWidth(
+        default=2,
+        matches=[(Match(func=lambda w: w is True), 4), (Match(func=lambda w: w is False), 0)],
+    )
+
+    assert bw.get_border_for_window(True) == 4
+    assert bw.get_border_for_window(False) == 0
+    assert bw.get_border_for_window("Something else") == 2

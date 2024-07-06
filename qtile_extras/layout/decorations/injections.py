@@ -27,7 +27,11 @@ from libqtile import qtile
 from libqtile.backend.wayland.window import SceneRect, Window, _rgb
 from xcffib.wrappers import GContextID, PixmapID
 
-from qtile_extras.layout.decorations.borders import ConditionalBorder, _BorderStyle
+from qtile_extras.layout.decorations.borders import (
+    ConditionalBorder,
+    ConditionalBorderWidth,
+    _BorderStyle,
+)
 
 if TYPE_CHECKING:
     from libqtile.backend.wayland.window import Core, Qtile, S
@@ -208,3 +212,38 @@ def x11_paint_borders(self, depth, colors, borderwidth, width, height):
                     core.PolyFillRectangle(pixmap, gc, 1, [rect])
                 coord += borderwidths[i]
             self._set_borderpixmap(depth, pixmap, gc, borderwidth, width, height)
+
+
+def new_place(
+    self,
+    x,
+    y,
+    width,
+    height,
+    borderwidth,
+    bordercolor,
+    above=False,
+    margin=None,
+    respect_hints=False,
+):
+    if isinstance(borderwidth, ConditionalBorderWidth):
+        newborder = borderwidth.get_border_for_window(self)
+        if newborder != borderwidth.default:
+            width += borderwidth.default * 2
+            width -= newborder * 2
+            height += borderwidth.default * 2
+            height -= newborder * 2
+    else:
+        newborder = borderwidth
+
+    self._place(
+        x,
+        y,
+        width,
+        height,
+        newborder,
+        bordercolor,
+        above=above,
+        margin=margin,
+        respect_hints=respect_hints,
+    )

@@ -18,3 +18,12 @@ Window Border Decorations
     :exclude-base:
     :no-commands:
     :show-config:
+
+
+Changing border widths
+=======================
+
+.. qtile_module:: qtile_extras.layout.decorations.borders
+    :baseclass: qtile_extras.layout.decorations.borders.ConditionalBorderWidth
+    :no-commands:
+    :show-config:
