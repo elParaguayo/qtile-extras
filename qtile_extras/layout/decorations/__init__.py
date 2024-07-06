@@ -21,6 +21,7 @@ from libqtile import hook
 
 from qtile_extras.layout.decorations.borders import (  # noqa: F401
     ConditionalBorder,
+    ConditionalBorderWidth,
     CustomBorder,
     GradientBorder,
     GradientFrame,
@@ -53,3 +54,24 @@ def inject_border_methods():
         from qtile_extras.layout.decorations.injections import x11_paint_borders
 
         XWindow.paint_borders = x11_paint_borders
+
+
+@hook.subscribe.startup_once
+def inject_border_width_methods():
+    from libqtile import qtile
+
+    from qtile_extras.layout.decorations.injections import new_place
+
+    if qtile.core.name == "wayland":
+        from libqtile.backend.wayland.xdgwindow import XdgWindow
+        from libqtile.backend.wayland.xwindow import XWindow
+
+        for base in (XdgWindow, XWindow):
+            base._place = base.place
+            base.place = new_place
+
+    else:
+        from libqtile.backend.x11.window import _Window
+
+        _Window._place = _Window.place
+        _Window.place = new_place
