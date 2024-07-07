@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import inspect
+import math
 
 import cairocffi
 import xcffib.xproto
@@ -571,6 +572,50 @@ class CustomBorder(_BorderStyle):
         with cairocffi.Context(surface) as ctx:
             ctx.translate(x, y)
             self.func(ctx, bw, width, height)
+
+
+class RoundedCorners(_BorderStyle):
+    """
+    A simple decoration to draw rounded corners.
+
+    .. note::
+
+        This border will not render well on x11 backends as it does not implement transparency.
+        As a result, the border will display with black artefacts in the corners.
+
+    """
+
+    needs_surface = True
+
+    defaults = [
+        ("colour", "00f", "Border colour"),
+    ]
+
+    _screenshots = [
+        ("border_rounded_corners.png", "Rounded corners"),
+    ]
+
+    def __init__(self, **config):
+        _BorderStyle.__init__(self, **config)
+        self.add_defaults(RoundedCorners.defaults)
+
+    def draw(self, surface, bw, x, y, width, height):
+        with cairocffi.Context(surface) as ctx:
+            ctx.translate(x, y)
+
+            radius = bw / 2
+            degrees = math.pi / 180.0
+
+            ctx.new_sub_path()
+            ctx.arc(width - bw, bw, radius, -90 * degrees, 0 * degrees)
+            ctx.arc(width - bw, height - bw, radius, 0 * degrees, 90 * degrees)
+            ctx.arc(bw, height - bw, radius, 90 * degrees, 180 * degrees)
+            ctx.arc(bw, bw, radius, 180 * degrees, 270 * degrees)
+            ctx.close_path()
+
+            ctx.set_line_width(bw)
+            ctx.set_source_rgba(*rgb(self.colour))
+            ctx.stroke()
 
 
 class ConditionalBorderWidth(Configurable):
