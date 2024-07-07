@@ -25,6 +25,7 @@ from qtile_extras.layout.decorations.borders import (  # noqa: F401
     CustomBorder,
     GradientBorder,
     GradientFrame,
+    RoundedCorners,
     ScreenGradientBorder,
     SolidEdge,
 )

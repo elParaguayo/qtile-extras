@@ -28,6 +28,7 @@ from qtile_extras.layout.decorations import (
     CustomBorder,
     GradientBorder,
     GradientFrame,
+    RoundedCorners,
     ScreenGradientBorder,
     SolidEdge,
 )
@@ -74,6 +75,8 @@ def manager(request, manager_nospawn):
         ConditionalBorder(matches=[(Match(title="three"), "f00")], fallback="00f"),
         ConditionalBorder(matches=[(Match(title="three"), "f00")], fallback=GradientBorder()),
         CustomBorder(func=lambda ctx, bw, x, y: None),
+        RoundedCorners(),
+        RoundedCorners(colour="f00"),
     ],
     indirect=True,
 )
