@@ -612,19 +612,22 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
 
     Block:
 
-    Block is a rectangle that can be filled (with `block_colour`) and/or have an outline (with `block_border_width` and
-    `block_border_colour`). The corners of the rectangle can be curved by setting the `block_corner_radius` value.
+    Block is a rectangle that can be filled (with ``block_colour``) and/or have an outline (with ``block_border_width`` and
+    ``block_border_colour``). The corners of the rectangle can be curved by setting the ``block_corner_radius`` value.
 
-    The block is positioned by using the `margin(_x)` and `margin_y` attributes. NB Currently, these are global for the widget
+    The block is positioned by using the ``margin(_x)`` and ``margin_y`` attributes. NB Currently, these are global for the widget
     and cannot be set by rules.
 
     Line:
 
-    Line is a straight line on the edge of the widget. A line will be drawn at the bottom of the box by default (when a `line_colour`
-    and `line_width have been set). The position of lines can be changed by setting the `line_position` attribute with
-    a LinePosition flag. For example to drawn lines at the top and bottom of the box you would set the `line_position` value to:
+    Line is a straight line on the edge of the widget. A line will be drawn at the bottom of the box by default (when a ``line_colour``
+    and ``line_width`` have been set). The position of lines can be changed by setting the ``line_position`` attribute with
+    a ``LinePosition`` flag. For example to drawn lines at the top and bottom of the box you would set the ``line_position`` value to:
 
     .. code:: python
+
+        from qtile_extras.widget.groupbox2 import GroupBoxRule
+
 
         GroupBoxRule.LINE_TOP | GroupBoxRule.LINE_BOTTOM
 
@@ -651,6 +654,9 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     For example, to define a rule that draws a red square in the middle of the box for occupied groups, you would do the following:
 
     .. code:: python
+
+        from qtile_extras.widget.groupbox2 import GroupBoxRule
+
 
         def draw_red_square(box):
 
@@ -679,6 +685,9 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     create the following rule:
 
     .. code:: python
+
+        from qtile_extras.widget.groupbox2 import GroupBoxRule
+
 
         GroupBoxRule(text_colour="00ffff").when(focused=False, occupied=True)
         #                    ^                            ^
@@ -731,6 +740,9 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
 
     .. code:: python
 
+        from qtile_extras.widget.groupbox2 import GroupBoxRule
+
+
         def has_vlc(rule, box):
             for win in box.group.windows:
                 if "VLC" in win.name:
@@ -746,6 +758,9 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     depending on the state of the group:
 
     .. code:: python
+
+        from qtile_extras.widget.groupbox2 import GroupBoxRule
+
 
         def set_label(rule, box):
             if box.focused:
@@ -770,6 +785,9 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     For example:
 
     .. code:: python
+
+        from qtile_extras.widget.groupbox2 import GroupBoxRule
+
 
         rules = [
             GroupBoxRule(block_colour="009999").when(screen=GroupBoxRule.SCREEN_THIS),
