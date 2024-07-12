@@ -227,14 +227,17 @@ def new_place(
     respect_hints=False,
 ):
     if isinstance(borderwidth, ConditionalBorderWidth):
+        old = getattr(self, "_old_bw", borderwidth.default)
         newborder = borderwidth.get_border_for_window(self)
-        if newborder != borderwidth.default:
-            width += borderwidth.default * 2
+        if newborder != old:
+            width += old * 2
             width -= newborder * 2
-            height += borderwidth.default * 2
+            height += old * 2
             height -= newborder * 2
     else:
         newborder = borderwidth
+
+    self._old_bw = newborder
 
     self._place(
         x,
