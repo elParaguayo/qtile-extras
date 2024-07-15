@@ -44,7 +44,7 @@ def inject_border_methods():
     if qtile.core.name == "wayland":
         from libqtile.backend.wayland.window import Window
 
-        from qtile_extras.layout.decorations.injections import (
+        from qtile_extras.layout.decorations.injections_wayland import (
             wayland_paint_borders,
             wayland_window_init,
         )
