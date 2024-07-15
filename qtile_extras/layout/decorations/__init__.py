@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from libqtile import hook
+from libqtile.log_utils import logger
 
 from qtile_extras.layout.decorations.borders import (  # noqa: F401
     ConditionalBorder,
@@ -38,6 +39,8 @@ from qtile_extras.layout.decorations.borders import (  # noqa: F401
 def inject_border_methods():
     from libqtile import qtile
 
+    logger.debug("qtile_extras: Running inject_border_methods.")
+
     if qtile.core.name == "wayland":
         from libqtile.backend.wayland.window import Window
 
@@ -46,6 +49,7 @@ def inject_border_methods():
             wayland_window_init,
         )
 
+        logger.debug("qtile_extras: Injecting wayland border methods.")
         Window.__init__ = wayland_window_init
         Window.paint_borders = wayland_paint_borders
 
@@ -54,6 +58,7 @@ def inject_border_methods():
 
         from qtile_extras.layout.decorations.injections import x11_paint_borders
 
+        logger.debug("qtile_extras: Injecting x11 border methods.")
         XWindow.paint_borders = x11_paint_borders
 
 
@@ -63,10 +68,13 @@ def inject_border_width_methods():
 
     from qtile_extras.layout.decorations.injections import new_place
 
+    logger.debug("qtile_extras: Running inject_border_width methods.")
+
     if qtile.core.name == "wayland":
         from libqtile.backend.wayland.xdgwindow import XdgWindow
         from libqtile.backend.wayland.xwindow import XWindow
 
+        logger.debug("qtile_extras: Injecting wayland border width methods.")
         for base in (XdgWindow, XWindow):
             base._place = base.place
             base.place = new_place
@@ -74,5 +82,6 @@ def inject_border_width_methods():
     else:
         from libqtile.backend.x11.window import _Window
 
+        logger.debug("qtile_extras: Injecting x11 border methods.")
         _Window._place = _Window.place
         _Window.place = new_place
