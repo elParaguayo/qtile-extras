@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 import xcffib
 from libqtile import qtile
 from libqtile.backend.wayland.window import SceneRect, Window, _rgb
+from libqtile.log_utils import logger
 from xcffib.wrappers import GContextID, PixmapID
 
 from qtile_extras.layout.decorations.borders import (
@@ -42,11 +43,13 @@ old_wayland_window_init = Window.__init__
 
 
 def wayland_window_init(self, core: Core, qtile: Qtile, surface: S):
+    logger.debug("qtile_extras: Running injected wayland window init.")
     old_wayland_window_init(self, core, qtile, surface)
     self._border_styles = {}
 
 
 def wayland_paint_borders(self, colors: ColorsType | None, width: int) -> None:
+    logger.debug("qtile_extras: Running injected wayland paint borders.")
     if not colors:
         colors = []
         width = 0
@@ -156,6 +159,7 @@ def x11_paint_borders(self, depth, colors, borderwidth, width, height):
     """
     This method is used only by the managing Window class.
     """
+    logger.debug("qtile_extras: Running injected x11 paint borders.")
     self.set_property("_NET_FRAME_EXTENTS", [borderwidth] * 4)
 
     if not colors or not borderwidth:
@@ -226,6 +230,7 @@ def new_place(
     margin=None,
     respect_hints=False,
 ):
+    logger.debug("qtile_extras: Running injected window place method.")
     if isinstance(borderwidth, ConditionalBorderWidth):
         old = getattr(self, "_old_bw", borderwidth.default)
         newborder = borderwidth.get_border_for_window(self)
