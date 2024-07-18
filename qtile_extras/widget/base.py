@@ -107,8 +107,7 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         # Set up necessary variables
         self.muted = False
         self.volume = -1
-        self.oldvol = -1
-        self.oldmute = False
+        self._previous_state = (-1.0, -1)
 
         # Variable to store icons
         self.surfaces = {}
@@ -186,7 +185,10 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         return width
 
     def status_change(self, vol, muted):
-        # Something's changed so let's update display
+        if (vol, muted) == self._previous_state:
+            return
+
+        # Something's changed
         # Unhide bar
         self.hidden = False
 
@@ -199,6 +201,7 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         # Get new values
         self.volume = vol
         self.muted = muted
+        self._previous_state = (vol, muted)
 
         # Restart timer
         self.set_refresh_timer()

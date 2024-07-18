@@ -1,3 +1,4 @@
+2024-07-18: [BUGFIX] Fix volume widgets bug volume display triggered on opening apps using sound device
 2024-07-16: [POST RELEASE] v0.27.0.post1 incorporates bugfix below. Still compatible with v0.27.0
 2024-07-16: [BUGFIX] Fix bug where border decorations failed on x11 if user did not have wayland libraries installed
 2024-07-12: [RELEASE] v0.27.0 release - compatible with qtile 0.27.0
