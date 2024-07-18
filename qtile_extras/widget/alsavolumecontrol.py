@@ -76,15 +76,14 @@ class ALSAWidget(_Volume):
 
         # If volume or mute status has changed
         # then we need to trigger callback
-        if any([self.volume != self.oldvol, self.muted != self.oldmute]):
+        if (self.volume, self.muted) != self._previous_state:
             if not self.first_run:
                 self.status_change(self.volume, self.muted)
             else:
                 self.first_run = False
 
             # Record old values
-            self.oldvol = self.volume
-            self.oldmute = self.muted
+            self._previous_state = (self.volume, self.muted)
 
     def get_volume(self):
         cmd = "amixer get {}".format(self.device)
