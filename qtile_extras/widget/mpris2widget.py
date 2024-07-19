@@ -108,6 +108,94 @@ class Mpris2(widget.Mpris2, ExtendedPopupMixin):
     .. |default| image:: /_static/images/mpris_popup_default.png
     .. |compact| image:: /_static/images/mpris_popup_compact.png
 
+    To help with creating your own layout, the default layout is defined as follows:
+
+    .. code:: python
+
+        DEFAULT_LAYOUT = PopupRelativeLayout(
+            None,
+            width=400,
+            height=200,
+            controls=[
+                PopupText(
+                    "",
+                    name="title",
+                    pos_x=0.35,
+                    pos_y=0.1,
+                    width=0.55,
+                    height=0.14,
+                    h_align="left",
+                    v_align="top",
+                ),
+                PopupText(
+                    "",
+                    name="artist",
+                    pos_x=0.35,
+                    pos_y=0.24,
+                    width=0.55,
+                    height=0.14,
+                    h_align="left",
+                    v_align="middle",
+                ),
+                PopupText(
+                    "",
+                    name="album",
+                    pos_x=0.35,
+                    pos_y=0.38,
+                    width=0.55,
+                    height=0.14,
+                    h_align="left",
+                    v_align="bottom",
+                ),
+                PopupImage(
+                    name="artwork",
+                    filename=DEFAULT_IMAGE,
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    width=0.21,
+                    height=0.42,
+                ),
+                PopupSlider(name="progress", pos_x=0.1, pos_y=0.6, width=0.8, height=0.1, marker_size=0),
+                PopupImage(
+                    name="previous",
+                    filename=(IMAGES_FOLDER / "previous.svg").resolve().as_posix(),
+                    mask=True,
+                    pos_x=0.125,
+                    pos_y=0.8,
+                    width=0.15,
+                    height=0.1,
+                ),
+                PopupImage(
+                    name="play_pause",
+                    filename=(IMAGES_FOLDER / "play_pause.svg").resolve().as_posix(),
+                    mask=True,
+                    pos_x=0.325,
+                    pos_y=0.8,
+                    width=0.15,
+                    height=0.1,
+                ),
+                PopupImage(
+                    name="stop",
+                    filename=(IMAGES_FOLDER / "stop.svg").resolve().as_posix(),
+                    mask=True,
+                    pos_x=0.525,
+                    pos_y=0.8,
+                    width=0.15,
+                    height=0.1,
+                ),
+                PopupImage(
+                    name="next",
+                    filename=(IMAGES_FOLDER / "next.svg").resolve().as_posix(),
+                    mask=True,
+                    pos_x=0.725,
+                    pos_y=0.8,
+                    width=0.15,
+                    height=0.1,
+                ),
+            ],
+            close_on_click=False,
+        )
+
     """
 
     defaults = [
