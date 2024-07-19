@@ -32,7 +32,8 @@ RE_VOL = re.compile(r"Playback\s[0-9]+\s\[([0-9]+)%\].*\[(on|off)\]")
 
 
 class ALSAWidget(_Volume):
-    """
+    __doc__ = (
+        """
     The widget is very simple and, so far, just allows controls for
     volume up, down and mute.
 
@@ -41,18 +42,9 @@ class ALSAWidget(_Volume):
     code, but will also update on an interval (i.e. it will reflect
     changes to volume made by other programs).
 
-    The widget displays volume level via an icon, bar or both. The icon
-    is permanently visible while the bar only displays when the volume
-    is changed and will hide after a user-defined period.
-
-    Alternatively, if you select the `popup` mode then no widget will
-    appear on the bar and, instead, a small popup will be displayed.
-
-    The layout of the popup can be customised via the `popup_layout` parameter.
-    Users should provide a _PopupLayout object. The layout should have at least one
-    of the following controls: a PopupSlider named `volume` and a PopupText control
-    named `text` as these controls will be updated whenever the volume changes.
     """
+        + _Volume._instructions
+    )
 
     _screenshots = [
         ("volumecontrol-icon.gif", "'icon' mode"),

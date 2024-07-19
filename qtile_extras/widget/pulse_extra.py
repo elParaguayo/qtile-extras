@@ -26,7 +26,8 @@ from qtile_extras.widget.pulse_volume import PulseVolume
 
 
 class PulseVolumeExtra(_Volume, PulseVolume):
-    """
+    __doc__ = (
+        """
     Volume widget for systems using PulseAudio.
 
     The appearance is identical to ``ALSAWidget`` but this widget
@@ -34,9 +35,12 @@ class PulseVolumeExtra(_Volume, PulseVolume):
     As a result, you will need the `pulsectl_asyncio <https://pypi.org/project/pulsectl-asyncio/>`__
     library to use this widget.
 
-    Finally, the widget allows users to select the output sink by middle clicking on the widget or calling
+    The widget allows users to select the output sink by middle clicking on the widget or calling
     the ``select_sink()`` command.
+
     """
+        + _Volume._instructions
+    )
 
     _screenshots = [
         ("volumecontrol-icon.gif", "'icon' mode"),

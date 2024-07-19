@@ -35,25 +35,63 @@ if TYPE_CHECKING:
 
 
 class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
-    """
+    _info = """
     This is a base class for volume-based widgets to provide common
     methods.
 
     The class provides methods to control volume (i.e. volume up, down and mute)
-    which need to be overwritten by widgets using this clas.
+    which need to be overwritten by widgets using this class.
 
-    The widget displays volume level via an icon, bar or both. The icon
+    """
+
+    _instructions = """The widget displays volume level via an icon, bar or both. The icon
     is permanently visible while the bar only displays when the volume
     is changed and will hide after a user-defined period.
 
     Alternatively, if you select the `popup` mode then no widget will
     appear on the bar and, instead, a small popup will be displayed.
 
-    The layout of the popup can be customised via the `popup_layout` parameter.
-    Users should provide a _PopupLayout object. The layout should have at least one
-    of the following controls: a PopupSlider named `volume` and a PopupText control
-    named `text` as these controls will be updated whenever the volume changes.
+    When using ``"popup"`` mode, the layout of the popup can be customised via the `popup_layout` parameter.
+    Users should provide a :ref:`_PopupLayout<ref-popup-layouts>` object. The layout should have at least one
+    of the following controls: a ``PopupSlider`` named ``"volume"`` and a ``PopupText`` control
+    named ``"text"`` as these controls will be updated whenever the volume changes. For example,
+    the default layout for the popup is defined as follows:
+
+    .. code:: python
+
+        VOLUME_NOTIFICATION = PopupRelativeLayout(
+            width=200,
+            height=50,
+            controls=[
+                PopupText(
+                    text="Volume:",
+                    name="text",
+                    pos_x=0.1,
+                    pos_y=0.1,
+                    height=0.2,
+                    width=0.8,
+                    v_align="middle",
+                    h_align="center",
+                ),
+                PopupSlider(
+                    name="volume",
+                    pos_x=0.1,
+                    pos_y=0.3,
+                    width=0.8,
+                    height=0.8,
+                    colour_below="00ffff",
+                    bar_border_size=2,
+                    bar_border_margin=1,
+                    bar_size=6,
+                    marker_size=0,
+                    end_margin=0,
+                ),
+            ],
+        )
+
     """
+
+    __doc__ = _info + _instructions
 
     orientations = base.ORIENTATION_HORIZONTAL
     defaults: list[tuple[str, Any, str]] = [
