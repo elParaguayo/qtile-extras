@@ -423,3 +423,30 @@ def test_visible_groups(gbmanager):
 def test_box_size(gbmanager):
     info = gbmanager.c.widget["groupbox2"].info()
     assert info["width"] == 250
+
+
+@pytest.mark.parametrize(
+    "gbmanager",
+    [
+        {
+            "rules": [
+                GroupBoxRule(visible=True).when(focused=True),
+                GroupBoxRule(visible=False).when(occupied=False),
+            ]
+        }
+    ],
+    indirect=True,
+)
+def test_box_visibility(gbmanager):
+    def text():
+        return gbmanager.c.widget["groupbox2"].info()["text"]
+
+    assert text() == "a|c"
+
+    gbmanager.c.group["b"].toscreen()
+    assert text() == "b|c"
+
+    gbmanager.c.group["c"].toscreen()
+    gbmanager.c.window.kill()
+    gbmanager.c.group["d"].toscreen()
+    assert text() == "d"
