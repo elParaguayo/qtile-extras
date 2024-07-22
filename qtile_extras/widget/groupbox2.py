@@ -117,6 +117,7 @@ class GroupBoxRule:
         "custom_draw",
         "text",
         "box_size",
+        "visible",
     ]
 
     def __init__(
@@ -133,6 +134,7 @@ class GroupBoxRule:
         custom_draw: Callable[[Box], None] | None | Sentinel = SENTINEL,
         text: str | Sentinel | None = SENTINEL,
         box_size: int | Sentinel | None = SENTINEL,
+        visible: bool | Sentinel | None = SENTINEL,
     ):
         self.text_colour = text_colour
         self.block_colour = block_colour
@@ -146,6 +148,7 @@ class GroupBoxRule:
         self.custom_draw = custom_draw
         self.text = text
         self.box_size = box_size
+        self.visible = visible
         self.screen = ScreenRule.UNSET
         self.focused: bool | None = None
         self.occupied: bool | None = None
@@ -249,6 +252,7 @@ class Box:
     custom_draw: Callable[[Box], None] | Sentinel | None
     text: str | Sentinel | None
     box_size: int | Sentinel | None
+    visible: bool | Sentinel | None
 
     def __init__(self, group, index, bar, qtile, drawer, config):
         self.group = group
@@ -413,6 +417,9 @@ class Box:
         self._prepare()
         del self.layout.width
         self.layout.text = self.text
+
+        if self.visible is False:
+            return 0
 
         if self.box_size:
             return self.box_size
@@ -585,6 +592,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     * custom_draw - a function that draws to the box
     * text - string representing text to display
     * box_size - integer to force the size of the individual box
+    * visible - boolean to set visibility of box. Box will display by default unless a rule sets ``visible=False``
 
     Whether a rule is applied will depend on whether it meets the relevant conditions set for each rule.
     A rule can set any combination of the following conditions:
@@ -919,6 +927,8 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
         self.drawer.clear(self.background or self.bar.background)
         offset = 0
         for box in self.boxes:
+            if box.visible is False:
+                continue
             box.draw(offset)
             offset += box.size
 
@@ -975,5 +985,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
 
     def info(self):
         info = base._Widget.info(self)
-        info["text"] = "|".join(box.text if box.text else "" for box in self.boxes)
+        info["text"] = "|".join(
+            box.text if box.text else "" for box in self.boxes if box.visible is not False
+        )
         return info
