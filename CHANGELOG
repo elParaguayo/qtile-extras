@@ -1,3 +1,4 @@
+2024-08-11: [RELEASE] v0.28.0 release - compatible with qtile 0.28.0
 2024-07-22: [FEATURE] Add ability to toggle visibility of groups in `GroupBox2` widget
 2024-07-18: [BUGFIX] Fix volume widgets bug volume display triggered on opening apps using sound device
 2024-07-16: [POST RELEASE] v0.27.0.post1 incorporates bugfix below. Still compatible with v0.27.0
