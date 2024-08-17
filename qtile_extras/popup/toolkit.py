@@ -235,7 +235,7 @@ class _PopupLayout(configurable.Configurable):
         `relative_to` parameter. The parameter is an integer from 1 to 9 representing the
         screen broken into a 3x3 grid:
 
-        .. ::
+        .. code::
 
              1      2      3
 
@@ -258,7 +258,7 @@ class _PopupLayout(configurable.Configurable):
         the bar or gap (including any margin) nearest the point on the above grid
         i.e. if ``relative_to=1`` then the y coordinate would be adjusted for any bar on the
         top of the screen and the x would be adjusted for any bar on the left. NB If you set
-        ``relative_to-bar=True`` and you use a float value for x and/or y, the float value is
+        ``relative_to_bar=True`` and you use a float value for x and/or y, the float value is
         still calculated by reference to the whole screen's dimensions (i.e. including the space
         occupied by the bar).
 
@@ -389,7 +389,12 @@ class _PopupLayout(configurable.Configurable):
         """Hide the popup."""
         self.popup.hide()
 
+    def unhide(self):
+        """Unhide the popup."""
+        self.popup.unhide()
+
     def kill(self):
+        """Kill the popup window."""
         if self.keyboard_navigation:
             self.unset_hooks()
         self.popup.kill()
@@ -1553,7 +1558,7 @@ class PopupWidget(_PopupWidget):
     Mouse clicks are passed on to the widgets.
 
     Currently, widgets will be sized based on the dimensions of the control.
-    This will override any width/stretching settings in thw widget.
+    This will override any width/stretching settings in the widget.
     """
 
     defaults = [

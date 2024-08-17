@@ -46,6 +46,7 @@ qtile_module_template = Template(
     {% if no_config %}:no-config:{% endif %}
     {% if no_commands %}:no-commands:{% endif %}
     {% if show_config %}:show-config:{% endif %}
+    {% if methods %}:methods: {{ methods }}{% endif %}
 """
 )
 
@@ -177,6 +178,11 @@ qtile_class_template = Template(
     .. automethod:: {{ module }}.{{ class_name }}.{{ cmd }}
     {% endfor %}
     {% endif %}
+    {% if has_methods %}
+    {% for method in methods %}
+    .. automethod:: {{ module }}.{{ class_name }}.{{ method }}
+    {% endfor %}
+    {% endif %}
     {% endif %}
 """
 )
@@ -219,6 +225,7 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         "show-config": directives.flag,
         "no-commands": directives.flag,
         "exclude-base": directives.flag,
+        "methods": directives.unchanged,
     }
 
     def make_rst(self):
@@ -265,6 +272,8 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             for k, v in widget_shots.items()
         }
 
+        methods = [m for m in self.options.get("methods", "").split(",") if m]
+
         context = {
             "module": module,
             "class_name": class_name,
@@ -281,7 +290,10 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             "compatibility": getattr(obj, "_qte_compatibility", False),
             "widget_screenshots": widget_shots,
             "is_widget": is_widget,
+            "methods": methods,
+            "has_methods": bool(methods),
         }
+
         if context["commandable"]:
             context["commands"] = [
                 # Command methods have the "_cmd" attribute so we check for this
@@ -300,12 +312,13 @@ class QtileModule(SimpleDirectiveMixin, Directive):
     # :baseclass: <base class path>
     # :no-commands:
     # :no-config:
-    optional_arguments = 4
+    optional_arguments = 5
     option_spec = {
         "baseclass": directives.unchanged,
         "no-commands": directives.flag,
         "exclude-base": directives.flag,
         "show-config": directives.flag,
+        "methods": directives.unchanged,
     }
 
     def make_rst(self):
@@ -331,6 +344,7 @@ class QtileModule(SimpleDirectiveMixin, Directive):
                 "class_name": item,
                 "no_commands": "no-commands" in self.options,
                 "show_config": "show-config" in self.options,
+                "methods": self.options.get("methods", ""),
             }
 
             rst = qtile_module_template.render(**context)
