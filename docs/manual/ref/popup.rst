@@ -17,6 +17,7 @@ flexibility to users, there are a number of different layouts available in the t
     :exclude-base:
     :no-commands:
     :show-config:
+    :methods: show,hide,unhide,kill,update_controls,bind_callbacks
 
 
 .. _ref-popup-controls:
