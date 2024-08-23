@@ -20,7 +20,12 @@
 import pytest
 
 from qtile_extras import widget
-from qtile_extras.widget.decorations import BorderDecoration, PowerLineDecoration, RectDecoration
+from qtile_extras.widget.decorations import (
+    BorderDecoration,
+    GradientDecoration,
+    PowerLineDecoration,
+    RectDecoration,
+)
 
 
 def widgets(decorations=list()):
@@ -205,6 +210,44 @@ params.append(
                 ),
             ]
         ),
+    }
+)
+
+# GRADIENTDECORATION
+params.append(
+    {
+        "name": "gradient-decoration-default",
+        "widgets": widgets([GradientDecoration()]),
+    }
+)
+params.append(
+    {
+        "name": "gradient-decoration-top-bottom",
+        "widgets": widgets([GradientDecoration(points=[(0, 0), (0, 1)])]),
+    }
+)
+params.append(
+    {
+        "name": "gradient-decoration-whole-bar",
+        "widgets": widgets([GradientDecoration(whole_bar=True)]),
+    }
+)
+params.append(
+    {
+        "name": "gradient-decoration-top-bottom-whole-bar",
+        "widgets": widgets([GradientDecoration(points=[(0, 0), (0, 1)], whole_bar=True)]),
+    }
+)
+params.append(
+    {
+        "name": "gradient-decoration-radial",
+        "widgets": widgets([GradientDecoration(radial=True)]),
+    }
+)
+params.append(
+    {
+        "name": "gradient-decoration-radial-whole-bar",
+        "widgets": widgets([GradientDecoration(radial=True, whole_bar=True)]),
     }
 )
 
