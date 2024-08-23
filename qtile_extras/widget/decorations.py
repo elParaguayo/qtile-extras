@@ -30,10 +30,14 @@ from libqtile import bar
 from libqtile.backend.base import Drawer
 from libqtile.confreader import ConfigError
 from libqtile.log_utils import logger
+from libqtile.utils import rgb
 from libqtile.widget import Systray, base
 
 if TYPE_CHECKING:
     from typing import Any  # noqa: F401
+
+
+HALF_ROOT_2 = 0.70711
 
 
 class _Decoration(base.PaddingMixin):
@@ -815,6 +819,98 @@ class PowerLineDecoration(_Decoration):
 
         self.ctx.save()
         self.draw_func()
+        self.ctx.restore()
+
+
+class GradientDecoration(_Decoration):
+    """
+    Renders a gradient background to the widget.
+
+    ``colours`` defines the list of colours in the gradient.
+
+    The angle/direction of the gradient is set by the ``points``
+    parameter. This is a list of a two (x, y) tuples. The x and y
+    values are relative to the drawing area (see below). A value of (0, 0) is the top
+    left corner while (1, 1) represents the bottom right corner.
+
+    ``offsets`` is used to adjust the position of the colours within
+    the gradient. Leaving this as ``None`` will space the colours evenly. The
+    values need to be in ascending order and in the range of 0.0 (the very start of
+    the gradient) and 1.0 (the end of the gradient). These represent positions on the
+    imagninary line between the two ``points`` defined above.
+
+    When ``radial=True`` the ``points`` parameter has no impact. The gradient will be drawn from the center
+    of the drawing area to the corner. ``offsets`` can still be used to adjust the
+    spacing of the colours.
+
+    Setting ``whole_bar=True`` will calculate the gradient by reference to the whole bar. Widgets will then
+    render the part of the gradient in the area covered by the widget. This allows a single gradient to be
+    applied consistently across all widgets.
+    """
+
+    _screenshots = [
+        ("gradient_decoration.png", "whole_bar=False"),
+        ("gradient_decoration_whole_bar.png", "whole_bar=True"),
+    ]
+
+    defaults = [
+        (
+            "whole_bar",
+            False,
+            "When set to ``True`` gradient is calculated by reference to the bar so "
+            "you can get a single gradient applied across multiple widgets.",
+        ),
+        ("colours", ["999", "000"], "List of colours in the gradient"),
+        ("points", [(0, 0), (1, 0)], "Points to size/angle the gradient. See docs for more."),
+        (
+            "offsets",
+            None,
+            "Offset locations (in range of 0.0-1.0) for gradient stops. ``None`` to use regular spacing.",
+        ),
+        ("radial", False, "Use radial gradient"),
+    ]
+
+    def __init__(self, **config):
+        _Decoration.__init__(self, **config)
+        self.add_defaults(GradientDecoration.defaults)
+
+        if self.offsets is None:
+            self.offsets = [x / (len(self.colours) - 1) for x in range(len(self.colours))]
+        elif len(self.offsets) != len(self.colours):
+            raise ConfigError("'offsets' must be same length as 'colours'.")
+
+    def draw(self):
+        width = self.parent.bar.width if self.whole_bar else self.width
+        height = self.parent.bar.height if self.whole_bar else self.height
+
+        # Nothing to do if widget is hidden
+        if not (width and height):
+            return
+
+        # Calculates absolute coordinates for gradient
+        def pos(point):
+            return tuple(p * d for p, d in zip(point, (width, height)))
+
+        self.ctx.save()
+        self.ctx.rectangle(0, 0, self.width, self.height)
+        self.ctx.clip()
+
+        # If we're using whole_bar then we shift 0, 0 to be top left corner of the bar
+        if self.whole_bar:
+            self.ctx.translate(-self.parent.offsetx, -self.parent.offsety)
+
+        if self.radial:
+            self.ctx.translate(width // 2, height // 2)
+            self.ctx.scale(width, height)
+            gradient = cairocffi.RadialGradient(0, 0, 0, 0, 0, HALF_ROOT_2)
+        else:
+            gradient = cairocffi.LinearGradient(*pos(self.points[0]), *pos(self.points[1]))
+
+        for offset, c in zip(self.offsets, self.colours):
+            gradient.add_color_stop_rgba(offset, *rgb(c))
+
+        self.ctx.set_source(gradient)
+        self.ctx.paint()
         self.ctx.restore()
 
 
