@@ -42,7 +42,8 @@ sudo apt-get install -y --no-install-recommends \
      libxshmfence-dev \
      xfonts-utils \
      xserver-xorg-dev \
-     ninja-build
+     ninja-build \
+     meson
 sudo pip install meson
 
 # Build wayland
