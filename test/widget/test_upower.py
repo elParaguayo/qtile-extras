@@ -172,11 +172,11 @@ def test_upower_show_text(manager_nospawn, powerconfig):
     orig_width = manager_nospawn.c.widget["upowerwidget"].info()["width"]
 
     # Click on widget shows text so it should be wider now
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["upowerwidget"].info()["width"] != orig_width
 
     # Click again to hide text so it's back to original width
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["upowerwidget"].info()["width"] == orig_width
 
     # Check this still works when battery is charging
@@ -194,7 +194,7 @@ def test_upower_show_text(manager_nospawn, powerconfig):
     )
 
     # Click on widget shows text so it should be wider now
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["upowerwidget"].info()["width"] != orig_width
 
     # Let the timer hide the text

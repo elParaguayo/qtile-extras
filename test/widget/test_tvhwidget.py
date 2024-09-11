@@ -140,7 +140,7 @@ def test_tvh_widget_recording(tvh_manager):
 @pytest.mark.parametrize("tvh_manager", [(2021, 11, 26, 19, 5)], indirect=True)
 def test_tvh_widget_popup(tvh_manager):
     """Test the popup displays the correct information."""
-    tvh_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    tvh_manager.c.bar["top"].fake_button_press(0, 0, 1)
     _, text = tvh_manager.c.widget["tvhwidget"].eval("self.popup.text")
     assert text == (
         "Upcoming recordings:\n"
@@ -149,7 +149,7 @@ def test_tvh_widget_popup(tvh_manager):
     )
 
     # Popup hides when clicked again.
-    tvh_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    tvh_manager.c.bar["top"].fake_button_press(0, 0, 1)
     _, result = tvh_manager.c.widget["tvhwidget"].eval("self.popup is None")
     assert result == "True"
 

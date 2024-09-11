@@ -96,7 +96,7 @@ def exit_manager(manager_nospawn, monkeypatch, temp_output):
 def test_exit(exit_manager, temp_output):
     """Check script activated."""
     assert not exit_manager.c.windows()
-    exit_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    exit_manager.c.bar["top"].fake_button_press(0, 0, 1)
     fname = temp_output.split(" ")[-1]
     read_file(fname)
 

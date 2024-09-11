@@ -116,7 +116,7 @@ def test_strava_widget_display(manager_nospawn, strava):
 def test_strava_widget_popup(manager_nospawn, strava):
     manager_nospawn.start(strava)
     data_parsed(manager_nospawn)
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert len(manager_nospawn.c.internal_windows()) == 2
 
     _, text = manager_nospawn.c.widget["stravawidget"].eval("self.popup.text")
