@@ -148,16 +148,16 @@ def test_scores_display_and_navigation(lfs_manager, manager_nospawn):
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Che 1-1 Bur"
 
     # Right-clicking loops through different displays
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "FT"
 
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Che: Havertz (33')"
 
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Bur: Vydra (79')"
 
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Premier League"
 
     # Waiting will revert to score display
@@ -165,15 +165,15 @@ def test_scores_display_and_navigation(lfs_manager, manager_nospawn):
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Che 1-1 Bur"
 
     # Test mouse scrolling to select match - this is "teams"
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 4)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 4)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Wes 3-2 Liv"
 
     # Test mouse scrolling to select match - this is "leagues"
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 4)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 4)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Ast 0-0 Bri"
 
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 5)
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 5)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 5)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 5)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Che 1-1 Bur"
 
 
@@ -246,7 +246,7 @@ def test_widget_popup(lfs_manager, manager_nospawn):
 
     assert len(manager_nospawn.c.internal_windows()) == 1
 
-    manager_nospawn.c.bar["top"].fake_button_press(0, "top", 0, 0, 3)
+    manager_nospawn.c.bar["top"].fake_button_press(0, 0, 3)
     assert len(manager_nospawn.c.internal_windows()) == 2
 
     # Each menu item is a tuple of:

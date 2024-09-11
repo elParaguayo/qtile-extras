@@ -89,7 +89,7 @@ def test_statusnotifier_menu(sni_manager):
 
     assert len(sni_manager.c.internal_windows()) == 2  # bar plus popup
 
-    sni_manager.c.bar["top"].fake_button_press(0, "top", 10, 0, 3)
+    sni_manager.c.bar["top"].fake_button_press(10, 0, 3)
     wait_for_menu(sni_manager, hidden=False)
     assert len(sni_manager.c.internal_windows()) == 3  # bar, popup and popupmenu
 

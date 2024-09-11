@@ -334,7 +334,7 @@ def test_bad_password_entry_args(iwd_manager, logger):
 def test_menu(iwd_manager):
     widget = iwd_manager.c.widget["iwd"]
     wait_for_text(widget, "qtile_extras (50%)")
-    iwd_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    iwd_manager.c.bar["top"].fake_button_press(0, 0, 1)
     wait_for_menu(iwd_manager)
 
     windows = iwd_manager.c.internal_windows()
@@ -351,7 +351,7 @@ def test_menu(iwd_manager):
     widget.eval("self.menu.controls[-1].button_press(0, 0, 1)")
     widget.eval("self.menu.kill()")
     wait_for_menu(iwd_manager, hidden=True)
-    iwd_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    iwd_manager.c.bar["top"].fake_button_press(0, 0, 1)
     wait_for_menu(iwd_manager)
     windows = iwd_manager.c.internal_windows()
     menu = [win for win in windows if win.get("name", "") == "popupmenu"]
@@ -364,7 +364,7 @@ def test_scan_command(iwd_manager):
     wait_for_text(widget, "qtile_extras (50%)")
 
     widget.scan()
-    iwd_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    iwd_manager.c.bar["top"].fake_button_press(0, 0, 1)
     wait_for_menu(iwd_manager)
     windows = iwd_manager.c.internal_windows()
     menu = [win for win in windows if win.get("name", "") == "popupmenu"]

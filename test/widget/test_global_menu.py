@@ -83,7 +83,7 @@ def test_global_menu(manager, backend_name):
     wait_for_text(manager, hidden=False)
 
     # Left-click on top menu to open menu window
-    manager.c.bar["top"].fake_button_press(0, "top", 10, 0, 1)
+    manager.c.bar["top"].fake_button_press(10, 0, 1)
     wait_for_internal(manager, count=3)
 
     menu = [x for x in manager.c.internal_windows() if x.get("name", "") == "popupmenu"][0]

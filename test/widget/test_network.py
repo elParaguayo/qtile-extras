@@ -86,7 +86,7 @@ def test_wifiicon(wifi_manager):
     assert wifi_manager.c.widget["wifiicon"].info()["width"] == 36
 
     # Click on widget to show text - width should be bigger now
-    wifi_manager.c.bar["top"].fake_button_press(0, "top", 0, 0, 1)
+    wifi_manager.c.bar["top"].fake_button_press(0, 0, 1)
     assert wifi_manager.c.widget["wifiicon"].info()["width"] > 36
 
     # Hide the text

@@ -393,17 +393,17 @@ def test_buttons(gbmanager):
 
     # Click to change group
     bar = gbmanager.c.bar["top"]
-    bar.fake_button_press(0, "top", 0, 0, 1)
+    bar.fake_button_press(0, 0, 1)
     assert current_group() == "a"
 
     # Scroll up
     for g in ["d", "c", "b", "a"]:
-        bar.fake_button_press(0, "top", 0, 0, 4)
+        bar.fake_button_press(0, 0, 4)
         assert current_group() == g
 
     # Scroll down
     for g in ["b", "c", "d", "a"]:
-        bar.fake_button_press(0, "top", 0, 0, 5)
+        bar.fake_button_press(0, 0, 5)
         assert current_group() == g
 
 
