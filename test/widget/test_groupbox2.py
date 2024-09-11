@@ -262,8 +262,6 @@ def test_screen_focus(gbmanager):
     assert scr2_info["boxes"][2]["text_colour"] == "666666"
 
 
-# Slightly hacky test for line positions:
-# Python 3.9 doesn't combine flag names so we can't check for `LEFT|RIGHT`
 @pytest.mark.parametrize(
     "gbmanager",
     [
