@@ -23,11 +23,15 @@ import os
 import pickle
 import time
 
-from pint import Unit
+from pint import Unit, set_application_registry
 from stravalib import Client
 from stravalib.model import Activity
+from stravalib.unit_registry import ureg
 
 from qtile_extras.resources.stravadata.locations import AUTH, CACHE, CREDS, TIMESTAMP
+
+set_application_registry(ureg)
+
 
 NUM_EVENTS = 5
 
