@@ -124,6 +124,14 @@ class MatchFlags(object):
 
 class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, MenuMixin):
     """
+    .. important::
+
+      This widget is currently broken due to some API changes on the BBC website. I do not know
+      when/if I will have time to update this.
+
+      The widget will report fixtures but will not update scores once the match is in progress
+      (which was the whole point of the widget!).
+
     The module uses a module I wrote a number of years ago that parses
     data from the BBC Sport website.
 
