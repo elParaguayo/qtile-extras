@@ -155,6 +155,7 @@ class GroupBoxRule:
         self.urgent: bool | None = None
         self.group_name: str | None = None
         self.func: Callable[[GroupBoxRule, Box], bool] | None = None
+        self.always_check = False
 
     size: int | Sentinel | None
 
@@ -211,6 +212,10 @@ class GroupBoxRule:
                 return False
 
         return True
+
+    def force_check(self):
+        self.always_check = True
+        return self
 
     def clone(self) -> GroupBoxRule:
         return deepcopy(self)
@@ -299,7 +304,7 @@ class Box:
             self.focused,
             self.occupied,
             self.urgent,
-        ):
+        ) and not any(rule.always_check for rule in self.rules):
             # Nothing has changed so we don't need to rerun rules
             return
 
@@ -603,6 +608,17 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     * Whether the group has any urgent windows - boolean True/False
     * Whether the group name matches a given string
     * Whether a user-defined function returns True
+
+    Rules are only rechecked when there a change to one of the following properties of the groups:
+
+    * Whether the group is focused
+    * The screen on which the group is shown
+    * Whether the group has windows
+    * The urgency status of the group changes
+
+    However, sometimes you may want rules to be checked more often e.g. if you're changing properties based on the
+    number of open windows. In this scenario, you can append ``.force_check()`` to the rule to ensure it's run
+    every time.
 
     Order of drawing:
 
