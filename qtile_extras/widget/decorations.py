@@ -674,10 +674,11 @@ class PowerLineDecoration(_Decoration):
         else:
             raise ConfigError(f"Unexpected value for PowerLineDecoration `path`: {self.path}.")
 
-        self.parent_background = (
-            self.override_colour or self.parent.background or self.parent.bar.background
-        )
         self.next_background = self.override_next_colour or self.set_next_colour()
+
+    @property
+    def parent_background(self):
+        return self.override_colour or self.parent.background or self.parent.bar.background
 
     def set_next_colour(self):
         try:
