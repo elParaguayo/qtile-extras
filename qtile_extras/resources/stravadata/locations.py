@@ -20,7 +20,7 @@ AUTH_JSON = os.path.join(STRAVA_DIR, AUTH_FILE)
 CACHE = os.path.join(STRAVA_DIR, CACHE_FILE)
 
 try:
-    with open(AUTH_JSON, "r") as authfile:
+    with open(AUTH_JSON) as authfile:
         AUTH = json.load(authfile)
 except FileNotFoundError:
     AUTH = {}

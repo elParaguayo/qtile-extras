@@ -210,7 +210,7 @@ class SimpleDirectiveMixin:
         node.document = self.state.document
         result = ViewList()
         for line in self.make_rst():
-            result.append(line, "<{0}>".format(self.__class__.__name__))
+            result.append(line, f"<{self.__class__.__name__}>")
         nested_parse_with_titles(self.state, result, node)
         return node.children
 
@@ -258,7 +258,7 @@ class QtileClass(SimpleDirectiveMixin, Directive):
         if is_widget:
             index = Path(__file__).parent / "_static" / "screenshots" / "widgets" / "shots.json"
             try:
-                with open(index, "r") as f:
+                with open(index) as f:
                     shots = json.load(f)
             except (FileNotFoundError, json.JSONDecodeError):
                 shots = {}
@@ -304,8 +304,7 @@ class QtileClass(SimpleDirectiveMixin, Directive):
             ]
 
         rst = qtile_class_template.render(**context)
-        for line in rst.splitlines():
-            yield line
+        yield from rst.splitlines()
 
 
 class QtileModule(SimpleDirectiveMixin, Directive):
@@ -412,8 +411,7 @@ class QtileHooks(SimpleDirectiveMixin, Directive):
         obj = import_class(module, class_name)
         for method in sorted(obj.hooks):
             rst = qtile_hooks_template.render(method=method)
-            for line in rst.splitlines():
-                yield line
+            yield from rst.splitlines()
 
 
 def generate_widget_screenshots():

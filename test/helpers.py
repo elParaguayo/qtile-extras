@@ -119,17 +119,14 @@ class Backend(metaclass=ABCMeta):
 
     def configure(self, manager):
         """This is used to do any post-startup configuration with the manager"""
-        pass
 
     @abstractmethod
     def fake_click(self, x, y):
         """Click at the specified coordinates"""
-        pass
 
     @abstractmethod
     def get_all_windows(self):
         """Get a list of all windows in ascending order of Z position"""
-        pass
 
 
 @Retry(ignore_exceptions=(ipc.IPCError,), return_on_fail=True)
@@ -208,7 +205,7 @@ class TestManager:
             return
         if rpipe.poll(0.1):
             error = rpipe.recv()
-            raise AssertionError("Error launching qtile, traceback:\n%s" % error)
+            raise AssertionError(f"Error launching qtile, traceback:\n{error}")
         raise AssertionError("Error launching qtile")
 
     def create_manager(self, config_class):
@@ -397,7 +394,10 @@ class GlobalMenu(ServiceInterface):
 
     @method()
     def GetLayout(  # noqa: F722, N802
-        self, parent_id: "i", recursion_depth: "i", properties: "as"  # noqa: F821
+        self,
+        parent_id: "i",  # noqa: F821
+        recursion_depth: "i",  # noqa: F821
+        properties: "as",  # noqa: F722, F821
     ) -> "u(ia{sv}av)":  # noqa: F722, F821, N802
         if parent_id == 0:
             return [
@@ -505,7 +505,10 @@ class SNIMenu(ServiceInterface):
 
     @method()
     def GetLayout(  # noqa: F722, N802
-        self, parent_id: "i", recursion_depth: "i", properties: "as"  # noqa: F722, F821
+        self,
+        parent_id: "i",  # noqa: F722, F821
+        recursion_depth: "i",  # noqa: F722, F821
+        properties: "as",  # noqa: F722, F821
     ) -> "u(ia{sv}av)":  # noqa: F722, F821, N802
         with open(icon_path.as_posix(), "rb") as icon:
             raw = icon.read()

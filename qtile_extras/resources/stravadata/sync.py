@@ -39,7 +39,7 @@ SHOW_EXTRA_MONTHS = 5
 KM = Unit("km")
 
 
-class ActivityHistory(object):
+class ActivityHistory:
     def __init__(self):
         self.current = None
         self.previous = []
@@ -50,7 +50,7 @@ class ActivityHistory(object):
         self.previous.append(actsum)
 
 
-class ActivitySummary(object):
+class ActivitySummary:
     def __init__(self, distance_unit=KM, groupdate=None, child=False):
         self.activities = []
         self.distance_unit = distance_unit
@@ -158,7 +158,7 @@ class ActivitySummary(object):
     def name(self):
         if self.is_multi_activity or self.groupdate:
             runs = "runs" if self.is_plural else "run"
-            return "{} {}".format(len(self.activities), runs)
+            return f"{len(self.activities)} {runs}"
         else:
             try:
                 return self._name
@@ -181,7 +181,7 @@ def refresh_token(client):
 
 
 def load_token():
-    with open(CREDS, "r") as f:
+    with open(CREDS) as f:
         token = json.load(f)
     return token
 
@@ -273,7 +273,7 @@ def check_last_update(interval):
     if not os.path.isfile(TIMESTAMP):
         pass
     else:
-        with open(TIMESTAMP, "r") as ts:
+        with open(TIMESTAMP) as ts:
             stamp = ts.read().strip()
 
         try:

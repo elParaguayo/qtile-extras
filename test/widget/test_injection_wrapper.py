@@ -33,7 +33,7 @@ def test_no_initialise():
     wrapped = modify(MyTextWidget, initialise=False)
 
     # modify returns same class
-    assert pre_type == type(wrapped)
+    assert pre_type is type(wrapped)
 
     # new methods have been injected so dir() should be different
     assert pre_dir != dir(wrapped)

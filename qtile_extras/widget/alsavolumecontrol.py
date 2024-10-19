@@ -78,23 +78,23 @@ class ALSAWidget(_Volume):
             self._previous_state = (self.volume, self.muted)
 
     def get_volume(self):
-        cmd = "amixer get {}".format(self.device)
+        cmd = f"amixer get {self.device}"
         self._run(cmd)
 
     @expose_command()
     def volume_up(self, *args, **kwargs):
         """Increase volume"""
-        cmd = "amixer set {} {}%+".format(self.device, self.step)
+        cmd = f"amixer set {self.device} {self.step}%+"
         self._run(cmd)
 
     @expose_command()
     def volume_down(self, *args, **kwargs):
         """Decrease volume"""
-        cmd = "amixer set {} {}%-".format(self.device, self.step)
+        cmd = f"amixer set {self.device} {self.step}%-"
         self._run(cmd)
 
     @expose_command()
     def toggle_mute(self, *args, **kwargs):
         """Mute audio output"""
-        cmd = "amixer set {} toggle".format(self.device)
+        cmd = f"amixer set {self.device} toggle"
         self._run(cmd)

@@ -112,7 +112,8 @@ class ConnectionAgent(ServiceInterface):  # noqa: E303
 
     @method()
     async def RequestPrivateKeyPassphrase(  # noqa: N802
-        self, path: "o"  # type:ignore  # noqa: F821
+        self,
+        path: "o",  # type:ignore  # noqa: F821
     ) -> "s":  # type:ignore  # noqa: F821
         return await self._get_password()
 

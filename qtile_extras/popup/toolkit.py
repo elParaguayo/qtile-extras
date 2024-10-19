@@ -201,7 +201,6 @@ class _PopupLayout(configurable.Configurable):
         Layous therefore need to override this method with the specific rules
         for that layout.
         """
-        pass
 
     def draw(self):
         """
@@ -957,7 +956,7 @@ class _PopupWidget(configurable.Configurable):
         )
 
     def button_press(self, x, y, button):
-        name = "Button{0}".format(button)
+        name = f"Button{button}"
         if name in self.mouse_callbacks:
             cmd = self.mouse_callbacks[name]
             if isinstance(cmd, LazyCall):

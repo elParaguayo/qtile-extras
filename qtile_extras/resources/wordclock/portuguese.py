@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 """This is a custom layout for the WordClock widget.
 
-    Custom layouts can be created for the widget by creating a new file in the
-    "qtile_extras.resources.wordclock" folder.
+Custom layouts can be created for the widget by creating a new file in the
+"qtile_extras.resources.wordclock" folder.
 
-    Each layout must have the following variables:
-        LAYOUT:   The grid layout. Must be a single string.
-        MAP:      The mapping required for various times (see notes below)
-        COLS:     The number of columns required for the grid layout
-        ROWS:     The number of rows required for the grid layout
+Each layout must have the following variables:
+    LAYOUT:   The grid layout. Must be a single string.
+    MAP:      The mapping required for various times (see notes below)
+    COLS:     The number of columns required for the grid layout
+    ROWS:     The number of rows required for the grid layout
 """
 
 # Layout is a single string variable which will be looped over by the parser.

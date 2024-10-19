@@ -137,4 +137,4 @@ def linkcode_resolve(domain, info):
     filename = info["module"].replace(".", "/")
     if filename.endswith("widget"):
         filename += f"/{widgets[info['fullname']]}"
-    return "https://github.com/elparaguayo/qtile-extras/tree/main/%s.py" % filename
+    return f"https://github.com/elparaguayo/qtile-extras/tree/main/{filename}.py"

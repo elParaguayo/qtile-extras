@@ -44,7 +44,7 @@ class League:
         on_status_change=None,
         on_new_match=None,
     ):
-        super(League, self).__init__()
+        super().__init__()
         self.league = league
         self.matches = []
         self.detailed = detailed

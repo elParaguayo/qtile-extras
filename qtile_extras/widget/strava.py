@@ -264,37 +264,37 @@ class StravaWidget(base._Widget, base.MarginMixin):
 
         for act in self.data.current.children:
             line = (
-                "{a.date:%d %b}: {a.name:<20.20} {a.distance:7,.1f} "
-                "{a.format_time:>10} {a.format_pace:>6}"
-            ).format(a=act)
+                f"{act.date:%d %b}: {act.name:<20.20} {act.distance:7,.1f} "
+                f"{act.format_time:>10} {act.format_pace:>6}"
+            )
             lines.append(line)
 
         sub = (
-            "\n{a.date:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
-            "{a.format_time:>10} "
-            "{a.format_pace:>6}"
-        ).format(a=self.data.current)
+            f"\n{self.data.current.date:%b %y}: {self.data.current.name:<20.20} {self.data.current.distance:7,.1f} "
+            f"{self.data.current.format_time:>10} "
+            f"{self.data.current.format_pace:>6}"
+        )
         lines.append(sub)
 
         for month in self.data.previous:
             line = (
-                "{a.groupdate:%b %y}: {a.name:<20.20} {a.distance:7,.1f} "
-                "{a.format_time:>10} {a.format_pace:>6}"
-            ).format(a=month)
+                f"{month.groupdate:%b %y}: {month.name:<20.20} {month.distance:7,.1f} "
+                f"{month.format_time:>10} {month.format_pace:>6}"
+            )
             lines.append(line)
 
         year = (
-            "\n{a.groupdate:%Y}  : {a.name:<20.20} {a.distance:7,.1f} "
-            "{a.format_time:>10} "
-            "{a.format_pace:>6}"
-        ).format(a=self.data.year)
+            f"\n{self.data.year.groupdate:%Y}  : {self.data.year.name:<20.20} {self.data.year.distance:7,.1f} "
+            f"{self.data.year.format_time:>10} "
+            f"{self.data.year.format_pace:>6}"
+        )
         lines.append(year)
 
         alltime = (
-            "\nTOTAL : {a.name:<20.20} {a.distance:7,.1f} "
-            "{a.format_time:>10} "
-            "{a.format_pace:>6}"
-        ).format(a=self.data.alltime)
+            f"\nTOTAL : {self.data.alltime.name:<20.20} {self.data.alltime.distance:7,.1f} "
+            f"{self.data.alltime.format_time:>10} "
+            f"{self.data.alltime.format_pace:>6}"
+        )
         lines.append(alltime)
 
         self.popup = Popup(

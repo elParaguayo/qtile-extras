@@ -92,7 +92,7 @@ def syncthing_manager(is_syncing, request, manager_nospawn, monkeypatch):
     # Initialise the widget. Set the api_key by default to supppress logging but it can be
     # overriden.
     widget = qtile_extras.widget.syncthing.Syncthing(
-        **{**{"api_key": "apikey"}, **getattr(request, "param", dict())}
+        **{"api_key": "apikey", **getattr(request, "param", dict())}
     )
 
     class SyncthingConfig(libqtile.confreader.Config):

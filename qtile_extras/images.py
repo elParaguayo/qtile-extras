@@ -64,7 +64,7 @@ class ImgMask(QtileImg):
     def attach_drawer(self, drawer: Drawer):
         self.drawer = drawer
 
-    def draw(self, x=0, y=0, colour: "ColorsType" = "FFFFFF"):
+    def draw(self, x=0, y=0, colour: ColorsType = "FFFFFF"):
         if self.drawer is None:
             logger.error("Cannot draw masked image. Did you forget to attach the drawer?")
             return

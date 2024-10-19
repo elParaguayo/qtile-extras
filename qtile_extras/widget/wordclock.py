@@ -55,9 +55,7 @@ class WordClock(base._Widget):
     .. admonition:: Supported languages
 
         Available languages: {}
-    """.format(
-        ", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES])
-    )
+    """.format(", ".join([f"``{lang.capitalize()}``" for lang in LANGUAGES]))
 
     orientations = base.ORIENTATION_BOTH
     defaults = [

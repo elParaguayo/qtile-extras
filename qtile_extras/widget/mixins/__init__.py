@@ -34,7 +34,8 @@ from qtile_extras.popup.menu import PopupMenu, PopupMenuItem, PopupMenuSeparator
 from qtile_extras.resources.dbusmenu import DBusMenuItem
 
 if TYPE_CHECKING:
-    from typing import Any, Callable  # noqa: F401
+    from collections.abc import Callable  # noqa: F401
+    from typing import Any  # noqa: F401
 
 
 PI = math.pi
@@ -55,8 +56,6 @@ def to_rads(degrees):
 
 class _BaseMixin:
     """Base class to help docs only show mixins."""
-
-    pass
 
 
 class TooltipMixin(_BaseMixin):

@@ -238,7 +238,7 @@ class UPowerWidget(base._Widget):
             battery_devices = [b for b in battery_devices if b["name"] == self.battery_name]
 
             if not battery_devices:
-                err = "No battery found matching {}.".format(self.battery_name)
+                err = f"No battery found matching {self.battery_name}."
                 logger.warning(err)
                 return []
 
@@ -393,7 +393,7 @@ class UPowerWidget(base._Widget):
         h, m = divmod(m, 60)
 
         # Need to mke sure minutes are zero padded in case single digit
-        return "{}:{:02d}".format(h, m)
+        return f"{h}:{m:02d}"
 
     def toggle_text(self):
         if not self.show_text:

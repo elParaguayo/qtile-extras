@@ -95,7 +95,7 @@ class GithubNotifications(base._Widget):
             self.error = True
             return
 
-        with open(token_file, "r") as f:
+        with open(token_file) as f:
             self.token = f.read().strip()
 
     def _load_icon(self):
