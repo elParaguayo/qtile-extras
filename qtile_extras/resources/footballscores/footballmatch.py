@@ -112,7 +112,7 @@ class FootballMatch:
 
         detailed - Do we want additional data (e.g. goal scorers, bookings)?
         """
-        super(FootballMatch, self).__init__()
+        super().__init__()
         self.detailed = detailed
         self.myteam = team
         self.match = MatchDict()
@@ -144,7 +144,7 @@ class FootballMatch:
         return self.__nonzero__()
 
     def __repr__(self):
-        return "<FootballMatch('%s')>" % (self.myteam)
+        return f"<FootballMatch('{self.myteam}')>"
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -281,7 +281,7 @@ class FootballMatch:
         teampage = "https://www.bbc.co.uk/sport/football/teams/" + team
         validteam = self.check_page(teampage)
         if validteam:
-            self.myteampage = "team/{}".format(team)
+            self.myteampage = f"team/{team}"
             return True
         else:
             return False
@@ -318,9 +318,7 @@ class FootballMatch:
         match = payload["matchData"]
 
         if match:
-            return list(match[0]["tournamentDatesWithEvents"].values())[0][0]["events"][
-                0
-            ]  # noqa: E501
+            return list(match[0]["tournamentDatesWithEvents"].values())[0][0]["events"][0]  # noqa: E501
         else:
             return None
 
@@ -497,13 +495,13 @@ class FootballMatch:
             times = []
 
             if event[0].is_goal and event[0].is_own_goal:
-                name = "{} (OG)".format(name)
+                name = f"{name} (OG)"
 
             for item in event:
                 dt = item.display_time
 
                 if item.is_goal and item.is_penalty:
-                    dt = "{} pen".format(dt)
+                    dt = f"{dt} pen"
 
                 times.append(dt)
 
@@ -634,33 +632,33 @@ class FootballMatch:
             self._on_new_match = func
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def home_team(self):
         """Returns string of the home team's name"""
         return self.match.homeTeam.name.full
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def away_team(self):
         """Returns string of the away team's name"""
         return self.match.awayTeam.name.full
 
     @property
-    @_no_match(int())
+    @_no_match(0)
     @_override_none(0)
     def home_score(self):
         """Returns the number of goals scored by the home team"""
         return self.match.homeTeam.scores.score
 
     @property
-    @_no_match(int())
+    @_no_match(0)
     @_override_none(0)
     def away_score(self):
         """Returns the number of goals scored by the away team"""
         return self.match.awayTeam.scores.score
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def competition(self):
         """Returns the name of the competition to which the match belongs
 
@@ -670,7 +668,7 @@ class FootballMatch:
         return self.match.tournamentName.full
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def status(self):
         """Returns the status of the match
 
@@ -680,17 +678,17 @@ class FootballMatch:
         return self.match.eventProgress.period
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def long_status(self):
         return self.match.eventStatusNote
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def display_time(self):
         me = self.elapsed_time
         et = self.added_time
 
-        miat = "+{}".format(et) if et else ""
+        miat = f"+{et}" if et else ""
 
         if self.is_postponed:
             return "P"
@@ -705,25 +703,25 @@ class FootballMatch:
             return self.start_time_uk
 
         elif me is not None:
-            return "{}{}'".format(me, miat)
+            return f"{me}{miat}'"
 
         else:
             return None
 
     @property
-    @_no_match(int())
+    @_no_match(0)
     @_override_none(0)
     def elapsed_time(self):
         return self.match.minutesElapsed
 
     @property
-    @_no_match(int())
+    @_no_match(0)
     @_override_none(0)
     def added_time(self):
         return self.match.minutesIntoAddedTime
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def venue(self):
         return self.match.venue.name.full
 
@@ -764,7 +762,7 @@ class FootballMatch:
         return self._get_goals(self.match.homeTeam)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def home_scorer_text(self):
         return self._format_events(self.home_scorers)
 
@@ -775,22 +773,22 @@ class FootballMatch:
         return self._get_goals(self.match.awayTeam)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def away_scorer_text(self):
         return self._format_events(self.away_scorers)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def last_goal(self):
         return self._last_event(self.ACTION_GOAL)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def last_home_goal(self):
         return self._last_event(self.ACTION_GOAL, just_home=True)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def last_away_goal(self):
         return self._last_event(self.ACTION_GOAL, just_away=True)
 
@@ -807,17 +805,17 @@ class FootballMatch:
         return self._get_reds(self.match.awayTeam)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def last_home_red_card(self):
         return self._last_reds(just_home=True)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def last_away_red_card(self):
         return self._last_reds(just_away=True)
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def last_red_card(self):
         return self._last_reds()
 
@@ -830,16 +828,15 @@ class FootballMatch:
 
         """
         if self.match:
-            return "%s %s-%s %s (%s)" % (
-                self.home_team,
-                self.home_score,
-                self.away_score,
-                self.away_team,
-                self.display_time,
+            return (
+                f"{self.home_team} "
+                f"{self.home_score}-{self.away_score} "
+                f"{self.away_team} "
+                f"({self.display_time})"
             )
 
         else:
-            return "%s are not playing today." % (self.myteam)
+            return f"{self.myteam} are not playing today."
 
     def __str__(self):
         """Returns short formatted summary of match.
@@ -850,7 +847,7 @@ class FootballMatch:
         return self.__unicode__()
 
     @property
-    @_no_match(str())
+    @_no_match("")
     def start_time_uk(self):
         return self.match.startTimeInUKHHMM
 

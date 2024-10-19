@@ -36,7 +36,7 @@ WINDOW = Path(__file__).parent.parent / "scripts" / "exit.py"
 
 @Retry(ignore_exceptions=(AssertionError, FileNotFoundError))
 def read_file(fname):
-    with open(fname, "r") as f:
+    with open(fname) as f:
         text = f.read()
         assert text == "CLOSED"
 

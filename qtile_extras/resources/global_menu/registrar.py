@@ -33,7 +33,7 @@ from libqtile.log_utils import logger
 from libqtile.utils import create_task
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from collections.abc import Callable
 
 GLOBAL_MENU_INTERFACE = "com.canonical.AppMenu.Registrar"
 GLOBAL_MENU_PATH = "/com/canonical/AppMenu/Registrar"
@@ -122,7 +122,7 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
         return False
 
     @method()
-    def RegisterWindow(self, windowId: "u", menuObjectPath: "o"):  # type: ignore  # noqa: F821, N802, N803
+    def RegisterWindow(self, windowId: u, menuObjectPath: o):  # type: ignore  # noqa: F821, N802, N803
         # This is silly, the spec says that apps should only provide
         # windowId and menuObjectPath but we need to be able to return
         # the host service too but this isn't explicityly provided
@@ -133,25 +133,25 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
         pass
 
     @method()
-    def UnregisterWindow(self, windowId: "u"):  # type: ignore  # noqa: F821, N802, N803
+    def UnregisterWindow(self, windowId: u):  # type: ignore  # noqa: F821, N802, N803
         if windowId in self.windows:
             del self.windows[windowId]
             self.WindowUnregistered(windowId)
 
     @method()
-    def GetMenuForWindow(self, windowId: "u") -> "so":  # type: ignore  # noqa: F821, N802, N803
+    def GetMenuForWindow(self, windowId: u) -> so:  # type: ignore  # noqa: F821, N802, N803
         return self.get_menu(windowId)
 
     @dbus_property(access=PropertyAccess.READ)
-    def RegisteredWindows(self) -> "au":  # type: ignore  # noqa: F821, N802
+    def RegisteredWindows(self) -> au:  # type: ignore  # noqa: F821, N802
         return list(self.windows.keys())
 
     @signal()
-    def WindowRegistered(self, windowId: int) -> "uso":  # type: ignore  # noqa: F821, N802, N803
+    def WindowRegistered(self, windowId: int) -> uso:  # type: ignore  # noqa: F821, N802, N803
         return [windowId, *self.get_menu(windowId)]
 
     @signal()
-    def WindowUnregistered(self, windowId: int) -> "u":  # type: ignore  # noqa: F821, N802, N803
+    def WindowUnregistered(self, windowId: int) -> u:  # type: ignore  # noqa: F821, N802, N803
         return windowId
 
     def get_menu(self, window_id):

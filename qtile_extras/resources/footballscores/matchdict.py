@@ -17,7 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-class MatchDictKeys(object):
+class MatchDictKeys:
     AWAY_TEAM = "awayTeam"
     COMMENT = "comment"
     CPS_ID = "cpsId"
@@ -73,7 +73,7 @@ class MatchDict(dict):
         if isinstance(value, dict):
             value = MatchDict(value)
 
-        super(MatchDict, self).__setitem__(item, value)
+        super().__setitem__(item, value)
 
     def add_callback(self, key, callback):
         if key in self._callbacks:

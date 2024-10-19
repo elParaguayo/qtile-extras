@@ -191,14 +191,12 @@ def snapcast_manager(response, request, manager_nospawn, monkeypatch):
 
     widget = qtile_extras.widget.snapcast.SnapCast(
         **{
-            **{
-                "snapclient": "/usr/bin/sleep",
-                "options": "10",
-                "client_name": "T400",
-                "active_colour": COLOUR_ACTIVE,
-                "inactive_colour": COLOUR_INACTIVE,
-                "error_colour": COLOUR_ERROR,
-            },
+            "snapclient": "/usr/bin/sleep",
+            "options": "10",
+            "client_name": "T400",
+            "active_colour": COLOUR_ACTIVE,
+            "inactive_colour": COLOUR_INACTIVE,
+            "error_colour": COLOUR_ERROR,
             **getattr(request, "param", dict()),
         }
     )

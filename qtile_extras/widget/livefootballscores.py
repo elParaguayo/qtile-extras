@@ -103,7 +103,7 @@ DETAILED_LAYOUT = PopupRelativeLayout(
 
 
 # Massively overkill to use a class here...
-class MatchFlags(object):
+class MatchFlags:
     def __init__(self):
         self._reset()
 
@@ -702,7 +702,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             if lines and league:
                 lines.append(pms())
             if league:
-                lines.append(pmi(text="{}:".format(league.league_name), enabled=False))
+                lines.append(pmi(text=f"{league.league_name}:", enabled=False))
                 for team in league:
                     lines.append(pmi(text=team.format_text(self.popup_text), **_callback(team)))
 

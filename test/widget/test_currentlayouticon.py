@@ -62,7 +62,7 @@ def temp_icons(layout_list):
 def currentlayout_manager(request, layout_list, manager_nospawn):
     # We need to enable the mask here otherwise the widget is just the default qtile one.
     widget = qtile_extras.widget.currentlayout.CurrentLayoutIcon(
-        **{**{"use_mask": True}, **getattr(request, "param", dict())}
+        **{"use_mask": True, **getattr(request, "param", dict())}
     )
 
     class CurrentLayoutConfig(libqtile.confreader.Config):

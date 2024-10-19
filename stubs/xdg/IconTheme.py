@@ -3,5 +3,4 @@ def getIconPath(  # noqa: N802
     size: int | None = None,
     theme: str | None = None,
     extensions: list[str] = ["png", "svg", "xpm"],
-) -> str | None:
-    ...
+) -> str | None: ...

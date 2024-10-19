@@ -85,7 +85,7 @@ def widget(request, manager_nospawn):
                             filenames=[LOCAL_ICON, LOCAL_ICON, LOCAL_ICON],
                             name="animatedimage",
                             loop_interval=0.1,
-                            **getattr(request, "param", dict())
+                            **getattr(request, "param", dict()),
                         )
                     ],
                     50,

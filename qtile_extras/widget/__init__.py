@@ -122,10 +122,10 @@ def lazify_imports(registry, fallback=None):
     """
     __all__ = tuple(registry.keys())
 
-    def __dir__():
+    def __dir__():  # noqa: N807
         return __all__
 
-    def __getattr__(name):
+    def __getattr__(name):  # noqa: N807
         if name not in registry:
             raise AttributeError
 

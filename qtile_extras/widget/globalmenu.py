@@ -207,7 +207,7 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
     def button_press(self, x, y, button):
         self.selected_item = self.find_text_at_pos(x, y)
 
-        name = "Button{0}".format(button)
+        name = f"Button{button}"
         if name in self.mouse_callbacks:
             self.mouse_callbacks[name]()
 

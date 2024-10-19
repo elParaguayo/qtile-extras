@@ -46,9 +46,10 @@ def draw_cava(width, height, num_bars, pad, bar_width, spacing, pipe, background
         lock_file.write(b"\00")
         lock_file.flush()
 
-        with mmap.mmap(
-            shm_file.fileno(), length=mem_size, access=mmap.ACCESS_DEFAULT
-        ) as shm, mmap.mmap(lock_file.fileno(), length=1) as lock:
+        with (
+            mmap.mmap(shm_file.fileno(), length=mem_size, access=mmap.ACCESS_DEFAULT) as shm,
+            mmap.mmap(lock_file.fileno(), length=1) as lock,
+        ):
             draw_bars(
                 shm,
                 lock,

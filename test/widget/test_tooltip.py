@@ -66,7 +66,7 @@ def bar_position(request):
 @pytest.fixture(scope="function")
 def tooltip_manager(request, bar_position, manager_nospawn):
     widget = TooltipWidget(
-        "Testint", **{**{"tooltip_delay": 0.5}, **getattr(request, "param", dict())}
+        "Testint", **{"tooltip_delay": 0.5, **getattr(request, "param", dict())}
     )
 
     class TooltipConfig(libqtile.confreader.Config):
@@ -126,7 +126,7 @@ def test_tooltip_display(tooltip_manager, backend_name):
 )
 def test_tooltip_position(tooltip_manager, pos, expected):
     x, y = pos
-    ex, ey = [str(n) for n in expected]
+    ex, ey = (str(n) for n in expected)
     widget = tooltip_manager.c.widget["tooltipwidget"]
     number = len(tooltip_manager.c.internal_windows())
 

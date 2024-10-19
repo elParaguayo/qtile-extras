@@ -69,9 +69,9 @@ class _Decoration(base.PaddingMixin):
         self.parent = parent
 
     def single_or_four(self, value, name: str):
-        if isinstance(value, (float, int)):
+        if isinstance(value, float | int):
             n = e = s = w = value
-        elif isinstance(value, (tuple, list)):
+        elif isinstance(value, tuple | list):
             if len(value) == 1:
                 n = e = s = w = value[0]
             elif len(value) == 4:

@@ -24,7 +24,7 @@ import math
 from copy import deepcopy
 from enum import Flag, auto
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from cairocffi.pixbuf import ImageLoadingError
 from libqtile import bar, hook
@@ -35,11 +35,12 @@ from libqtile.utils import describe_attributes
 from libqtile.widget import base
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Literal
+    from collections.abc import Callable
+    from typing import Any, Literal
 
 
-ColorType = Union[str, tuple[int, int, int], tuple[int, int, int, float]]
-ColorsType = Union[ColorType, list[ColorType]]
+ColorType = str | tuple[int, int, int] | tuple[int, int, int, float]
+ColorsType = ColorType | list[ColorType]
 
 
 IMAGE_CACHE: dict[str, Img] = {}

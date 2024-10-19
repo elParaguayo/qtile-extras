@@ -24,7 +24,7 @@ ACTION_YELLOW_RED_CARD = "yellow-red-card"
 actions = {ACTION_GOAL: "GOAL", ACTION_RED_CARD: "RED CARD", ACTION_YELLOW_RED_CARD: "RED CARD"}
 
 
-class PlayerAction(object):
+class PlayerAction:
     def __init__(self, player, action):
         if not isinstance(player, dict):
             player = dict()

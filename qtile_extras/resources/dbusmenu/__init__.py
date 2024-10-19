@@ -32,7 +32,7 @@ from libqtile.log_utils import logger
 from qtile_extras.resources.dbusmenu.dbusmenu import DBUS_MENU_SPEC
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from collections.abc import Callable
 
 
 MENU_INTERFACE = "com.canonical.dbusmenu"

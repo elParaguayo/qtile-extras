@@ -31,7 +31,7 @@ from qtile_extras.resources.dbusmenu import DBusMenu
 from qtile_extras.widget.mixins import DbusMenuMixin
 
 if TYPE_CHECKING:
-    from typing import Callable, Optional
+    from collections.abc import Callable
 
 NO_MENU = "/NO_DBUSMENU"
 
@@ -54,7 +54,7 @@ async def attach_menu(self):
         await self.menu.start()
 
 
-def get_menu(self, root: int = 0, callback: Optional[Callable] = None):
+def get_menu(self, root: int = 0, callback: Callable | None = None):
     if self.menu:
         self.menu.get_menu(root, callback=callback)
 

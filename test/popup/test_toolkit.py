@@ -499,9 +499,7 @@ def test_popup_positioning_relative(manager_nospawn, position, opts, expected):
         )
 
         self.popup.show(x={0}, y={1}, relative_to={2}, relative_to_bar={3})
-    """.format(
-            *opts
-        )
+    """.format(*opts)  # noqa: UP030
     )
 
     manager_nospawn.c.eval(layout)

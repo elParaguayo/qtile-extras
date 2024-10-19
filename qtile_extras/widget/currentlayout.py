@@ -83,7 +83,7 @@ class CurrentLayoutIcon(LayoutIcon):
                 img.attach_drawer(self.drawer)
                 # Check if we can create a surface here
                 img.surface
-            except (cairocffi.Error, cairocffi.pixbuf.ImageLoadingError, IOError):
+            except (OSError, cairocffi.Error, cairocffi.pixbuf.ImageLoadingError):
                 # Icon file is guaranteed to exist at this point.
                 # If this exception happens, it means the icon file contains
                 # an invalid image or is not readable.

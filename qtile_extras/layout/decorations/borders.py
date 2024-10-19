@@ -205,7 +205,7 @@ class GradientBorder(_BorderStyle):
         _BorderStyle.__init__(self, **config)
         self.add_defaults(GradientBorder.defaults)
 
-        if not isinstance(self.colours, (list, tuple)):
+        if not isinstance(self.colours, list | tuple):
             raise ConfigError("colours must be a list or tuple.")
 
         if self.offsets is None:
@@ -261,7 +261,7 @@ class GradientFrame(_BorderStyle):
         self.add_defaults(GradientFrame.defaults)
         self.offsets = [x / (len(self.colours) - 1) for x in range(len(self.colours))]
 
-        if not isinstance(self.colours, (list, tuple)):
+        if not isinstance(self.colours, list | tuple):
             raise ConfigError("colours must be a list or tuple.")
 
         self._check_colours()
@@ -408,7 +408,7 @@ class SolidEdge(_BorderStyle):
         _BorderStyle.__init__(self, **config)
         self.add_defaults(SolidEdge.defaults)
 
-        if not (isinstance(self.colours, (list, tuple)) and len(self.colours) == 4):
+        if not (isinstance(self.colours, list | tuple) and len(self.colours) == 4):
             raise ConfigError("colours must have 4 values.")
 
         self._check_colours()
@@ -488,7 +488,7 @@ class ConditionalBorder(_BorderStyle):
             return self.fallback
 
         for match, colour in self.matches:
-            if isinstance(match, (list, str)):
+            if isinstance(match, list | str):
                 matched = any(m.compare(win) for m in match)
             else:
                 matched = match.compare(win)

@@ -88,12 +88,10 @@ def githubnotification_manager(token_file, response, request, manager_nospawn, m
 
     widget = qtile_extras.widget.githubnotifications.GithubNotifications(
         **{
-            **{
-                "token_file": token_file,
-                "active_colour": COLOUR_ACTIVE,
-                "inactive_colour": COLOUR_INACTIVE,
-                "error_colour": COLOUR_ERROR,
-            },
+            "token_file": token_file,
+            "active_colour": COLOUR_ACTIVE,
+            "inactive_colour": COLOUR_INACTIVE,
+            "error_colour": COLOUR_ERROR,
             **getattr(request, "param", dict()),
         }
     )

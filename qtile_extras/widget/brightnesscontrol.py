@@ -389,7 +389,7 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         "Simple method to read value from given path"
 
         try:
-            with open(path, "r") as b:
+            with open(path) as b:
                 value = int(b.read())
         except PermissionError:
             logger.error("Unable to read %s.", path)

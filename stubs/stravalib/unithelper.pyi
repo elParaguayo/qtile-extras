@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import Any, Protocol, Union
+from typing import Any, Protocol
 
 import pint
 from _typeshed import Incomplete
@@ -23,7 +23,7 @@ class Quantity:
 class UnitConverter:
     unit: Incomplete
     def __init__(self, unit: str) -> None: ...
-    def __call__(self, q: Union[Number, pint.Quantity, UnitsQuantity]): ...
+    def __call__(self, q: Number | pint.Quantity | UnitsQuantity): ...
 
 def is_quantity_type(obj: Any): ...
 

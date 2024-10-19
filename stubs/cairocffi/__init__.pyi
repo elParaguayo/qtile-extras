@@ -28,7 +28,7 @@ VERSION: Any
 version: str
 version_info: Any
 
-def dlopen(ffi, library_names, filenames): ...
+def dlopen(ffi, library_names, filenames): ...  # noqa: F811
 
 cairo: Any
 

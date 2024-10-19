@@ -218,7 +218,7 @@ class PopupMenu(PopupGridLayout):
                         has_submenu=dbmitem.children_display == "submenu",
                         enabled=dbmitem.enabled,
                         **callbacks,
-                        **config
+                        **config,
                     )
                 )
             prev_sep = sep
