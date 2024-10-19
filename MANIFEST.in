@@ -8,6 +8,7 @@ include whitelist.py
 exclude coverage.xml
 exclude tox.ini
 exclude .readthedocs.yaml
+exclude .git-blame-ignore-revs
 
 recursive-include qtile_extras *.py
 
