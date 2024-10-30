@@ -19,7 +19,7 @@
 # SOFTWARE.
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import groupby
 from typing import TYPE_CHECKING
 
@@ -29,19 +29,8 @@ from qtile_extras.resources.footballscores.exceptions import FSConnectionError
 from qtile_extras.resources.footballscores.matchdict import MatchDict
 from qtile_extras.resources.footballscores.matchdict import MatchDictKeys as MDKey
 from qtile_extras.resources.footballscores.matchevent import MatchEvent
-from qtile_extras.resources.footballscores.morphlinks import ML
 from qtile_extras.resources.footballscores.playeraction import PlayerAction
-from qtile_extras.resources.footballscores.utils import UTC
-
-# dateutil is not part of the standard library so let's see if we can import
-# and set a flag showing success or otherwise
-try:
-    import dateutil.parser
-
-    HAS_DATEUTIL = True
-
-except ImportError:
-    HAS_DATEUTIL = False
+from qtile_extras.resources.footballscores.utils import UTC, get_time_tuple
 
 if TYPE_CHECKING:
     from typing import Any
@@ -50,7 +39,19 @@ if TYPE_CHECKING:
 # We need a UTC timezone to do some datetime manipulations
 TZ_UTZ = UTC()
 
-API_BASE = "http://push.api.bbci.co.uk"
+# API_BASE = "http://push.api.bbci.co.uk"
+API_BASE = "https://web-cdn.api.bbci.co.uk/wc-poll-data/container/sport-data-scores-fixtures"
+
+URN_PREFIX = "urn:bbc:sportsdata:football:"
+URN_ALL = f"{URN_PREFIX}tournament-collection:collated"
+
+# https://web-cdn.api.bbci.co.uk/wc-poll-data/container/sport-data-scores-fixtures?selectedEndDate=2024-09-28&selectedStartDate=2024-09-28&todayDate=2024-09-28&urn=urn%3Abbc%3Asportsdata%3Afootball%3Atournament-collection%3Acollated&useSdApi=false
+
+# team
+# https://web-cdn.api.bbci.co.uk/wc-poll-data/container/sport-data-scores-fixtures?selectedEndDate=2024-09-28&selectedStartDate=2024-09-28&todayDate=2024-09-28&urn=urn%3Abbc%3Asportsdata%3Afootball%3Ateam%3Achelsea&useSdApi=false
+
+# tournament
+# https://web-cdn.api.bbci.co.uk/wc-poll-data/container/sport-data-scores-fixtures?selectedEndDate=2024-09-21&selectedStartDate=2024-09-21&todayDate=2024-09-22&urn=urn%3Abbc%3Asportsdata%3Afootball%3Atournament%3Apremier-league&useSdApi=false
 
 
 class FootballMatch:
@@ -58,20 +59,11 @@ class FootballMatch:
     Data is pulled from BBC live scores page.
     """
 
-    scoreslink = (
-        "/proxy/data/bbc-morph-football-scores-match-list-data/"
-        "endDate/{end_date}/startDate/{start_date}/{source}/"
-        "version/2.4.0/withPlayerActions/{detailed}"
-    )
-
-    detailprefix = "http://www.bbc.co.uk/sport/football/live/" "partial/{id}"
-
     match_format = {
         "%H": "home_team",
         "%A": "away_team",
         "%h": "home_score",
         "%a": "away_score",
-        "%v": "venue",
         "%T": "display_time",
         "%S": "status",
         "%R": "home_red_cards",
@@ -82,9 +74,10 @@ class FootballMatch:
     }
 
     ACTION_GOAL = "goal"
-    ACTION_RED_CARD = "red-card"
-    ACTION_YELLOW_RED_CARD = "yellow-red-card"
+    ACTION_RED_CARD = "card"
 
+    STATUS_LIVE = "LIVE"
+    STATUS_POSTPONED = "POSTPONED"
     STATUS_HALF_TIME = "HALFTIME"
     STATUS_FULL_TIME = "FULLTIME"
     STATUS_FIXTURE = "FIXTURE"
@@ -211,10 +204,9 @@ class FootballMatch:
 
         return wrapper
 
-    def _request(self, url):
-        url = API_BASE + url
+    def _request(self, **data):
         try:
-            r = requests.get(url)
+            r = requests.get(API_BASE, params=data)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             raise FSConnectionError
 
@@ -245,34 +237,20 @@ class FootballMatch:
         return self.hasTeamPage
 
     def _scan_leagues(self):
-        raw = self._get_scores_fixtures(source=ML.MORPH_FIXTURES_ALL)
+        payload = self._get_scores_fixtures()
 
-        comps = raw.get("matchData", None)
-
-        if not comps:
-            return None
-
-        for comp in comps:
-            matches = list(comp["tournamentDatesWithEvents"].values())[0][0]
-            matches = matches["events"]
-            for m in matches:
-                if self.check_team_in_match(m):
-                    return m
+        for group in payload["eventGroups"]:
+            for subgroup in group["secondaryGroups"]:
+                for game in subgroup["events"]:
+                    if self.check_team_in_match(game):
+                        return game
 
         return None
 
     def check_team_in_match(self, m):
-        home = [
-            m["homeTeam"]["name"][x].lower()
-            for x in ["first", "full", "abbreviation", "last"]
-            if m["homeTeam"]["name"][x]
-        ]
+        home = [m["home"][x].lower() for x in ["fullName", "shortName"] if m["home"][x]]
 
-        away = [
-            m["awayTeam"]["name"][x].lower()
-            for x in ["first", "full", "abbreviation", "last"]
-            if m["awayTeam"]["name"][x]
-        ]
+        away = [m["away"][x].lower() for x in ["fullName", "shortName"] if m["away"][x]]
 
         return self.myteam.lower() in (home + away)
 
@@ -299,45 +277,41 @@ class FootballMatch:
             else:
                 end_date = datetime.now().strftime("%Y-%m-%d")
 
-        if source is None and self.hasTeamPage:
-            source = self.myteampage
+        if self.hasTeamPage:
+            urn = f"{URN_PREFIX}{self.myteampage.replace("/", ":")}"
+        else:
+            urn = URN_ALL
 
-        if detailed is None:
-            detailed = self.detailed
-
-        pl = self.scoreslink.format(
-            start_date=start_date,
-            end_date=end_date,
-            source=source,
-            detailed=str(detailed).lower(),
+        data = dict(
+            selectedStartDate=start_date,
+            selectedEndDate=end_date,
+            todayDate=datetime.now().strftime("%Y-%m-%d"),
+            urn=urn,
         )
 
-        return self._request(pl)
+        return self._request(**data)
 
     def _find_match(self, payload):
-        match = payload["matchData"]
+        match = payload["eventGroups"]
 
         if match:
-            return list(match[0]["tournamentDatesWithEvents"].values())[0][0]["events"][0]  # noqa: E501
+            return match[0]["secondaryGroups"][0]["events"][0]  # noqa: E501
         else:
             return None
 
     def _set_callbacks(self):
-        self.match.add_callback(MDKey.HOME_TEAM, self._check_home_team_event)
-        self.match.add_callback(MDKey.AWAY_TEAM, self._check_away_team_event)
+        self.match.add_callback("home", self._check_home_team_event)
+        self.match.add_callback("away", self._check_away_team_event)
         self.match.add_callback(MDKey.PROGRESS, self._check_status)
 
     def _get_events(self, event, event_type):
         events = []
 
-        player_actions = event.get("playerActions", list())
+        player_actions = event.get("actions", list())
 
         for acts in player_actions:
-            # player = acts["name"]["abbreviation"]
-            for act in acts["actions"]:
-                if act["type"] == event_type:
-                    pa = PlayerAction(acts, act)
-                    events.append(pa)
+            if acts["actionType"] == event_type:
+                events += PlayerAction.get_all(acts)
 
         return sorted(events)
 
@@ -348,10 +322,10 @@ class FootballMatch:
             just_home = just_away = False
 
         if not just_away:
-            events += self._get_events(self.match.homeTeam, event_type)
+            events += self._get_events(self.match.home, event_type)
 
         if not just_home:
-            events += self._get_events(self.match.awayTeam, event_type)
+            events += self._get_events(self.match.away, event_type)
 
         events = sorted(events)
 
@@ -381,14 +355,17 @@ class FootballMatch:
     def _get_reds(self, event):
         reds = []
         reds += self._get_events(event, self.ACTION_RED_CARD)
-        reds += self._get_events(event, self.ACTION_YELLOW_RED_CARD)
         return sorted(reds)
 
     def _get_goals(self, event):
         return self._get_events(event, self.ACTION_GOAL)
 
     def _check_goal(self, old, new):
-        return (old.scores.score != new.scores.score) and (new.scores.score > 0)
+        if not (
+            (isinstance(new.score, str) and new.score.isnumeric()) or isinstance(new.score, int)
+        ):
+            return False
+        return (old.score != new.score) and (int(new.score) > 0)
 
     def _check_red(self, old, new):
         old_reds = self._get_reds(old)
@@ -404,9 +381,9 @@ class FootballMatch:
 
     def _check_team_event(self, event, home=True):
         if home:
-            old = self._old.homeTeam
+            old = self._old.home
         else:
-            old = self._old.awayTeam
+            old = self._old.away
 
         new = MatchDict(event)
 
@@ -474,13 +451,14 @@ class FootballMatch:
             self._fire(func, payload)
 
     def _grouped_events(self, events):
-        def timesort(event):
-            return (event.elapsed_time, event.added_time)
-
-        events = sorted(events, key=lambda x: x.full_name)
-        events = [list(y) for x, y in groupby(events, key=lambda x: x.full_name)]
-        events = sorted(events, key=lambda x: timesort(x[0]))
-        events = [sorted(x, key=timesort) for x in events]
+        # Sort events by name
+        events = sorted(events, key=lambda x: x.name)
+        # Group events by name (list of lists)
+        events = [list(y) for x, y in groupby(events, key=lambda x: x.name)]
+        # Sort the player groups so the earliest goal is first
+        events = sorted(events, key=lambda x: x[0]._time_tuple)
+        # Sort the goals in time order (shouldn't be necessary...)
+        events = [sorted(x, key=lambda x: x._time_tuple) for x in events]
 
         return events
 
@@ -491,7 +469,7 @@ class FootballMatch:
         out = ""
 
         for event in events:
-            name = event[0].abbreviated_name
+            name = event[0].name
             times = []
 
             if event[0].is_goal and event[0].is_own_goal:
@@ -635,27 +613,27 @@ class FootballMatch:
     @_no_match("")
     def home_team(self):
         """Returns string of the home team's name"""
-        return self.match.homeTeam.name.full
+        return self.match.home.fullName
 
     @property
     @_no_match("")
     def away_team(self):
         """Returns string of the away team's name"""
-        return self.match.awayTeam.name.full
+        return self.match.away.fullName
 
     @property
     @_no_match(0)
     @_override_none(0)
     def home_score(self):
         """Returns the number of goals scored by the home team"""
-        return self.match.homeTeam.scores.score
+        return self.match.home.score
 
     @property
     @_no_match(0)
     @_override_none(0)
     def away_score(self):
         """Returns the number of goals scored by the away team"""
-        return self.match.awayTeam.scores.score
+        return self.match.away.score
 
     @property
     @_no_match("")
@@ -665,7 +643,7 @@ class FootballMatch:
         e.g. "Premier League", "FA Cup" etc
 
         """
-        return self.match.tournamentName.full
+        return self.match.tournament.name
 
     @property
     @_no_match("")
@@ -675,12 +653,25 @@ class FootballMatch:
         e.g. "L", "HT", "FT"
 
         """
-        return self.match.eventProgress.period
+        # return self.match.eventProgress.period
+        status = getattr(self.match, "status", None)
+        if status == "PreEvent":
+            return self.STATUS_FIXTURE
+        elif status == "MidEvent":
+            if self.long_status == "Half time":
+                return self.STATUS_HALF_TIME
+            else:
+                return self.STATUS_LIVE
+        elif status == "PostEvent":
+            return self.STATUS_FULL_TIME
+        elif status == "Postponed":
+            return self.STATUS_POSTPONED
+        return status or ""
 
     @property
     @_no_match("")
     def long_status(self):
-        return self.match.eventStatusNote
+        return self.match.statusComment.accessible
 
     @property
     @_no_match("")
@@ -690,7 +681,7 @@ class FootballMatch:
 
         miat = f"+{et}" if et else ""
 
-        if self.is_postponed:
+        if self.status == self.STATUS_POSTPONED:
             return "P"
 
         elif self.status == self.STATUS_HALF_TIME:
@@ -700,10 +691,10 @@ class FootballMatch:
             return "FT"
 
         elif self.status == self.STATUS_FIXTURE:
-            return self.start_time_uk
+            return f"{self.start_time_local:%H:%M}"
 
         elif me is not None:
-            return f"{me}{miat}'"
+            return f"{me}'{miat}"
 
         else:
             return None
@@ -712,28 +703,35 @@ class FootballMatch:
     @_no_match(0)
     @_override_none(0)
     def elapsed_time(self):
-        return self.match.minutesElapsed
+        time, _ = get_time_tuple(self.match.periodLabel.value)
+        return time
 
     @property
     @_no_match(0)
     @_override_none(0)
     def added_time(self):
-        return self.match.minutesIntoAddedTime
-
-    @property
-    @_no_match("")
-    def venue(self):
-        return self.match.venue.name.full
+        _, added = get_time_tuple(self.match.periodLabel.value)
+        return added
 
     @property
     @_no_match(False)
     def is_fixture(self):
-        return self.match.eventStatus == "pre-event"
+        return self.match.status == "PreEvent"
 
     @property
     @_no_match(False)
     def is_live(self):
-        return self.match.eventStatus == "mid-event" and not self.status == self.STATUS_HALF_TIME
+        return self.match.status == "MidEvent"
+
+    @property
+    @_no_match(False)
+    def is_finished(self):
+        return self.match.status == "PostEvent"
+
+    @property
+    @_no_match(False)
+    def is_postponed(self):
+        return self.match.status == "Postponed"
 
     @property
     @_no_match(False)
@@ -742,24 +740,16 @@ class FootballMatch:
 
     @property
     @_no_match(False)
-    def is_finished(self):
-        return self.match.eventStatus == "post-event"
-
-    @property
-    @_no_match(False)
     def is_in_added_time(self):
-        return self.match.minutesIntoAddedTime > 0
-
-    @property
-    @_no_match(False)
-    def is_postponed(self):
-        return self.match.eventStatus == "postponed"
+        # return self.match.minutesIntoAddedTime > 0
+        # TO FIX
+        return False
 
     @property
     @_no_match(list())
     def home_scorers(self):
         """Returns list of goalscorers for home team"""
-        return self._get_goals(self.match.homeTeam)
+        return self._get_goals(self.match.home)
 
     @property
     @_no_match("")
@@ -770,7 +760,7 @@ class FootballMatch:
     @_no_match(list())
     def away_scorers(self):
         """Returns list of goalscorers for away team"""
-        return self._get_goals(self.match.awayTeam)
+        return self._get_goals(self.match.away)
 
     @property
     @_no_match("")
@@ -796,13 +786,13 @@ class FootballMatch:
     @_no_match(list())
     def home_red_cards(self):
         """Returns list of players sent off for home team"""
-        return self._get_reds(self.match.homeTeam)
+        return self._get_reds(self.match.home)
 
     @property
     @_no_match(list())
     def away_red_cards(self):
         """Returns list of players sent off for away team"""
-        return self._get_reds(self.match.awayTeam)
+        return self._get_reds(self.match.away)
 
     @property
     @_no_match("")
@@ -848,28 +838,19 @@ class FootballMatch:
 
     @property
     @_no_match("")
-    def start_time_uk(self):
-        return self.match.startTimeInUKHHMM
+    def start_time_local(self):
+        return self.start_time_datetime.astimezone()
 
     @property
     @_no_match(None)
     def start_time_datetime(self):
-        st = self.match.startTime
-
-        if HAS_DATEUTIL:
-            try:
-                return dateutil.parser.parse(st)
-
-            except ValueError:
-                return None
-
-        else:
-            return None
+        st = self.match.date.iso
+        return datetime.fromisoformat(st)
 
     @property
     @_no_match(None)
     def start_time(self):
-        return self.match.startTime
+        return f"{self.start_time_local:%H:%M}"
 
     @property
     @_no_match(None)
@@ -878,8 +859,4 @@ class FootballMatch:
 
         Returns None if unable to parse match time or if match in progress.
         """
-        if HAS_DATEUTIL and self.is_fixture:
-            return self.start_time_datetime.astimezone(TZ_UTZ) - datetime.now(TZ_UTZ)
-
-        else:
-            return None
+        return self.start_time_datetime - datetime.now(timezone.utc)
