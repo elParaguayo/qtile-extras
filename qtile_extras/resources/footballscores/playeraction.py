@@ -17,8 +17,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from qtile_extras.resources.footballscores.utils import get_time_tuple
+
 ACTION_GOAL = "goal"
-ACTION_RED_CARD = "red-card"
+ACTION_RED_CARD = "card"
 ACTION_YELLOW_RED_CARD = "yellow-red-card"
 
 actions = {ACTION_GOAL: "GOAL", ACTION_RED_CARD: "RED CARD", ACTION_YELLOW_RED_CARD: "RED CARD"}
@@ -29,56 +31,39 @@ class PlayerAction:
         if not isinstance(player, dict):
             player = dict()
 
-        nm = player.get("name", dict())
-        self._fullname = nm.get("full", "")
-        self._abbreviatedname = nm.get("abbreviation", "")
-        self._firstname = nm.get("first", "")
-        self._lastname = nm.get("last", "")
+        self._name = player.get("playerName", "")
 
         if not isinstance(action, dict):
             action = dict()
 
-        self._actiontype = action.get("type", None)
-        self._actiondisplaytime = action.get("displayTime", None)
-        self._actiontime = action.get("timeElapsed", 0)
-        self._actionaddedtime = action.get("addedTime", 0)
-        self._actionowngoal = action.get("ownGoal", False)
-        self._actionpenalty = action.get("penalty", False)
+        self._actiontype = player.get("actionType", None)
+        self._actiontime = action.get("timeLabel", dict()).get("value", "0'")
+        self._time_tuple = get_time_tuple(self._actiontime)
+        act_type = action.get("type", "")
+        self._actionowngoal = act_type == "Own Goal"
+        self._actionpenalty = act_type == "Penalty"
+        self._actionsecondyellow = act_type == "Two Yellow Cards"
+
+    @classmethod
+    def get_all(cls, actions):
+        return [cls(actions, action) for action in actions["actions"]]
 
     def __lt__(self, other):
-        normal = self._actiontime < other._actiontime
-        added = (self._actiontime == other._actiontime) and (
-            self._actionaddedtime < other._actionaddedtime
-        )
-        return normal or added
+        return self._time_tuple < other._time_tuple
 
     def __eq__(self, other):
-        normal = self._actiontime == other._actiontime
-        added = self._actionaddedtime == other._actionaddedtime
-        return normal and added
+        return self._time_tuple == other._time_tuple
 
     def __repr__(self):
         return "<{}: {} ({})>".format(
             actions[self._actiontype],
-            self._abbreviatedname.encode("ascii", "replace"),
-            self._actiondisplaytime,
+            self.name.encode("ascii", "replace"),
+            self._actiontime,
         )
 
     @property
-    def full_name(self):
-        return self._fullname
-
-    @property
-    def first_name(self):
-        return self._firstname
-
-    @property
-    def last_name(self):
-        return self._lastname
-
-    @property
-    def abbreviated_name(self):
-        return self._abbreviatedname
+    def name(self):
+        return self._name
 
     @property
     def action_type(self):
@@ -86,15 +71,15 @@ class PlayerAction:
 
     @property
     def display_time(self):
-        return self._actiondisplaytime
-
-    @property
-    def elapsed_time(self):
         return self._actiontime
 
     @property
+    def elapsed_time(self):
+        return self._time_tuple[0]
+
+    @property
     def added_time(self):
-        return self._actionaddedtime
+        return self._time_tuple[1]
 
     @property
     def is_goal(self):
@@ -102,15 +87,15 @@ class PlayerAction:
 
     @property
     def is_red_card(self):
-        return self._actiontype == ACTION_RED_CARD or self._actiontype == ACTION_YELLOW_RED_CARD
-
-    @property
-    def is_straight_red(self):
         return self._actiontype == ACTION_RED_CARD
 
     @property
+    def is_straight_red(self):
+        return self._actiontype == ACTION_RED_CARD and not self._actionsecondyellow
+
+    @property
     def is_second_booking(self):
-        return self._actiontype == ACTION_YELLOW_RED_CARD
+        return self._actionsecondyellow
 
     @property
     def is_penalty(self):

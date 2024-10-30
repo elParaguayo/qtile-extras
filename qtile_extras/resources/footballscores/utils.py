@@ -17,7 +17,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import re
 from datetime import timedelta, tzinfo
+
+REGEX_TIME = re.compile(r"([0-9]+)'(?:\s?\+([0-9]+))?")
 
 ZERO = timedelta(0)
 
@@ -31,3 +34,14 @@ class UTC(tzinfo):
 
     def dst(self, dt):
         return ZERO
+
+
+def get_time_tuple(timestring):
+    """Return a tuple of normal time and added time."""
+    m = REGEX_TIME.match(timestring)
+    if not m:
+        return (0, 0)
+    normal = int(m.group(1))
+    added = int(m.group(2)) if m.group(2) else 0
+
+    return (normal, added)

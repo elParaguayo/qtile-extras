@@ -23,18 +23,13 @@ import requests
 
 from qtile_extras.resources.footballscores.footballmatch import FootballMatch
 
-API_BASE = "http://push.api.bbci.co.uk"
+API_BASE = "https://web-cdn.api.bbci.co.uk/wc-poll-data/container/sport-data-scores-fixtures"
+
+URN_PREFIX = "urn:bbc:sportsdata:football:tournament:"
+URN_ALL = "urn:bbc:sportsdata:football:tournament-collection:collated"
 
 
 class League:
-    leaguelink = (
-        "/proxy/data/bbc-morph-football-scores-match-list-data/"
-        "endDate/{end_date}/startDate/{start_date}/"
-        "tournament/{tournament}/"
-        "withPlayerActions/{detailed}/"
-        "version/2.4.0"
-    )
-
     def __init__(
         self,
         league,
@@ -84,9 +79,8 @@ class League:
         if self.leagueid:
             self.matches = self.get_matches()
 
-    def _request(self, url):
-        url = API_BASE + url
-        r = requests.get(url)
+    def _request(self, **data):
+        r = requests.get(API_BASE, params=data)
         if r.status_code == 200:
             return r.json()
         else:
@@ -105,38 +99,40 @@ class League:
         if detailed is None:
             detailed = self.detailed
 
-        pl = self.leaguelink.format(
-            start_date=start_date,
-            end_date=end_date,
-            tournament=source,
-            detailed=str(detailed).lower(),
+        urn = f"{URN_PREFIX}{self.leagueid}"
+
+        pl = dict(
+            selectedStartDate=start_date,
+            selectedEndDate=end_date,
+            todayDate=datetime.now().strftime("%Y-%m-%d"),
+            urn=urn,
         )
 
-        return self._request(pl)
+        return self._request(**pl)
 
     def _get_raw_data(self):
         rawdata = self._get_scores_fixtures()
         if not rawdata:
             return []
 
-        if not rawdata.get("matchData"):
+        if not rawdata.get("eventGroups"):
             return []
 
-        data = rawdata["matchData"][0]["tournamentDatesWithEvents"]
+        data = rawdata["eventGroups"][0]["secondaryGroups"]
 
         mdata = []
-        for event in list(data.values())[0]:
-            mdata += event["events"]
+        for event in data[0]["events"]:
+            mdata.append(event)
 
         return mdata
 
-    def get_matches(self):
+    def get_matches(self, update=True):
         matches = []
 
         data = self._get_raw_data()
 
         for m in data:
-            home = m["homeTeam"]["name"]["abbreviation"]
+            home = m["home"]["shortName"]
             fmatch = FootballMatch(
                 home,
                 data=m,
@@ -145,6 +141,7 @@ class League:
                 on_red=self.on_red,
                 on_status_change=self.on_status_change,
                 on_new_match=self.on_new_match,
+                update=update,
             )
             matches.append(fmatch)
 
@@ -154,7 +151,7 @@ class League:
         data = self._get_raw_data()
 
         for m in data:
-            home = m["homeTeam"]["name"]["abbreviation"]
+            home = m["home"]["shortName"]
             for team in self.matches:
                 if team.myteam == home:
                     team.update(data=m)
@@ -164,7 +161,7 @@ class League:
         if not self.leagueid:
             self._setup()
 
-        matches = self.get_matches()
+        matches = self.get_matches(update=False)
 
         current = [x for x in self.matches if x in matches]
         current += [x for x in matches if x not in self.matches]
