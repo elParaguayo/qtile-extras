@@ -315,7 +315,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         }
 
         try:
-            # Create foorball match object
+            # Create football match object
             if not self.sources[0]:
                 myteam = FootballMatch(self.team, **kwargs)
                 self.sources[0].append(myteam)
@@ -555,6 +555,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             # Draw the bar
             self.drawer.fillrect(offset, self.height - 2, width, 2, 2)
 
+    @expose_command
     def loop_match_info(self):
         self.set_default_timer()
         self.screen_index = (self.screen_index + 1) % len(self.screens)
@@ -720,3 +721,11 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             relative_to_bar=relative_to_bar,
             hide_on_timeout=hide_on_timeout,
         )
+
+    @expose_command
+    def next_match(self):
+        self.change_match(1)
+
+    @expose_command
+    def previous_match(self):
+        self.change_match(-1)

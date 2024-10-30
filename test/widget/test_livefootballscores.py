@@ -58,18 +58,20 @@ class MatchRequest:
     status_code = 200
     error = False
 
-    def __init__(self, url):
+    def __init__(self, url, params=dict()):
         self.url = url
+        self.params = params
+        self.urn = params.get("urn", "")
         if self.error:
             raise requests.exceptions.ConnectionError
 
     def json(self):
-        if "chelsea" in self.url or "burnley" in self.url:
+        if "chelsea" in self.urn or "west-ham-united" in self.urn:
             return lfs_data.CHELSEA
-        elif "liverpool" in self.url:
+        elif "liverpool" in self.urn:
             return lfs_data.LIVERPOOL
         # Ugly hack to get the premier league data when no tournament provided!
-        elif "premier-league" in self.url or "tournament/full-priority" in self.url:
+        elif "premier-league" in self.urn or "tournament-collection:collated" in self.urn:
             return lfs_data.PREMIER_LEAGUE
         else:
             return lfs_data.NO_MATCHES
@@ -140,41 +142,43 @@ def test_scores_display_and_navigation(lfs_manager, manager_nospawn):
     matches_loaded(manager_nospawn)
 
     # There should be 10 matches (1x "team", 1x "teams" and
-    # 7 in "leagues")
+    # 4 in "leagues")
     _, output = manager_nospawn.c.widget["livefootballscores"].eval("len(self.matches)")
-    assert int(output) == 9
+    assert int(output) == 6
 
     # Default display is "team"
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Che 1-1 Bur"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == "Wes 1-5 Che"
 
     # Right-clicking loops through different displays
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "FT"
 
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Che: Havertz (33')"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == "Wes: Lucas Paquetá (6')"
 
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Bur: Vydra (79')"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == (
+        "Che: João Pedro (15'), Pedro Neto (23'), E. Fernández (34'), M. Caicedo (54'), T. Chalobah (58')"
+    )
 
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert manager_nospawn.c.widget["livefootballscores"].get() == "Premier League"
 
     # Waiting will revert to score display
     restore_default_screen(manager_nospawn)
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Che 1-1 Bur"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == "Wes 1-5 Che"
 
     # Test mouse scrolling to select match - this is "teams"
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 4)
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Wes 3-2 Liv"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == "Liv 1-0 Ars"
 
     # Test mouse scrolling to select match - this is "leagues"
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 4)
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Ast 0-0 Bri"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == "Bri 2-1 Man"
 
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 5)
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 5)
-    assert manager_nospawn.c.widget["livefootballscores"].get() == "Che 1-1 Bur"
+    assert manager_nospawn.c.widget["livefootballscores"].get() == "Wes 1-5 Che"
 
 
 def test_widget_reboot(lfs_manager, manager_nospawn):
@@ -198,41 +202,35 @@ def test_widget_info(lfs_manager, manager_nospawn):
     # info() gives us a lot of data!
     info = manager_nospawn.c.widget["livefootballscores"].info()
     assert info == {
-        "matches": {
-            0: "Chelsea 1-1 Burnley (FT)",
-            1: "West Ham United 3-2 Liverpool (FT)",
-            2: "Aston Villa 0-0 Brighton & Hove Albion (15:00)",
-            3: "Burnley 0-0 Crystal Palace (15:00)",
-            4: "Newcastle United 0-0 Brentford (15:00)",
-            5: "Norwich City 0-0 Southampton (15:00)",
-            6: "Watford 0-0 Manchester United (15:00)",
-            7: "Wolverhampton Wanderers 0-0 West Ham United (15:00)",
-            8: "Liverpool 0-0 Arsenal (17:30)",
-        },
         "name": "livefootballscores",
+        "sources": {
+            "team": "Chelsea",
+            "teams": "Liverpool, Real Madrid",
+            "leagues": "premier-league, FIFA World Cup",
+        },
         "objects": {
+            "team": "West Ham United 1-5 Chelsea (FT)",
+            "teams": {
+                "Liverpool": "Liverpool 1-0 Arsenal (FT)",
+                "Real Madrid": "Real Madrid are not playing today.",
+            },
             "leagues": {
                 "premier-league": {
-                    0: "Aston Villa 0-0 Brighton & Hove Albion (15:00)",
-                    1: "Burnley 0-0 Crystal Palace (15:00)",
-                    2: "Newcastle United 0-0 Brentford (15:00)",
-                    3: "Norwich City 0-0 Southampton (15:00)",
-                    4: "Watford 0-0 Manchester United (15:00)",
-                    5: "Wolverhampton Wanderers 0-0 West Ham United (15:00)",
-                    6: "Liverpool 0-0 Arsenal (17:30)",
+                    0: "Brighton & Hove Albion 2-1 Manchester City (FT)",
+                    1: "Nottingham Forest 0-3 West Ham United (FT)",
+                    2: "Liverpool 1-0 Arsenal (FT)",
+                    3: "Aston Villa 0-3 Crystal Palace (FT)",
                 },
                 "FIFA World Cup": {},
             },
-            "team": "Chelsea 1-1 Burnley (FT)",
-            "teams": {
-                "Liverpool": "West Ham United 3-2 Liverpool (FT)",
-                "Real Madrid": "Real Madrid are not playing today.",
-            },
         },
-        "sources": {
-            "leagues": "premier-league, FIFA World Cup",
-            "team": "Chelsea",
-            "teams": "Liverpool, Real Madrid",
+        "matches": {
+            0: "West Ham United 1-5 Chelsea (FT)",
+            1: "Liverpool 1-0 Arsenal (FT)",
+            2: "Brighton & Hove Albion 2-1 Manchester City (FT)",
+            3: "Nottingham Forest 0-3 West Ham United (FT)",
+            4: "Liverpool 1-0 Arsenal (FT)",
+            5: "Aston Villa 0-3 Crystal Palace (FT)",
         },
     }
 
@@ -255,19 +253,16 @@ def test_widget_popup(lfs_manager, manager_nospawn):
     # - boolean: whether item is enable or not
     items = (
         (True, "Premier League", False),
-        (True, "Chelsea 1-1 Burnley (FT)", True),
+        (True, "West Ham United 1-5 Chelsea (FT)", True),
         (False, "", False),
         (True, "Selected Teams:", False),
-        (True, "West Ham United 3-2 Liverpool (FT)", True),
+        (True, "Liverpool 1-0 Arsenal (FT)", True),
         (False, "", False),
         (True, "Premier League:", False),
-        (True, "Aston Villa 0-0 Brighton & Hove Albi (15:00)", True),
-        (True, "Burnley 0-0 Crystal Palace (15:00)", True),
-        (True, "Newcastle United 0-0 Brentford (15:00)", True),
-        (True, "Norwich City 0-0 Southampton (15:00)", True),
-        (True, "Watford 0-0 Manchester United (15:00)", True),
-        (True, "Wolverhampton Wander 0-0 West Ham United (15:00)", True),
-        (True, "Liverpool 0-0 Arsenal (17:30)", True),
+        (True, "Brighton & Hove Albi 2-1 Manchester City (FT)", True),
+        (True, "Nottingham Forest 0-3 West Ham United (FT)", True),
+        (True, "Liverpool 1-0 Arsenal (FT)", True),
+        (True, "Aston Villa 0-3 Crystal Palace (FT)", True),
     )
 
     for i, (is_text, match, enabled) in enumerate(items):
@@ -310,12 +305,12 @@ def test_widget_refresh(lfs_manager, manager_nospawn, caplog):
 def test_footballmatch_module_equality(lfs_match):
     """Football matches should be equal if they're the same game."""
     che = lfs_match("Chelsea")
-    bur = lfs_match("Burnley")
+    whu = lfs_match("West Ham United")
 
     che.update()
-    bur.update()
+    whu.update()
 
-    assert che == bur
+    assert che == whu
 
 
 def test_footballmatch_module_inequality(lfs_match, monkeypatch):
@@ -352,17 +347,17 @@ def test_footballmatch_module_scanleagues(lfs_match, monkeypatch):
     monkeypatch.setattr(
         "qtile_extras.resources.footballscores.FootballMatch._find_team_page", lambda _: False
     )
-    sth = lfs_match("Southampton")
+    sth = lfs_match("Crystal Palace")
 
-    assert sth.home_team == "Norwich City"
-    assert sth.away_team == "Southampton"
+    assert sth.home_team == "Aston Villa"
+    assert sth.away_team == "Crystal Palace"
 
 
 def test_footballmatch_module_no_matchdata(lfs_match, monkeypatch):
     """Check output when no match."""
 
     def no_match(*args, **kwargs):
-        return {"fixtureListMeta": {"scorersButtonShouldBeEnabled": False}, "matchData": []}
+        return lfs_data.NO_MATCHES
 
     monkeypatch.setattr(
         "qtile_extras.resources.footballscores.FootballMatch._get_scores_fixtures", no_match
@@ -374,7 +369,7 @@ def test_footballmatch_module_no_matchdata(lfs_match, monkeypatch):
 def test_footballmatch_module_format_match(lfs_match):
     """Test string formatting."""
     che = lfs_match("Chelsea")
-    assert che.format_match("%H %A %v") == "Chelsea Burnley Stamford Bridge"
+    assert che.format_match("%H %A") == "West Ham United Chelsea"
 
 
 def test_footballmatch_module_kickoff_time(lfs_match, monkeypatch):
@@ -395,8 +390,8 @@ def test_footballmatch_module_kickoff_time(lfs_match, monkeypatch):
     )
     che = lfs_match("Chelsea")
 
-    # Time to kick-off is 15:00 - 13:45 == 1 hr and 15 mins
-    assert che.format_time_to_kick_off("{h}:{m}") == "1:15"
+    # Time to kick-off is 19:00 - 13:45 == 1 hr and 15 mins
+    assert che.format_time_to_kick_off("{h}:{m}") == "5:15"
 
 
 def test_footballmatch_module_last_events(lfs_match):
@@ -404,11 +399,11 @@ def test_footballmatch_module_last_events(lfs_match):
     che = lfs_match("Chelsea")
     lg = che.last_goal
     assert lg.is_goal
-    assert lg.abbreviated_name == "Vydra"
+    assert lg.name == "T. Chalobah"
 
     hg = che.last_home_goal
     assert hg.is_goal
-    assert hg.abbreviated_name == "Havertz"
+    assert hg.name == "Lucas Paquetá"
 
     ag = che.last_away_goal
     assert ag == lg
@@ -462,7 +457,7 @@ def test_matchevent_module(lfs_match):
     assert not home_goal.is_live
     assert not home_goal.is_new_match
     assert not home_goal.is_fixture
-    assert home_goal.scorer.abbreviated_name == "Havertz"
+    assert home_goal.scorer.name == "Lucas Paquetá"
 
     away_goal = MatchEvent(MatchEvent.TYPE_GOAL, che, home=False)
     assert away_goal.is_goal
@@ -471,7 +466,7 @@ def test_matchevent_module(lfs_match):
     assert not away_goal.is_live
     assert not away_goal.is_new_match
     assert not away_goal.is_fixture
-    assert away_goal.scorer.abbreviated_name == "Vydra"
+    assert away_goal.scorer.name == "T. Chalobah"
 
     home_red = MatchEvent(MatchEvent.TYPE_RED_CARD, che, home=True)
     assert not home_red.is_goal
