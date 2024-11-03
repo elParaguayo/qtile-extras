@@ -18,19 +18,43 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import logging
+import tempfile
+from pathlib import Path
 
+import cairocffi
 import libqtile.bar
 import libqtile.config
 import pytest
 from libqtile.log_utils import init_log
+from libqtile.utils import rgb
 
 from qtile_extras import widget
 from qtile_extras.widget.decorations import (
     BorderDecoration,
+    ImageDecoration,
     PowerLineDecoration,
     RectDecoration,
     _Decoration,
 )
+
+
+@pytest.fixture(scope="function")
+def image_background():
+    with tempfile.TemporaryDirectory() as img_dir:
+        output = Path(img_dir) / "image_background.png"
+
+        img = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, 100, 100)
+
+        with cairocffi.Context(img) as ctx:
+            lg = cairocffi.LinearGradient(0, 0, 100, 100)
+            lg.add_color_stop_rgba(0, *rgb("f0f"))
+            lg.add_color_stop_rgba(1, *rgb("0ff"))
+            ctx.set_source(lg)
+            ctx.paint()
+
+        img.write_to_png(output.as_posix())
+
+        yield output.as_posix()
 
 
 def test_single_or_four():
@@ -272,3 +296,40 @@ def test_decoration_grouping(manager_nospawn, minimal_conf_noscreen, dec_class, 
 
     # Last widget is not grouped
     assert_first_last(widget6, True, True)
+
+
+@pytest.mark.parametrize(
+    "kwargs,xoffset,yoffset",
+    [
+        ({}, 0, 0),
+        ({"preserve_aspect_ratio": True}, 0, -30),  # (40 - 100) // 2
+        ({"preserve_aspect_ratio": True, "center": False}, 0, 0),  # Overrides offset
+    ],
+)
+def test_image_decoration(
+    manager_nospawn, minimal_conf_noscreen, image_background, kwargs, xoffset, yoffset
+):
+    config = minimal_conf_noscreen
+
+    config.screens = [
+        libqtile.config.Screen(
+            top=libqtile.bar.Bar(
+                [
+                    widget.TextBox(
+                        "Text 1",
+                        width=100,
+                        decorations=[ImageDecoration(image=image_background, **kwargs)],
+                    )
+                ],
+                40,
+            )
+        )
+    ]
+
+    manager_nospawn.start(config)
+
+    tb = manager_nospawn.c.widget["textbox"]
+    _, ox = tb.eval("self.decorations[0]._xoffset")
+    _, oy = tb.eval("self.decorations[0]._yoffset")
+    assert int(ox) == xoffset
+    assert int(oy) == yoffset

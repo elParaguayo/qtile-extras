@@ -17,14 +17,21 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from pathlib import Path
+
 import pytest
 
 from qtile_extras import widget
 from qtile_extras.widget.decorations import (
     BorderDecoration,
     GradientDecoration,
+    ImageDecoration,
     PowerLineDecoration,
     RectDecoration,
+)
+
+BACKGROUND = (
+    (Path(__file__).parent / ".." / "resources" / "image_background.png").resolve().as_posix()
 )
 
 
@@ -248,6 +255,108 @@ params.append(
     {
         "name": "gradient-decoration-radial-whole-bar",
         "widgets": widgets([GradientDecoration(radial=True, whole_bar=True)]),
+    }
+)
+
+# IMAGEDECORATION
+params.append(
+    {
+        "name": "image-decoration-default",
+        "widgets": widgets([ImageDecoration(image=BACKGROUND)]),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-default-aspectratio",
+        "widgets": widgets([ImageDecoration(image=BACKGROUND, preserve_aspect_ratio=True)]),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill",
+        "widgets": widgets([ImageDecoration(image=BACKGROUND, fill=False)]),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-nocenter",
+        "widgets": widgets([ImageDecoration(image=BACKGROUND, fill=False, center=False)]),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-aspectratio",
+        "widgets": widgets(
+            [ImageDecoration(image=BACKGROUND, fill=False, preserve_aspect_ratio=True)]
+        ),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-aspectratio-nocenter",
+        "widgets": widgets(
+            [
+                ImageDecoration(
+                    image=BACKGROUND, fill=False, preserve_aspect_ratio=True, center=False
+                )
+            ]
+        ),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-default-wholebar",
+        "widgets": widgets([ImageDecoration(image=BACKGROUND, whole_bar=True)]),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-default-aspectratio-wholebar",
+        "widgets": widgets(
+            [ImageDecoration(image=BACKGROUND, preserve_aspect_ratio=True, whole_bar=True)]
+        ),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-wholebar",
+        "widgets": widgets([ImageDecoration(image=BACKGROUND, fill=False, whole_bar=True)]),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-nocenter-wholebar",
+        "widgets": widgets(
+            [ImageDecoration(image=BACKGROUND, fill=False, center=False, whole_bar=True)]
+        ),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-aspectratio-wholebar",
+        "widgets": widgets(
+            [
+                ImageDecoration(
+                    image=BACKGROUND, fill=False, preserve_aspect_ratio=True, whole_bar=True
+                )
+            ]
+        ),
+    }
+)
+params.append(
+    {
+        "name": "image-decoration-nofill-aspectratio-nocenter-wholebar",
+        "widgets": widgets(
+            [
+                ImageDecoration(
+                    image=BACKGROUND,
+                    fill=False,
+                    preserve_aspect_ratio=True,
+                    center=False,
+                    whole_bar=True,
+                )
+            ]
+        ),
     }
 )
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2021, elParaguayo. All rights reserved.
+# Copyright (c) 2021-4, elParaguayo. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@ from __future__ import annotations
 import copy
 import math
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import cairocffi
@@ -32,6 +33,8 @@ from libqtile.confreader import ConfigError
 from libqtile.log_utils import logger
 from libqtile.utils import rgb
 from libqtile.widget import Systray, base
+
+from qtile_extras.images import Img
 
 if TYPE_CHECKING:
     from typing import Any  # noqa: F401
@@ -911,6 +914,108 @@ class GradientDecoration(_Decoration):
             gradient.add_color_stop_rgba(offset, *rgb(c))
 
         self.ctx.set_source(gradient)
+        self.ctx.paint()
+        self.ctx.restore()
+
+
+class ImageDecoration(_Decoration):
+    """
+    Renders an image background to the widget.
+
+    Setting ``whole_bar=True`` will draw the image by reference to the whole bar. Widgets will then
+    render the part of the image in the area covered by the widget. This allows a single image to be
+    applied consistently across all widgets.
+    """
+
+    _screenshots = [("image_decoration.png", "Image with 'whole_bar=True'.")]
+
+    defaults = [
+        (
+            "whole_bar",
+            False,
+            "When set to ``True`` image is calculated by reference to the bar so "
+            "you can get a single image applied across multiple widgets.",
+        ),
+        ("image", "", "Path to background image"),
+        (
+            "center",
+            True,
+            "Whether to center the image in the widget. If ``False`` image will be rendered frop top/left corner",
+        ),
+        ("fill", True, "Whether or not image should be resized to fit the widget/bar."),
+        (
+            "preserve_aspect_ratio",
+            False,
+            "Whether aspect ratio should be preserved when resizing the image.",
+        ),
+    ]
+
+    def __init__(self, **config):
+        _Decoration.__init__(self, **config)
+        self.add_defaults(ImageDecoration.defaults)
+
+        if not self.image:
+            raise ConfigError("ImageDecoration has no image file.")
+
+        self._image = Path(self.image).expanduser().resolve()
+        if not self._image.is_file():
+            raise ConfigError(f"ImageDecoration cannot find {self.image}.")
+
+        self._old_width = 0
+        self._old_height = 0
+        self._surface = None
+
+        self._xoffset = 0
+        self._yoffset = 0
+
+    def _get_image(self, width, height):
+        if self._surface and self._old_width == width and self._old_height == height:
+            return self._surface
+
+        image = Img.from_path(self._image.as_posix())
+
+        if self.fill:
+            if self.preserve_aspect_ratio:
+                if image.width / image.height > width / height:
+                    image.resize(height=height)
+                elif image.width / image.height < width / height:
+                    image.resize(width=width)
+                else:
+                    image.resize(width=width, height=height)
+            else:
+                image.resize(width=width, height=height)
+
+        self._xoffset = ((width - image.width) // 2) if self.center else 0
+        self._yoffset = ((height - image.height) // 2) if self.center else 0
+
+        self._old_width = width
+        self._old_height = height
+
+        self._surface = image.pattern
+        return self._surface
+
+    def draw(self):
+        width = self.parent.bar.width if self.whole_bar else self.width
+        height = self.parent.bar.height if self.whole_bar else self.height
+
+        # Nothing to do if widget is hidden
+        if not (width and height):
+            return
+
+        image = self._get_image(width, height)
+
+        self.ctx.save()
+        self.ctx.rectangle(0, 0, self.width, self.height)
+        self.ctx.clip()
+
+        # If we're using whole_bar then we shift 0, 0 to be top left corner of the bar
+        if self.whole_bar:
+            self.ctx.translate(-self.parent.offsetx, -self.parent.offsety)
+
+        # Translate the image to position correctly for resizing/centering
+        self.ctx.translate(self._xoffset, self._yoffset)
+
+        self.ctx.set_source(image)
         self.ctx.paint()
         self.ctx.restore()
 
