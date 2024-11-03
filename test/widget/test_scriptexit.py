@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 import logging
+import sys
 import tempfile
 from pathlib import Path
 
@@ -43,8 +44,9 @@ def read_file(fname):
 
 @pytest.fixture(scope="function")
 def temp_output():
+    python = sys.executable
     with tempfile.TemporaryDirectory() as tempdir:
-        yield f"python {WINDOW} {tempdir}/exit.log"
+        yield f"{python} {WINDOW} {tempdir}/exit.log"
 
 
 @pytest.fixture(scope="function")
