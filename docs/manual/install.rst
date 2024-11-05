@@ -30,13 +30,9 @@ or the ``qtile-extras-git`` package (for the latest git version).
 Fedora
 ======
 
-There is no official package for Fedora yet but you can install it
-from `Copr`_::
+There is an official package for Fedora::
 
-    dnf copr enable frostyx/qtile
     dnf install qtile-extras
-
-.. _Copr: https://copr.fedorainfracloud.org/
 
 pipx
 ====
