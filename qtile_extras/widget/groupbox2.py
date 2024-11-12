@@ -157,6 +157,7 @@ class GroupBoxRule:
         self.group_name: str | None = None
         self.func: Callable[[GroupBoxRule, Box], bool] | None = None
         self.always_check = False
+        self._inverted = False
 
     size: int | Sentinel | None
 
@@ -190,7 +191,7 @@ class GroupBoxRule:
 
         return self
 
-    def match(self, box: Box) -> bool:
+    def _match(self, box: Box) -> bool:
         """Returns True if box conditions match rule criteria."""
         if not self.screen & ScreenRule.UNSET:
             if not box.screen & self.screen:
@@ -214,6 +215,13 @@ class GroupBoxRule:
 
         return True
 
+    def match(self, box: Box) -> bool:
+        matched = self._match(box)
+        if not self._inverted:
+            return matched
+
+        return not matched
+
     def force_check(self):
         self.always_check = True
         return self
@@ -226,11 +234,16 @@ class GroupBoxRule:
 
     def __repr__(self) -> str:
         """Short representation of rule instance."""
+        inverted = "_not" if self._inverted else ""
         output = describe_attributes(self, GroupBoxRule.attrs, lambda x: x is not SENTINEL)
         when = describe_attributes(
             self, ["screen", "focused", "occupied", "urgent", "group_name", "func"], filter_attrs
         )
-        return f"<GroupBoxRule format({output}) when({when})>"
+        return f"<GroupBoxRule format({output}) when{inverted}({when})>"
+
+    def __invert__(self):
+        self._inverted = not self._inverted
+        return self
 
 
 class Box:
@@ -240,7 +253,7 @@ class Box:
     fontshadow: bool | None
     markup: bool
     padding_x: int
-    paddint_y: int
+    padding_y: int
     rules: list[GroupBoxRule]
     margin_x: int
     margin_y: int
@@ -386,7 +399,10 @@ class Box:
             return False
 
         if scale:
-            img.resize(height=self.bar.height - 2 * self.margin_y)
+            if self.horizontal:
+                img.resize(height=self.bar.height - 2 * self.margin_y)
+            else:
+                img.resize(width=self.bar.width - 2 * self.margin_x)
         IMAGE_CACHE[filename] = img
 
         return True
@@ -401,6 +417,10 @@ class Box:
     @property
     def rule_attrs(self) -> list[str]:
         return GroupBoxRule.attrs
+
+    @property
+    def horizontal(self) -> bool:
+        return self.bar.horizontal
 
     def _reset_format(self) -> None:
         """Clears all formatting for the box."""
@@ -424,6 +444,9 @@ class Box:
         del self.layout.width
         self.layout.text = self.text
 
+        if not self.horizontal:
+            self.layout.width = self.bar.width
+
         if self.visible is False:
             return 0
 
@@ -431,9 +454,23 @@ class Box:
             return self.box_size
 
         elif self.image and self.image in IMAGE_CACHE:
-            return IMAGE_CACHE[self.image].width + 2 * self.margin_x
+            if self.horizontal:
+                return IMAGE_CACHE[self.image].width + 2 * self.margin_x
+            else:
+                return IMAGE_CACHE[self.image].height + 2 * self.margin_y
 
-        return self.layout.width + 2 * self.padding_x
+        if self.horizontal:
+            return self.layout.width + 2 * self.padding_x
+        else:
+            return self.layout.height + 2 * self.padding_y
+
+    @property
+    def bottom(self):
+        return self.bar.height if self.horizontal else self.size
+
+    @property
+    def right(self):
+        return self.size if self.horizontal else self.bar.width
 
     @property
     def has_block(self) -> bool:
@@ -454,8 +491,8 @@ class Box:
             ctx.rectangle(
                 self.margin_x,
                 self.margin_y,
-                self.size - 2 * self.margin_x,
-                self.bar.height - 2 * self.margin_y,
+                (self.size if self.horizontal else self.bar.width) - 2 * self.margin_x,
+                (self.bar.height if self.horizontal else self.size) - 2 * self.margin_y,
             )
 
         # If not, we need to do rounded corers
@@ -468,8 +505,8 @@ class Box:
             delta = radius + 1
             x = self.margin_x
             y = self.margin_y
-            width = self.size - 2 * self.margin_x
-            height = self.bar.height - 2 * self.margin_y
+            width = (self.size if self.horizontal else self.bar.width) - 2 * self.margin_x
+            height = (self.bar.height if self.horizontal else self.size) - 2 * self.margin_y
             ctx.arc(x + width - delta, y + delta, radius, -90 * degrees, 0 * degrees)
             ctx.arc(x + width - delta, y + height - delta, radius, 0 * degrees, 90 * degrees)
             ctx.arc(x + delta, y + height - delta, radius, 90 * degrees, 180 * degrees)
@@ -499,10 +536,10 @@ class Box:
         """
         if vertical:
             start = (offset, 0)
-            end = (0, self.bar.height)
+            end = (0, self.bottom)
         else:
             start = (0, offset)
-            end = (self.size, 0)
+            end = (self.right, 0)
 
         ctx = self.drawer.ctx
         ctx.save()
@@ -523,13 +560,13 @@ class Box:
             self._draw_line(line_width // 2)
 
         if self.line_position & LinePosition.BOTTOM:
-            self._draw_line(self.bar.height - line_width // 2)
+            self._draw_line(self.bottom - line_width // 2)
 
         if self.line_position & LinePosition.LEFT:
             self._draw_line(line_width // 2, vertical=True)
 
         if self.line_position & LinePosition.RIGHT:
-            self._draw_line(self.size - line_width // 2, vertical=True)
+            self._draw_line(self.right - line_width // 2, vertical=True)
 
     def draw_image(self) -> None:
         """Draws the image, offset by margin_x and margin_y."""
@@ -542,7 +579,10 @@ class Box:
 
         ctx = self.drawer.ctx
         ctx.save()
-        ctx.translate((self.size - img.width) // 2, self.margin_y)
+        if self.horizontal:
+            ctx.translate((self.size - img.width) // 2, self.margin_y)
+        else:
+            ctx.translate(self.margin_x, (self.size - img.height) // 2)
         ctx.set_source(img.pattern)
         ctx.paint()
         ctx.restore()
@@ -550,13 +590,16 @@ class Box:
     def draw_text(self) -> None:
         """Draws text, centered vertically."""
         self.layout.colour = self.text_colour
-        self.layout.draw(self.padding_x, (self.bar.height - self.layout.height) // 2)
+        if self.horizontal:
+            self.layout.draw(self.padding_x, (self.bar.height - self.layout.height) // 2)
+        else:
+            self.layout.draw(0, self.padding_y)
 
     def draw(self, offset) -> None:
         """Main method to draw all formatting."""
         self.drawer.ctx.save()
 
-        self.drawer.ctx.translate(offset, 0)
+        self.drawer.ctx.translate(*offset)
 
         if self.has_block:
             self.draw_block()
@@ -609,6 +652,10 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
     * Whether the group has any urgent windows - boolean True/False
     * Whether the group name matches a given string
     * Whether a user-defined function returns True
+
+    Rules can be inverted by using the ``~`` operator. For example, to apply to rule when the group is not
+    on the current screen, you can write ``~GroupBoxRule(text_colour="888").when(screen=GroupBoxRule.SCREEN_THIS)``.
+    This is expected to be of limited use but may provide finer control in some circumstances.
 
     Rules are only rechecked when there a change to one of the following properties of the groups:
 
@@ -828,7 +875,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
 
     _experimental = True
 
-    orientations = base.ORIENTATION_HORIZONTAL
+    orientations = base.ORIENTATION_BOTH
 
     defaults: list[tuple[str, Any, str]] = [
         (
@@ -932,6 +979,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
             "fontshadow",
             "markup",
             "padding_x",
+            "padding_y",
             "rules",
             "margin_x",
             "margin_y",
@@ -946,7 +994,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
         for box in self.boxes:
             if box.visible is False:
                 continue
-            box.draw(offset)
+            box.draw((offset, 0) if self.bar.horizontal else (0, offset))
             offset += box.size
 
         self.drawer.draw(
@@ -954,7 +1002,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
         )
 
     def button_press(self, x, y, button):
-        self.click_pos = x
+        self.click_pos = x, y
         base._Widget.button_press(self, x, y, button)
 
     def get_clicked_group(self):
@@ -962,7 +1010,9 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
         offset = 0
         for box in self.boxes:
             offset += box.size
-            if self.click_pos <= offset:
+            if (self.bar.horizontal and self.click_pos[0] <= offset) or (
+                not self.bar.horizontal and self.click_pos[1] <= offset
+            ):
                 group = box.group
                 break
         return group
