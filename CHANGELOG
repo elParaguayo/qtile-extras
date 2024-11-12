@@ -1,3 +1,4 @@
+2024-11-14: [FEATURE] Enable support for vertical bars for `GroupBox2`
 2024-11-03: [FEATURE] Add `ImageDecoration` for widgets
 2024-10-19: [RELEASE] v0.29.0 release - compatible with qtile 0.29.0
 2024-08-23: [FEATURE] Add `GradientDecoration` for widgets
