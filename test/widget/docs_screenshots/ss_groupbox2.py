@@ -20,6 +20,7 @@
 import pytest
 
 from qtile_extras.widget.groupbox2 import GroupBox2, GroupBoxRule
+from test.widget.docs_screenshots.conftest import vertical_bar, widget_config
 
 
 @pytest.fixture
@@ -55,8 +56,7 @@ def set_label(rule, box):
     return True
 
 
-@pytest.mark.parametrize(
-    "screenshot_manager",
+@widget_config(
     [
         {},
         {"visible_groups": ["1", "2", "3", "4"]},
@@ -97,10 +97,35 @@ def set_label(rule, box):
                 GroupBoxRule(text_colour="999999"),
             ],
         },
-    ],
-    indirect=True,
+    ]
 )
 def ss_groupbox2(screenshot_manager):
+    screenshot_manager.test_window("one")
+    screenshot_manager.c.window.togroup("3")
+    screenshot_manager.take_screenshot()
+
+
+@widget_config(
+    [
+        {
+            "padding_y": 5,
+            "rules": [
+                GroupBoxRule(
+                    line_colour="00ffff",
+                    line_position=GroupBoxRule.LINE_RIGHT,
+                ).when(screen=GroupBoxRule.SCREEN_THIS),
+                GroupBoxRule(
+                    line_colour="009999",
+                    line_position=GroupBoxRule.LINE_LEFT,
+                ).when(screen=GroupBoxRule.SCREEN_OTHER),
+                GroupBoxRule(text_colour="ffffff").when(occupied=True),
+                GroupBoxRule(text_colour="999999").when(occupied=False),
+            ],
+        },
+    ]
+)
+@vertical_bar
+def ss_groupbox2_vertical(screenshot_manager):
     screenshot_manager.test_window("one")
     screenshot_manager.c.window.togroup("3")
     screenshot_manager.take_screenshot()
