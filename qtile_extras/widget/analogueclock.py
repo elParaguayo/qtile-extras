@@ -62,22 +62,19 @@ class AnalogueClock(base._Widget):
         ("adjust_y", 0, "Adjust the y position of the widget"),
     ]
 
-    _screenshots = [
-        ("analogue_clock1.png", "Default config"),
-        ("analogue_clock2.png", "With square clock face"),
-    ]
-
     def __init__(self, **config):
         base._Widget.__init__(self, 0, **config)
         self.add_defaults(AnalogueClock.defaults)
         self.hours = self.minutes = self.seconds = 0
+        self.clock_size = 0
         self.clock_string = ""
         self.previous_clock = ""
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
         self.drawer.ctx.set_antialias(cairocffi.ANTIALIAS_NONE)
-        self.length = self.bar.size + 2 * (self.padding - self.margin)
+        self.clock_size = self.bar.size - 2 * self.margin
+        self.length = self.clock_size + 2 * (self.padding + self.margin)
 
         if self.face_shape not in ["square", "circle", None]:
             logger.warning("Unknown clock face shape. Setting to None.")
@@ -101,28 +98,28 @@ class AnalogueClock(base._Widget):
     def _draw_hand(self, angle, thickness, length, colour):
         self.drawer.ctx.save()
         self.drawer.ctx.translate(
-            self.bar.size // 2 + self.padding + self.adjust_x - self.margin,
+            self.clock_size // 2 + self.padding + self.adjust_x + self.margin,
             self.bar.size // 2 + thickness // 2 + self.adjust_y,
         )
         self.drawer.ctx.rotate(angle)
         self.drawer.set_source_rgb(colour)
         self.drawer.ctx.set_line_width(thickness)
         self.drawer.ctx.move_to(0, 0)
-        self.drawer.ctx.line_to((self.bar.size // 2 - self.margin) * length, 0)
+        self.drawer.ctx.line_to((self.clock_size // 2) * length, 0)
         self.drawer.ctx.stroke()
         self.drawer.ctx.restore()
 
     def draw_face(self):
         if self.face_shape == "square":
             self.drawer.ctx.rectangle(
-                self.padding + self.margin + self.adjust_x,
-                self.margin + self.adjust_y,
-                self.bar.size - 2 * self.margin,
-                self.bar.size - 2 * self.margin,
+                self.padding + self.margin + self.adjust_x - self.face_border_width // 2,
+                self.margin + self.adjust_y - self.face_border_width // 2,
+                self.clock_size,
+                self.clock_size,
             )
         else:
             self.drawer.ctx.arc(
-                self.bar.size // 2 + self.padding + self.adjust_x - self.margin,
+                self.clock_size // 2 + self.padding + self.margin + self.adjust_x,
                 self.bar.size // 2 + self.adjust_y,
                 self.bar.size // 2 - self.margin - self.face_border_width,
                 0,
