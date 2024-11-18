@@ -66,8 +66,6 @@ class SnapCast(base._Widget):
         ),
     ]
 
-    _screenshots = [("snapcast.png", "Snapclient active running in background")]
-
     _dependencies = ["requests"]
 
     def __init__(self, **config):
@@ -188,7 +186,7 @@ class SnapCast(base._Widget):
         self.drawer.clear(self.background or self.bar.background)
 
         offsety = (self.bar.height - self.img.height) // 2
-        self.img.draw(colour=self.status_colour, y=offsety)
+        self.img.draw(colour=self.status_colour, x=self.padding, y=offsety)
         self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
 
     def finalize(self):
