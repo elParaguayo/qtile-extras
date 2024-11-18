@@ -66,8 +66,6 @@ class GithubNotifications(base._Widget):
         ("update_interval", 150, "Number of seconds before checking status."),
     ]
 
-    _screenshots = [("github_notifications.png", "")]
-
     _dependencies = ["requests"]
 
     _hooks = [h.name for h in hook.githubnotifications_hooks]
