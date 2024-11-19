@@ -216,19 +216,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         ),
     ]  # type: list[tuple[str, Any, str]]
 
-    _screenshots = [
-        (
-            "livefootballscores.gif",
-            "The different screens show: live score, elapsed time, "
-            "home and away goalscorers and competition name. In "
-            "addition, the amount of text shown can be customised by "
-            "using python's string formatting techniques e.g. the "
-            "default line ``{H:.3} {h}-{a} {A:.3}`` shows the first 3 "
-            "letters of team names rather than the full name as "
-            "shown above.",
-        ),
-    ]
-
     _dependencies = ["requests"]
     _queue_time = 1
     _hooks = [h.name for h in hook.footballscores_hooks]
