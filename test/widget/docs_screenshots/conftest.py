@@ -29,6 +29,8 @@ from libqtile.bar import Bar
 from libqtile.command.base import expose_command
 from libqtile.config import Group, Screen
 
+from qtile_extras.popup.toolkit import _PopupLayout
+
 
 @pytest.fixture(scope="function")
 def vertical(request):
@@ -61,7 +63,10 @@ def target():
         nonlocal key
 
         # Convert config into a string of key=value
-        entry = ", ".join(f"{k}={repr(v)}" for k, v in config.items())
+        if isinstance(config, dict):
+            entry = ", ".join(f"{k}={repr(v)}" for k, v in config.items())
+        else:
+            entry = config
 
         # Check if widget is in the key dict
         if w_name not in key:
@@ -148,6 +153,51 @@ def screenshot_manager(widget, request, manager_nospawn, minimal_conf_noscreen, 
 
             dest.write_to_png(target)
 
+        @expose_command()
+        def take_screenshot_with_popup(self, target):
+            if not self.configured:
+                return
+
+            # Check if we have an active popup
+            popup = getattr(self, "popup", None)
+            menu = getattr(self, "menu", None)
+            win = popup if popup else menu
+            if win is None:
+                return
+
+            width = max(self.width, win.width)
+            height = self.height + win.height
+
+            if isinstance(win, _PopupLayout):
+                win = win.popup
+
+            dest = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, width, height)
+            with cairocffi.Context(dest) as ctx:
+                ctx.set_source_surface(self.drawer.last_surface)
+                ctx.paint()
+                ctx.translate(win.x, win.y)
+                ctx.set_source_surface(win.drawer._xcb_surface)
+                ctx.paint()
+
+            dest.write_to_png(target)
+
+        @expose_command()
+        def take_extended_popup_screenshot(self, target):
+            if not self.configured:
+                return
+
+            # Check if we have an active popup
+            popup = getattr(self, "extended_popup")
+            if popup is None:
+                return
+
+            dest = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, popup.width, popup.height)
+            with cairocffi.Context(dest) as ctx:
+                ctx.set_source_surface(popup.popup.drawer._xcb_surface)
+                ctx.paint()
+
+            dest.write_to_png(target)
+
     class ScreenshotBar(Bar):
         def _configure(self, qtile, screen, **kwargs):
             Bar._configure(self, qtile, screen, **kwargs)
@@ -194,8 +244,8 @@ def screenshot_manager(widget, request, manager_nospawn, minimal_conf_noscreen, 
     name = wdgt.name
 
     # Create a function to generate filename
-    def filename():
-        return target(name, config)
+    def filename(caption=None):
+        return target(name, caption if caption else config)
 
     # define bars
     position = "left" if vertical else "top"
@@ -214,7 +264,15 @@ def screenshot_manager(widget, request, manager_nospawn, minimal_conf_noscreen, 
     # Add some convenience attributes for taking screenshots
     manager_nospawn.target = filename
     ss_widget = manager_nospawn.c.widget[name]
-    manager_nospawn.take_screenshot = lambda f=filename: ss_widget.take_screenshot(f())
+    manager_nospawn.take_screenshot = lambda f=filename, caption=None: ss_widget.take_screenshot(
+        f(caption)
+    )
+    manager_nospawn.take_popup_screenshot = (
+        lambda f=filename, caption=None: ss_widget.take_screenshot_with_popup(f(caption))
+    )
+    manager_nospawn.take_extended_popup_screenshot = (
+        lambda f=filename, caption=None: ss_widget.take_extended_popup_screenshot(f(caption))
+    )
 
     yield manager_nospawn
 
