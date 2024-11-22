@@ -160,8 +160,6 @@ class TVHWidget(base._Widget, base.MarginMixin):
         ),
     ]
 
-    _screenshots = [("tvh_widget.gif", "")]
-
     _dependencies = ["requests"]
 
     _hooks = [h.name for h in hook.tvh_hooks]
