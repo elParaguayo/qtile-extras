@@ -43,10 +43,6 @@ class CurrentLayoutIcon(LayoutIcon):
         )
     ]
 
-    _screenshots = [
-        ("currentlayouticon.png", "You can use a single colour or a list of colours.")
-    ]
-
     def __init__(self, **config):
         LayoutIcon.__init__(self, **config)
         self.add_defaults(CurrentLayoutIcon.defaults)
