@@ -27,9 +27,11 @@ import cairocffi
 import pytest
 from libqtile.bar import Bar
 from libqtile.command.base import expose_command
-from libqtile.config import Group, Screen
+from libqtile.config import Group, Key, Screen
+from libqtile.lazy import lazy
 
 from qtile_extras.popup.toolkit import _PopupLayout
+from test.helpers import DBusPopup, Retry
 
 
 @pytest.fixture(scope="function")
@@ -38,6 +40,22 @@ def vertical(request):
 
 
 vertical_bar = pytest.mark.parametrize("vertical", [True], indirect=True)
+
+
+@pytest.fixture(scope="function")
+def sni(request):
+    yield getattr(request, "param", False)
+
+
+statusnotifier = pytest.mark.parametrize("sni", [True], indirect=True)
+
+
+@pytest.fixture(scope="function")
+def gm(request):
+    yield getattr(request, "param", False)
+
+
+globalmenu = pytest.mark.parametrize("gm", [True], indirect=True)
 
 
 @pytest.fixture(scope="session")
@@ -106,7 +124,9 @@ def target():
 
 
 @pytest.fixture
-def screenshot_manager(widget, request, manager_nospawn, minimal_conf_noscreen, target, vertical):
+def screenshot_manager(
+    widget, request, manager_nospawn, minimal_conf_noscreen, target, vertical, sni, gm
+):
     """
     Create a manager instance for the screenshots. Individual "tests" should only call
     `screenshot_manager.take_screenshot()` but the destination path is also available in
@@ -258,8 +278,37 @@ def screenshot_manager(widget, request, manager_nospawn, minimal_conf_noscreen, 
         Screen(**bar1, x=0, y=0, width=300, height=300),
         Screen(**bar2, x=0, y=300, width=300, height=300),
     ]
+    minimal_conf_noscreen.enable_sni = sni
+    minimal_conf_noscreen.enable_global_menu = gm
+
+    if sni or gm:
+
+        def start_dbus(qtile):
+            dbus_window = DBusPopup(
+                qtile=qtile,
+                width=1,
+                height=1,
+                x=-1,
+                y=-1,
+                # controls=[PopupText(text="Started", x=0, y=0, width=1, height=0.2, name="textbox")],
+            )
+
+            dbus_window.show()
+
+        minimal_conf_noscreen.keys = [Key(["mod4"], "m", lazy.function(start_dbus))]
+
+        request.getfixturevalue("dbus")  # Start dbus
 
     manager_nospawn.start(minimal_conf_noscreen)
+
+    if sni or gm:
+        manager_nospawn.c.simulate_keypress(["mod4"], "m")
+
+        @Retry(ignore_exceptions=(AssertionError,))
+        def wait_for_popup():
+            assert len(manager_nospawn.c.internal_windows()) == 3
+
+        wait_for_popup()
 
     # Add some convenience attributes for taking screenshots
     manager_nospawn.target = filename
