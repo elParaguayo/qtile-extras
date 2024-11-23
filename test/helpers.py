@@ -34,6 +34,8 @@ from libqtile.utils import create_task
 
 from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText
 
+ICON = Path(__file__).parent / "resources" / "qtile.rgba"
+
 # the sizes for outputs
 WIDTH = 800
 HEIGHT = 600
@@ -575,6 +577,17 @@ class SNItem(ServiceInterface):
         self.popup = popup
         self.servicename = name
 
+        with open(ICON, "rb") as f:
+            self.icon = f.read()
+
+        arr = bytearray(self.icon)
+        for i in range(0, len(arr), 4):
+            r, g, b, a = arr[i : i + 4]
+            arr[i] = a
+            arr[i + 1 : i + 4] = bytearray([r, g, b])
+
+        self.icon = bytes(arr)
+
     @method()
     def Activate(self, x: "i", y: "i"):  # noqa: F821, N802
         self.popup.update_controls(textbox="Activated")
@@ -585,7 +598,7 @@ class SNItem(ServiceInterface):
 
     @dbus_property(PropertyAccess.READ)
     def IconPixmap(self) -> "a(iiay)":  # noqa: F821, N802
-        return [[32, 32, bytes([100] * (32 * 32 * 4))]]
+        return [[32, 32, self.icon]]
 
     @dbus_property(PropertyAccess.READ)
     def AttentionIconPixmap(self) -> "a(iiay)":  # noqa: F821, N802
