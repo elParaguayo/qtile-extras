@@ -73,7 +73,7 @@ class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):
 
     _experimental = True
 
-    _dependencies = ["dbus-next", "xdg"]
+    _dependencies = ["dbus-fast", "xdg"]
 
     _screenshots = [("statusnotifier.png", "Widget showing Remmina icon and context menu.")]
 

@@ -51,7 +51,7 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
         ("padding", 3, "Padding between items in menu bar"),
     ]  # type: list[tuple[str, Any, str]]
 
-    _dependencies = ["dbus-next"]
+    _dependencies = ["dbus-fast"]
 
     _screenshots = [("globalmenu.png", "Showing VLC menu in the bar.")]
 

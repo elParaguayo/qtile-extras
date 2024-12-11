@@ -12,9 +12,9 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
-from dbus_next.aio import MessageBus
-from dbus_next.constants import PropertyAccess
-from dbus_next.service import ServiceInterface, dbus_property, method
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import PropertyAccess
+from dbus_fast.service import ServiceInterface, dbus_property, method
 
 
 @pytest.fixture(scope="function")
