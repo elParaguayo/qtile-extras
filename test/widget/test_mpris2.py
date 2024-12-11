@@ -29,9 +29,9 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
+from dbus_fast import Variant
 from dbus_fast.aio import MessageBus
 from dbus_fast.constants import PropertyAccess
-from dbus_fast.message import Variant
 from dbus_fast.service import ServiceInterface, dbus_property, method
 
 import qtile_extras.widget.mpris2widget as mp

@@ -27,9 +27,8 @@ from threading import Thread
 
 import pytest
 from dbus_fast import Variant
-from dbus_fast._private.address import get_session_bus_address
 from dbus_fast.aio import MessageBus
-from dbus_fast.constants import PropertyAccess
+from dbus_fast.constants import BusType, PropertyAccess
 from dbus_fast.service import ServiceInterface, dbus_property, method
 from libqtile.bar import Bar
 from libqtile.config import Screen
@@ -45,6 +44,11 @@ from qtile_extras.widget.iwd import (
 )
 from test.conftest import BareConfig
 from test.helpers import Retry
+
+
+class ForceSessionBusType:
+    SESSION = BusType.SESSION
+    SYSTEM = BusType.SESSION
 
 
 class Device(ServiceInterface):
@@ -241,12 +245,8 @@ def dbus_thread(monkeypatch):
 @pytest.fixture
 def widget(monkeypatch):
     """Patch the widget to use the fake dbus service."""
-
-    def force_session_bus(bus_type):
-        return get_session_bus_address()
-
     # Make dbus_fast always return the session bus address even if system bus is requested
-    monkeypatch.setattr("dbus_fast.message_bus.get_bus_address", force_session_bus)
+    monkeypatch.setattr("qtile_extras.widget.iwd.BusType", ForceSessionBusType)
 
     yield IWD
 
