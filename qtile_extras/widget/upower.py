@@ -21,8 +21,8 @@
 import asyncio
 from enum import Enum, auto
 
-from dbus_next.aio import MessageBus
-from dbus_next.constants import BusType
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import BusType
 from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.widget import base
@@ -101,7 +101,7 @@ class UPowerWidget(base._Widget):
         ("battery_textdisplay.gif", "Showing text"),
     ]
 
-    _dependencies = ["dbus-next"]
+    _dependencies = ["dbus-fast"]
 
     _hooks = [h.name for h in hook.upower_hooks]
 

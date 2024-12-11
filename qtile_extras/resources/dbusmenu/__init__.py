@@ -24,9 +24,9 @@ import time
 from functools import partial
 from typing import TYPE_CHECKING
 
-from dbus_next import InterfaceNotFoundError, InvalidIntrospectionError, Variant
-from dbus_next.aio import MessageBus
-from dbus_next.errors import DBusError
+from dbus_fast import InterfaceNotFoundError, InvalidIntrospectionError, Variant
+from dbus_fast.aio import MessageBus
+from dbus_fast.errors import DBusError
 from libqtile.log_utils import logger
 
 from qtile_extras.resources.dbusmenu.dbusmenu import DBUS_MENU_SPEC

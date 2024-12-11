@@ -1,3 +1,4 @@
+2024-12-11: [BREAKING CHANGE] `dbus-next` dependency has been replaced with `dbus-fast`. Update to latest qtile is also required.
 2024-11-18: [BUGFIX] Fix square border for `AnalogueClock`
 2024-11-14: [FEATURE] Enable support for vertical bars for `GroupBox2`
 2024-11-03: [FEATURE] Add `ImageDecoration` for widgets
