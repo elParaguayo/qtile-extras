@@ -23,8 +23,8 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
-from dbus_next import Variant
-from dbus_next.constants import BusType
+from dbus_fast import Variant
+from dbus_fast.constants import BusType
 from libqtile.log_utils import init_log
 from libqtile.widget import base
 

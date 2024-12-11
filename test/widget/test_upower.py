@@ -27,7 +27,7 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
-from dbus_next.constants import BusType
+from dbus_fast.constants import BusType
 
 from qtile_extras.widget.upower import UPowerWidget
 from test.helpers import Retry  # noqa: I001
