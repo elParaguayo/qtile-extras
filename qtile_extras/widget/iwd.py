@@ -21,10 +21,10 @@ import asyncio
 import contextlib
 import shutil
 
-from dbus_next.aio import MessageBus
-from dbus_next.constants import BusType
-from dbus_next.errors import DBusError, InterfaceNotFoundError
-from dbus_next.service import ServiceInterface, method
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import BusType
+from dbus_fast.errors import DBusError, InterfaceNotFoundError
+from dbus_fast.service import ServiceInterface, method
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.utils import create_task

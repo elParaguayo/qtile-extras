@@ -23,8 +23,8 @@
 import asyncio
 import math
 
-from dbus_next.aio import MessageBus
-from dbus_next.constants import BusType
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import BusType
 from libqtile import bar
 from libqtile.log_utils import logger
 from libqtile.widget import base
@@ -75,7 +75,7 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
 
     _screenshots = [("widget-unitstatus-screenshot.png", "")]
 
-    _dependencies = ["dbus-next"]
+    _dependencies = ["dbus-fast"]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)

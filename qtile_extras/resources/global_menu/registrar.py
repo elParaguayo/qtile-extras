@@ -24,10 +24,10 @@ import pickle
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dbus_next import Message
-from dbus_next.aio import MessageBus
-from dbus_next.constants import MessageType, PropertyAccess
-from dbus_next.service import ServiceInterface, dbus_property, method, signal
+from dbus_fast import Message
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import MessageType, PropertyAccess
+from dbus_fast.service import ServiceInterface, dbus_property, method, signal
 from libqtile.core.lifecycle import lifecycle
 from libqtile.log_utils import logger
 from libqtile.utils import create_task
@@ -126,7 +126,7 @@ class GlobalMenuRegistrar(ServiceInterface):  # noqa: E303
         # This is silly, the spec says that apps should only provide
         # windowId and menuObjectPath but we need to be able to return
         # the host service too but this isn't explicityly provided
-        # and dbus-next's high-level service doesn't expose this part of
+        # and dbus-fast's high-level service doesn't expose this part of
         # the message. So... we expose the method here but don't do anything
         # with it. We actually deal with the call in a low-level message
         # handler, self._message_handler.

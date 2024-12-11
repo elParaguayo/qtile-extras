@@ -23,7 +23,7 @@ import libqtile.config
 import libqtile.confreader
 import libqtile.layout
 import pytest
-from dbus_next.errors import InterfaceNotFoundError, InvalidIntrospectionError
+from dbus_fast.errors import InterfaceNotFoundError, InvalidIntrospectionError
 from libqtile.log_utils import init_log
 
 import qtile_extras.resources.dbusmenu

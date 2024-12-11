@@ -19,11 +19,11 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
-from dbus_next import Message, Variant
-from dbus_next.aio import MessageBus
-from dbus_next.constants import MessageType, PropertyAccess
-from dbus_next.service import ServiceInterface, dbus_property, method
-from dbus_next.service import signal as dbus_signal
+from dbus_fast import Message, Variant
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import MessageType, PropertyAccess
+from dbus_fast.service import ServiceInterface, dbus_property, method
+from dbus_fast.service import signal as dbus_signal
 from libqtile import command, config, ipc, layout
 from libqtile.confreader import Config
 from libqtile.core.manager import Qtile

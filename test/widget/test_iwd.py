@@ -26,11 +26,11 @@ import time
 from threading import Thread
 
 import pytest
-from dbus_next import Variant
-from dbus_next._private.address import get_session_bus_address
-from dbus_next.aio import MessageBus
-from dbus_next.constants import PropertyAccess
-from dbus_next.service import ServiceInterface, dbus_property, method
+from dbus_fast import Variant
+from dbus_fast._private.address import get_session_bus_address
+from dbus_fast.aio import MessageBus
+from dbus_fast.constants import PropertyAccess
+from dbus_fast.service import ServiceInterface, dbus_property, method
 from libqtile.bar import Bar
 from libqtile.config import Screen
 
@@ -176,7 +176,7 @@ class IWDService(Thread):
             Network(connected=True, name="qtile_extras", known=known_network, network_type="psk"),
         )
 
-        # We need to include a known network path here otherwise dbus_next will spit out an error about an
+        # We need to include a known network path here otherwise dbus_fast will spit out an error about an
         # invalid path (according to spec, empty strings are not allowed...)
         bus.export(open_network, Network(name="open_network", network_type="open", known="/"))
         bus.export(eap_network, Network(name="8021x_network", network_type="8021x", known="/"))
@@ -245,8 +245,8 @@ def widget(monkeypatch):
     def force_session_bus(bus_type):
         return get_session_bus_address()
 
-    # Make dbus_next always return the session bus address even if system bus is requested
-    monkeypatch.setattr("dbus_next.message_bus.get_bus_address", force_session_bus)
+    # Make dbus_fast always return the session bus address even if system bus is requested
+    monkeypatch.setattr("dbus_fast.message_bus.get_bus_address", force_session_bus)
 
     yield IWD
 
