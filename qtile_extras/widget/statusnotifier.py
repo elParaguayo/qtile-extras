@@ -23,6 +23,7 @@ import asyncio
 import os
 from typing import TYPE_CHECKING
 
+import cairocffi
 from libqtile.log_utils import logger
 from libqtile.widget.helpers.status_notifier import StatusNotifierItem, host
 from libqtile.widget.statusnotifier import StatusNotifier as QtileStatusNotifier
@@ -77,6 +78,11 @@ class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):
 
     _screenshots = [("statusnotifier.png", "Widget showing Remmina icon and context menu.")]
 
+    defaults = [
+        ("mask", False, "Use icon as mask. Use 'foreground' to set icon colour."),
+        ("foreground", "fff", "Colour for masked icons"),
+    ]
+
     def __init__(self, **config):
         QtileStatusNotifier.__init__(self, **config)
         self.add_defaults(DbusMenuMixin.defaults)
@@ -109,3 +115,20 @@ class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):
         if not self.selected_item:
             return
         self.selected_item.get_menu(callback=self.display_menu)
+
+    def _draw_icon(self, icon, x, y):
+        ctx = self.drawer.ctx
+        ctx.save()
+
+        if self.mask:
+            ctx.translate(x, y)
+            self.drawer.set_source_rgb(self.foreground)
+            ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+            ctx.mask(cairocffi.SurfacePattern(icon))
+            ctx.fill()
+
+        else:
+            ctx.set_source_surface(icon, x, y)
+            ctx.paint()
+
+        ctx.restore()
