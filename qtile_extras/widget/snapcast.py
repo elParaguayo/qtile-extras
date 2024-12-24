@@ -22,13 +22,12 @@ import shlex
 import subprocess
 from pathlib import Path
 
-import requests
 from libqtile import bar
 from libqtile.command.base import expose_command
-from libqtile.log_utils import logger
 from libqtile.widget import base
 
 from qtile_extras.images import ImgMask
+from qtile_extras.resources.snapcast import SnapControl, SnapMprisPlayer
 
 SNAPCAST_ICON = Path(__file__).parent / ".." / "resources" / "snapcast-icons" / "snapcast.svg"
 
@@ -48,6 +47,8 @@ class SnapCast(base._Widget):
     defaults = [
         ("client_name", None, "Client name (as recognised by server)."),
         ("server_address", "localhost", "Name or IP address of server."),
+        ("server_port", 1780, "Port the snapserver is running on"),
+        ("enable_mpris2", False, "Broadcast metadata on Mpris2 interface"),
         ("snapclient", "/usr/bin/snapclient", "Path to snapclient"),
         ("options", "", "Options to be passed to snapclient."),
         ("icon_size", None, "Icon size. None = autofit."),
@@ -66,7 +67,7 @@ class SnapCast(base._Widget):
         ),
     ]
 
-    _dependencies = ["requests"]
+    _dependencies = ["requests", "websockets"]
 
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
@@ -92,6 +93,39 @@ class SnapCast(base._Widget):
         self._url = f"http://{self.server_address}:1780/jsonrpc"
         self.timeout_add(1, self._check_server)
 
+    async def _config_async(self):
+        self.control = SnapControl("192.168.1.100", 1780)
+        self.control.subscribe(self._on_message)
+        await self.control.start()
+        if self.enable_mpris2:
+            self.mpris = SnapMprisPlayer(
+                "org.mpris.MediaPlayer2.QtileSnapcastWidget", self.control, self
+            )
+            await self.mpris.start()
+
+    def _on_message(self, message):
+        if "method" not in message:
+            return
+
+        params = message["params"]
+
+        match message["method"]:
+            case "Client.OnConnect":
+                self.on_connect(params)
+            case "Client.OnDisconnect":
+                self.on_disconnect(params)
+            case _:
+                pass
+
+    def on_connect(self, params):
+        if params["client"]["host"]["name"] == self.client_name:
+            self.client_id = params["client"]["id"]
+            self._check_server()
+
+    def on_disconnect(self, params):
+        if params["client"]["host"]["name"] == self.client_name:
+            self.client_id = None
+
     def _load_icon(self):
         self.img = ImgMask.from_path(SNAPCAST_ICON)
         self.img.attach_drawer(self.drawer)
@@ -104,50 +138,27 @@ class SnapCast(base._Widget):
         self.img.resize(size)
         self.icon_size = self.img.width
 
-    def _send_request(self, method, params=dict()):
-        self._id += 1
-        data = {"id": self._id, "jsonrpc": "2.0", "method": method}
-        if params:
-            data["params"] = params
-
-        try:
-            r = requests.post(self._url, json=data)
-        except (requests.ConnectionError, requests.Timeout):
-            return False
-
-        if not r.status_code == 200:
-            logger.warning("Unable to connect to snapcast server.")
-            return {}
-
-        return r.json()
-
     def _find_id(self, status):
-        self.client_id = None
         self.current_group = {}
-        for group in status["result"]["server"]["groups"]:
+        for group in status["server"]["groups"]:
             for client in group.get("clients", list()):
                 if client["host"]["name"] == self.client_name:
                     self.client_id = client["id"]
                     self.current_group = {group["name"]: group["id"]}
 
     def _check_server(self):
-        future = self.qtile.run_in_executor(self._get_data)
-        future.add_done_callback(self._check_response)
-
-    def _get_data(self):
-        return self._send_request(SERVER_STATUS)
+        self.control.send(SERVER_STATUS, callback=self._check_response)
 
     def _check_response(self, reply):
-        status = reply.result()
-
-        if not status:
+        if not reply:
             self.streams = []
             self.timeout_add(self.server_reconnect_interval, self._check_server)
             return
 
-        self._find_id(status)
+        if self.client_id is None:
+            self._find_id(reply)
 
-        self.streams = [x["id"] for x in status["result"]["server"]["streams"]]
+        self.streams = [x["id"] for x in reply["server"]["streams"]]
 
     @property
     def status_colour(self):
@@ -174,6 +185,11 @@ class SnapCast(base._Widget):
             self._proc = None
 
         self.draw()
+
+    @expose_command
+    def stop(self):
+        if self._proc:
+            self.toggle_state()
 
     def calculate_length(self):
         if self.img is None:
