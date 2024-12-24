@@ -16,6 +16,8 @@
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+import time
+
 import libqtile.bar
 import libqtile.config
 import libqtile.confreader
@@ -56,12 +58,12 @@ REPLIES = [
                                 "host": {
                                     "arch": "x86_64",
                                     "ip": "127.0.0.1",
-                                    "mac": "00:21:6a:7d:74:fc",
+                                    "mac": "10:20:30:40:50:60",
                                     "name": "T400",
                                     "os": "Linux Mint 17.3 Rosa",
                                 },
-                                "id": "00:21:6a:7d:74:fc#2",
-                                "lastSeen": {"sec": 1488025696, "usec": 578142},
+                                "id": "10:20:30:40:50:60",
+                                "lastSeen": {"sec": int(time.time()) + 1000, "usec": 578142},
                                 "snapclient": {
                                     "name": "Snapclient",
                                     "protocolVersion": 2,
@@ -84,7 +86,7 @@ REPLIES = [
                                     "os": "Linux Mint 17.3 Rosa",
                                 },
                                 "id": "00:21:6a:7d:74:fc",
-                                "lastSeen": {"sec": 1488025696, "usec": 611255},
+                                "lastSeen": {"sec": int(time.time()) + 1000, "usec": 611255},
                                 "snapclient": {
                                     "name": "Snapclient",
                                     "protocolVersion": 2,
@@ -157,43 +159,38 @@ REPLIES = [
 
 @Retry(ignore_exceptions=(AssertionError,))
 def wait_for_poll(manager):
-    _, streams = manager.c.widget["snapcast"].eval("hasattr(self, 'streams')")
+    _, streams = manager.c.widget["snapcast"].eval("len(self.streams) > 0")
     assert streams == "True"
+
+
+async def control_start(self):
+    pass
 
 
 @pytest.fixture
 def response(request):
     param = getattr(request, "param", True)
 
-    def post(*args, **kwargs):
-        class Response:
-            def json(*args, **kwargs):
-                """Quick object to return recording data."""
+    def check_server(self, method, callback=None):
+        if param == ERROR:
+            callback("", "401 Error")
+        else:
+            callback(REPLIES[0]["result"], "")
 
-                return REPLIES[0]
-
-            @property
-            def status_code(self):
-                if param == ERROR:
-                    return 401
-
-                return 200
-
-        return Response()
-
-    yield post
+    yield check_server
 
 
 @pytest.fixture(scope="function")
 def snapcast_manager(response, request, manager_nospawn, monkeypatch):
     # Patch the web request to provide dummy data
-    monkeypatch.setattr("qtile_extras.widget.snapcast.requests.post", response)
+    monkeypatch.setattr("qtile_extras.widget.snapcast.SnapControl.start", control_start)
+    monkeypatch.setattr("qtile_extras.widget.snapcast.SnapControl.send", response)
 
     widget = qtile_extras.widget.snapcast.SnapCast(
         **{
             "snapclient": "/usr/bin/sleep",
             "options": "10",
-            "client_name": "T400",
+            "client_id": "10:20:30:40:50:60",
             "active_colour": COLOUR_ACTIVE,
             "inactive_colour": COLOUR_INACTIVE,
             "error_colour": COLOUR_ERROR,
@@ -235,7 +232,7 @@ def test_snapcast_icon(snapcast_manager, expected):
 
 @pytest.mark.parametrize(
     "snapcast_manager,expected",
-    [({}, COLOUR_ACTIVE), ({"client_name": "T500"}, COLOUR_ERROR)],
+    [({}, COLOUR_ACTIVE), ({"client_id": "11:22:33:44:55:66"}, COLOUR_ERROR)],
     indirect=["snapcast_manager"],
 )
 def test_snapcast_icon_colour(snapcast_manager, expected):
@@ -257,16 +254,22 @@ def test_snapcast_icon_colour(snapcast_manager, expected):
 
 
 @pytest.mark.parametrize("response", [ERROR], indirect=True)
-@pytest.mark.flaky(reruns=5)
 def test_snapcast_http_error(snapcast_manager, logger):
-    wait_for_poll(snapcast_manager)
+    @Retry(ignore_exceptions=(AssertionError,))
+    def wait_for_logs():
+        assert logger.get_records("call")
+
+    wait_for_logs()
     recs = logger.get_records("call")
-    assert recs
     assert recs[0].levelname == "WARNING"
-    assert recs[0].msg == "Unable to connect to snapcast server."
+    assert recs[0].msg == "Error received when checking server status: 401 Error."
 
 
 def test_snapcast_options(fake_qtile, fake_bar):
+    def no_op(*args, **kwargs):
+        pass
+
     snap = qtile_extras.widget.snapcast.SnapCast(options="-s pipewire")
+    snap._config_async = no_op
     snap._configure(fake_qtile, fake_bar)
-    assert snap._cmd == ["/usr/bin/snapclient", "-s", "pipewire"]
+    assert snap._cmd[:3] == ["/usr/bin/snapclient", "-s", "pipewire"]
