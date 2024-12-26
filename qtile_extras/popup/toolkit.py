@@ -909,6 +909,7 @@ class _PopupWidget(configurable.Configurable):
         self.drawer.set_source_rgb(self.highlight)
         self.drawer.ctx.save()
         self.rectangle()
+        self.drawer.ctx.set_line_width(self.highlight_border)
         self.drawer.ctx.stroke()
         self.drawer.ctx.restore()
 
