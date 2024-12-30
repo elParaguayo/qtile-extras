@@ -35,6 +35,7 @@ Currently, the following controls are provided:
 - ``PopupText``: a simple text display object
 - ``PopupImage``: a control to display an image
 - ``PopupSlider``: a control to draw a line which marks a particular value (e.g. volume level)
+- ``PopupCircularProgress``: a control to draw a curved line showing progress etc.
 - ``PopupWidget``: a control to display a Qtile widget in the popup
 
 Configuration options for these controls can be found on
@@ -55,7 +56,7 @@ Below is an example of creating a power menu in your ``config.py``.
 
 .. code:: python
 
-    from qtile_extras.popup.toolkit import (
+    from qtile_extras.popup import (
         PopupRelativeLayout,
         PopupImage,
         PopupText 
@@ -154,7 +155,7 @@ Below is a quick example for displaying a number of graph widgets in a popup:
 .. code:: python
 
     from libqtile import widget
-    from qtile_extras.popup.toolkit import (
+    from qtile_extras.popup import (
         PopupRelativeLayout,
         PopupWidget
     )
@@ -216,7 +217,7 @@ be updated in the same call.
 
 .. code:: python
 
-    from qtile_extras.popup.toolkit import (
+    from qtile_extras.popup import (
         PopupRelativeLayout,
         PopupText
     )
@@ -267,7 +268,7 @@ For example, to make the ``Clock`` widget show the long date when clicked:
     from libqtile import widget
 
     from qtile_extras import widget as extrawidgets
-    from qtile_extras.popup.toolkit import PopupRelativeLayout, PopupText, PopupWidget
+    from qtile_extras.popup import PopupRelativeLayout, PopupText, PopupWidget
     from qtile_extras.widget.mixins import ExtendedPopupMixin
 
 
@@ -322,3 +323,67 @@ For example, to make the ``Clock`` widget show the long date when clicked:
 Putting ``extended_clock`` in your bar and clicking on the clock will give you this:
 
 .. image:: /_static/images/extended_popup_clock.png
+
+
+Building simple text menus
+==========================
+
+The toolkit also contains some basic classes to simplify the creation of text based menus.
+The primary use of these classes is to provide context menus for widgets (e.g. ``StatusNotifier``)
+but they can also be easily incorporated directly in config files.
+
+For example, to recreate the power menu above using text, you could define the following:
+
+.. code:: python
+
+    from libqtile.lazy import lazy
+
+    from qtile_extras.popup import PopupMenu, PopupMenuItem, PopupMenuSeparator
+
+
+    @lazy.function
+    def show_text_power_menu(qtile):
+        items = [
+            PopupMenuItem(text="Power Menu", enabled=False),
+            PopupMenuSeparator(),
+            PopupMenuItem(
+                text="Lock",
+                mouse_callbacks={
+                    "Button1": lazy.spawn("/path/to/lock_cmd")
+                }
+            ),
+            PopupMenuItem(
+                text="Sleep",
+                mouse_callbacks={
+                    "Button1": lazy.spawn("/path/to/lock_cmd")
+                }
+            ),
+            PopupMenuItem(
+                text="Shutdown",
+                highlight="900",
+                mouse_callbacks={
+                    "Button1": lazy.shutdown()
+                }
+            ),
+        ]
+        menu = PopupMenu.generate(qtile, menuitems=items, border_width=2)
+        menu.show(centered=True)
+
+    keys = [
+        ...
+        Key([mod, "shift"], "q", show_text_power_menu)
+        ...
+    ]
+
+Pressing ``Mod + shift + B`` will display the following:
+
+.. image:: /_static/images/text_power_menu.png
+
+Menu items have a default blue/green highlight but this was overriden to show red for
+the shutdown command.
+
+Note that the menu items can be configured individually. Configuration options for the layout
+(border etc.) are passed to the ``generate`` method.
+
+Configuration options for the menu objects can be found on
+:ref:`the reference page <ref-popup-menus>`.
