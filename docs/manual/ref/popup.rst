@@ -33,3 +33,20 @@ and have each of these react to input events or display information dynamically.
     :exclude-base:
     :no-commands:
     :show-config:
+
+
+.. _ref-popup-menus:
+
+Popup Toolkit Menus
+===================
+
+These are basic text menus. The layout is generated automatically and users are only
+required to provide the menu items.
+
+.. qtile_class:: qtile_extras.popup.menu.PopupMenu
+    :methods: generate,from_dbus_menu
+
+.. qtile_class:: qtile_extras.popup.menu.PopupMenuItem
+
+.. qtile_class:: qtile_extras.popup.menu.PopupMenuSeparator
+ 

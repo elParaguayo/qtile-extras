@@ -162,13 +162,13 @@ class PopupMenu(PopupGridLayout):
     A class for creating menus.
 
     The menu should be created via one of two classmethods:
-    `from_dbus_menu` or `generate`. The former accepts a list of
-    `DBusMenuItem` objects and the second accepts a list of
-    `PopupMenuItem` and `PopupMenuSeparator` objects.
+    ``from_dbus_menu`` or ``generate``. The former accepts a list of
+    ``DBusMenuItem`` objects and the second accepts a list of
+    ``PopupMenuItem`` and ``PopupMenuSeparator`` objects.
 
     The menu is created as a PopupGridLayout object. Therefore, if
-    using the `generate` method, object sizes can be changed using
-    the `row_span` attribute. By default, a text item will be twice
+    using the ``generate`` method, object sizes can be changed using
+    the ``row_span`` attribute. By default, a text item will be twice
     the height of a separator.
     """
 
@@ -182,6 +182,12 @@ class PopupMenu(PopupGridLayout):
 
     @classmethod
     def from_dbus_menu(cls, qtile, dbusmenuitems, **config):
+        """
+        Create a ``PopupMenu`` instance a DBus menu.
+
+        The ``dbusmenuitems`` need to be created from ``DBusMenu.parse_menu`` as this
+        will generate the ``DBusMenuItem`` objects needed to create a menu.
+        """
         menuitems = []
         prev_sep = False
 
@@ -227,6 +233,14 @@ class PopupMenu(PopupGridLayout):
 
     @classmethod
     def generate(cls, qtile, menuitems, **config):
+        """
+        Create a ``PopupMenu`` instance from the provided ``menuitems``.
+
+        Users must pass the ``qtile`` instance as well as the list of items.
+
+        ``menuitems`` should be a list of ``PopupMenuItem`` and ``PopupMenuSeparator``
+        instances.
+        """
         row_count = 0
         for item in menuitems:
             item.row = row_count
