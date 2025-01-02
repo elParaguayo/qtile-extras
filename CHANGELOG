@@ -1,3 +1,4 @@
+2025-01-02: [FEATURE] More methods for generating `PopupMenu` objects
 2024-12-26: [BUGFIX] Fix control highlight border in popup toolkit
 2024-12-23: [FEATURE] Add ability to mask icons in `StatusNotifier` widget
 2024-12-11: [BREAKING CHANGE] `dbus-next` dependency has been replaced with `dbus-fast`. Update to latest qtile is also required.
