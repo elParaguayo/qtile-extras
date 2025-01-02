@@ -385,5 +385,61 @@ the shutdown command.
 Note that the menu items can be configured individually. Configuration options for the layout
 (border etc.) are passed to the ``generate`` method.
 
+Alternatively, the ``PopupMenu.make_generators`` method can be used to apply a config to menu items
+and the layout. It returns three functions which are used to create menu items, separators and the layout.
+For example, to recreate the text menu above with a custom theme, you could do the following:
+
+.. code:: python
+
+    from libqtile.lazy import lazy
+
+    from qtile_extras.popup import PopupMenu
+
+
+    # Define config for menu and create functions to generate menu
+    menu_config = {
+        "foreground": "0ff",
+        "foreground_disabled": "666",
+        "foreground_highlighted": "fff",
+        "highlight": "900",
+        "border_width": 2
+    }
+
+    item, separator, generate = PopupMenu.make_generators(**menu_config)
+
+
+    @lazy.function
+    def show_text_power_menu(qtile):
+        items = [
+            item(text="Power Menu", enabled=False),
+            separator(),
+            item(
+                text="Lock",
+                mouse_callbacks={
+                    "Button1": lazy.spawn("/path/to/lock_cmd")
+                }
+            ),
+            item(
+                text="Sleep",
+                mouse_callbacks={
+                    "Button1": lazy.spawn("/path/to/lock_cmd")
+                }
+            ),
+            item(
+                text="Shutdown",
+                mouse_callbacks={
+                    "Button1": lazy.shutdown()
+                }
+            ),
+        ]
+        menu = generate(qtile, menuitems=items)
+        menu.show(centered=True)
+
+    keys = [
+        ...
+        Key([mod, "shift"], "q", show_text_power_menu)
+        ...
+    ]
+
 Configuration options for the menu objects can be found on
 :ref:`the reference page <ref-popup-menus>`.

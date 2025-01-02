@@ -180,6 +180,38 @@ class PopupMenu(PopupGridLayout):
         PopupGridLayout.__init__(self, qtile, controls=controls, **config)
         self.add_defaults(PopupMenu.defaults)
 
+    @staticmethod
+    def make_generators(qtile=None, **config):
+        """
+        Returns three functions (``make_popupmenuitem``, ``make_popupmenuseparator`` and
+        ``generate_menu``) to help creation of menus with custom configs.
+
+        ``make_popupmenuitem`` and ``make_popupmenuseparator`` create those items but with
+        the supplied config already applied to them. Config values can still be overriden
+        on an item-by-item basis.
+
+        ``generate_menu`` creates the menu with the supplied config.
+
+        The ``qtile`` object must be passed to either the ``make_generators`` method or the
+        ``generate_menu`` function.
+        """
+        _qtile = qtile
+
+        def make_popupmenuitem(text, **itemconfig):
+            cfg = {**config, **itemconfig}
+            return PopupMenuItem(text=text, **cfg)
+
+        def make_popupmenuseparator(**itemconfig):
+            cfg = {**config, **itemconfig}
+            return PopupMenuSeparator(**cfg)
+
+        def generate_menu(qtile=None, menuitems=list(), **menuconfig):
+            qt = _qtile or qtile
+            cfg = {**config, **menuconfig}
+            return PopupMenu.generate(qt, menuitems=menuitems, **cfg)
+
+        return make_popupmenuitem, make_popupmenuseparator, generate_menu
+
     @classmethod
     def from_dbus_menu(cls, qtile, dbusmenuitems, **config):
         """
