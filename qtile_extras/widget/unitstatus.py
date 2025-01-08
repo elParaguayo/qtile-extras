@@ -54,8 +54,8 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
         ("unitname", "NetworkManager.service", "Name of systemd unit."),
         ("label", "NM", "Short text to display next to indicator."),
         ("colour_active", "00ff00", "Colour for active indicator"),
-        ("colour_inactive", "ffffff", "Colour for active indicator"),
-        ("colour_failed", "ff0000", "Colour for active indicator"),
+        ("colour_inactive", "ffffff", "Colour for inactive indicator"),
+        ("colour_failed", "ff0000", "Colour for failed indicator"),
         ("colour_dead", "666666", "Colour for dead indicator"),
         ("indicator_size", 10, "Size of indicator (None = up to margin)"),
         (
