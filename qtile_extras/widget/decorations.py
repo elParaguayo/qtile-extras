@@ -58,6 +58,13 @@ class _Decoration(base.PaddingMixin):
             "Ignores additional width added by decoration. "
             "Useful when stacking decorations on top of a PowerLineDecoration.",
         ),
+        (
+            "rotate_decoration",
+            True,
+            "Whether the decoration should be rotated for vertical bars. "
+            "This should be left as ``True`` in most situations but users may want to set to ``False`` "
+            "in ``ImageDecoration``.",
+        ),
     ]  # type: list[tuple[str, Any, str]]
 
     def __init__(self, **config):
@@ -119,6 +126,18 @@ class _Decoration(base.PaddingMixin):
     @property
     def ctx(self) -> Context:
         return self.drawer.ctx
+
+    @property
+    def is_rotated(self) -> bool:
+        return not self.parent.bar.horizontal
+
+    @property
+    def wants_rotating(self) -> bool:
+        return self.is_rotated and self.rotate_decoration
+
+    @property
+    def left(self) -> bool:
+        return self.parent.bar.screen.left is self.parent.bar
 
     def set_source_rgb(self, colour) -> None:
         self.drawer.set_source_rgb(colour, ctx=self.ctx)
@@ -684,13 +703,14 @@ class PowerLineDecoration(_Decoration):
         return self.override_colour or self.parent.background or self.parent.bar.background
 
     def set_next_colour(self):
+        bar = self.parent.bar
+        bar_widgets = bar.widgets[::-1] if bar.screen.left is bar else bar.widgets
         try:
-            index = self.parent.bar.widgets.index(self.parent)
-            widgets = self.parent.bar.widgets
+            index = bar_widgets.index(self.parent)
             next_widget = next(
                 w
-                for w in widgets
-                if hasattr(w, "length") and w.length and widgets.index(w) > index
+                for w in bar_widgets
+                if hasattr(w, "length") and w.length and bar_widgets.index(w) > index
             )
             return next_widget.background or self.parent.bar.background
         except (ValueError, IndexError, StopIteration):
@@ -703,13 +723,16 @@ class PowerLineDecoration(_Decoration):
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
+        bar = self.parent.bar
+        height = bar.height if bar.horizontal else bar.width
+
         # If we have vertical padding then we need to paint the bar's background to the space
         if self.padding_y:
             self.ctx.rectangle(
                 0,
                 0,
                 self.parent.length,
-                self.parent.bar.height,
+                height,
             )
             self.set_source_rgb(self.parent.bar.background)
             self.ctx.fill()
@@ -724,7 +747,7 @@ class PowerLineDecoration(_Decoration):
             0,
             self.padding_y,
             self.parent_length - self.shift,
-            self.parent.bar.height - 2 * self.padding_y,
+            height - 2 * self.padding_y,
         )
         self.set_source_rgb(background)
         self.ctx.fill()
@@ -734,7 +757,7 @@ class PowerLineDecoration(_Decoration):
             self.parent_length - self.shift,
             self.padding_y,
             self.size,
-            self.parent.bar.height - 2 * self.padding_y,
+            height - 2 * self.padding_y,
         )
         self.set_source_rgb(foreground)
         self.ctx.fill()
@@ -744,19 +767,15 @@ class PowerLineDecoration(_Decoration):
     def draw_rounded(self, rotate=False):
         # While not totally necessary to set these as instance variables,
         # it's helpful for testing!
-        self.fg = self.parent_background if not rotate else self.next_background
-        self.bg = self.next_background if not rotate else self.parent_background
+        # self.fg = self.parent_background if not rotate else self.next_background
+        # self.bg = self.next_background if not rotate else self.parent_background
 
-        self.paint_background(self.parent_background, self.bg)
+        # self.paint_background(self.parent_background, self.bg)
 
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
-        start = (
-            self.parent_length - self.shift + self.extrawidth
-            if not rotate
-            else self.parent.length
-        )
+        start = self.shift - self.extrawidth if rotate else 0
 
         # Translate the surface so that the origin is in the middle of the arc
         self.ctx.translate(start, self.parent.bar.height // 2)
@@ -788,19 +807,20 @@ class PowerLineDecoration(_Decoration):
 
         # While not totally necessary to set these as instance variables,
         # it's helpful for testing!
-        self.fg = self.parent_background
-        self.bg = self.next_background
 
-        self.paint_background(self.fg, self.bg)
+        # self.paint_background(self.fg, self.bg)
+
+        bar = self.parent.bar
+        h = bar.height if bar.horizontal else bar.width
 
         width = self.size
-        height = self.parent.bar.height - 2 * (self.padding_y)
+        height = h - 2 * (self.padding_y)
 
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
         # Move to the start of the decoration (i.e. the addition area before the next widget)
-        self.ctx.translate(self.parent_length - self.shift + self.extrawidth, self.padding_y)
+        self.ctx.translate(0, self.padding_y)
 
         # The points are defined between 0 and 1 so they get scaled by width and height.
         x, y = path.pop(0)
@@ -815,13 +835,39 @@ class PowerLineDecoration(_Decoration):
 
         self.ctx.restore()
 
+    def _set_colours(self):
+        self.next_background = self.override_next_colour or self.set_next_colour()
+
+        if self.path.startswith("rounded"):
+            rotate = self.path == "rounded_right"
+            self.fg = self.parent_background if not rotate else self.next_background
+            self.bg = self.next_background if not rotate else self.parent_background
+        else:
+            self.fg = self.parent_background
+            self.bg = self.next_background
+
     def draw(self) -> None:
         if self.width == 0:
             return
 
-        self.next_background = self.override_next_colour or self.set_next_colour()
+        self._set_colours()
 
         self.ctx.save()
+
+        if not self.parent.bar.horizontal:
+            # Left bar reads bottom to top
+            if self.parent.bar.screen.left is self.parent.bar:
+                self.ctx.rotate(-90 * math.pi / 180.0)
+                self.ctx.translate(-self.parent.length, 0)
+
+            # Right bar is top to bottom
+            else:
+                self.ctx.translate(self.parent.bar.width, 0)
+                self.ctx.rotate(90 * math.pi / 180.0)
+
+        self.paint_background(self.parent_background, self.bg)
+        self.ctx.translate(self.parent_length - self.shift + self.extrawidth, 0)
+
         self.draw_func()
         self.ctx.restore()
 
@@ -1035,7 +1081,16 @@ def inject_decorations(classdef):
 
         # Draw the decorations
         for decoration in self.decorations:
+            decoration.ctx.save()
+            # if decoration.is_rotated:
+            #     if decoration.left:
+            #         decoration.ctx.rotate(-90 * math.pi / 180.0)
+            #         decoration.ctx.translate(-decoration.parent.length, 0)
+            #     else:
+            #         decoration.ctx.translate(decoration.parent.bar.width, 0)
+            #         decoration.ctx.rotate(90 * math.pi / 180.0)
             decoration.draw()
+            decoration.ctx.restore()
 
     def configure_decorations(self):
         if not hasattr(self, "use_bar_background"):
