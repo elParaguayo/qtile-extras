@@ -1,3 +1,4 @@
+2025-02-22: [FEATURE] Add ability to stroke `PowerLineDecoration` shape 
 2025-01-07: [RELEASE] v0.30.0 release - compatible with qtile 0.30.0
 2025-01-02: [FEATURE] More methods for generating `PopupMenu` objects
 2024-12-26: [BUGFIX] Fix control highlight border in popup toolkit

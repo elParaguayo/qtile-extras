@@ -560,6 +560,9 @@ class PowerLineDecoration(_Decoration):
     be drawn to each subsequent point. The path is then closed by returning to the first point.
     Finally, the shape is filled with the background of the current widget.
 
+    It is also possible to stroke a line over the decoration shape using the ``stroke_weight`` and ``stroke_width``
+    parameters.
+
     .. note::
 
         The decoration currently only works on horizontal bars. The ``padding_y`` parameter can be
@@ -623,6 +626,8 @@ class PowerLineDecoration(_Decoration):
             None,
             "Force background colour for the next part of the decoration.",
         ),
+        ("stroke_weight", 0, "Width to stroke decoration"),
+        ("stroke_colour", "000", "Colour to stroke decoration"),
     ]
 
     _screenshots = [
@@ -652,6 +657,10 @@ class PowerLineDecoration(_Decoration):
         self.add_defaults(PowerLineDecoration.defaults)
         self.shift = max(min(self.shift, self.size), 0)
         self._extrawidth += self.size - self.shift
+
+        if self.stroke_weight and not self.extrawidth:
+            self.extrawidth = self.stroke_weight
+            self._extrawidth += self.stroke_weight
 
         # This decoration doesn't use the GroupMixin but we need to set the property
         # as False as it's used in a couple of checks when other decorations are grouped
@@ -741,22 +750,25 @@ class PowerLineDecoration(_Decoration):
 
         self.ctx.restore()
 
-    def draw_rounded(self, rotate=False):
+    def draw_rounded(self, rotate=False, stroke=False):
         # While not totally necessary to set these as instance variables,
         # it's helpful for testing!
         self.fg = self.parent_background if not rotate else self.next_background
         self.bg = self.next_background if not rotate else self.parent_background
 
-        self.paint_background(self.parent_background, self.bg)
+        if not stroke:
+            self.paint_background(self.parent_background, self.bg)
 
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
+
+        stroke_shift = self.stroke_weight / 2 if stroke else 0
 
         start = (
             self.parent_length - self.shift + self.extrawidth
             if not rotate
             else self.parent.length
-        )
+        ) - stroke_shift
 
         # Translate the surface so that the origin is in the middle of the arc
         self.ctx.translate(start, self.parent.bar.height // 2)
@@ -768,17 +780,23 @@ class PowerLineDecoration(_Decoration):
         # We use scaling in order to be able to draw ellipses
         x_scale = self.parent.length - (self.parent_length - self.shift) - self.extrawidth
         y_scale = (self.parent.bar.height / 2) - self.padding_y
+        self.ctx.save()
         self.ctx.scale(x_scale, y_scale)
-
-        self.set_source_rgb(self.fg)
 
         # Radius is 1 as we've scaled the surface
         self.ctx.arc(0, 0, 1, -math.pi / 2, math.pi / 2)
-        self.ctx.close_path()
-        self.ctx.fill()
+        if not stroke:
+            self.ctx.close_path()
+        self.ctx.restore()
+        if stroke:
+            self.set_source_rgb(self.stroke_colour)
+            self.ctx.stroke()
+        else:
+            self.set_source_rgb(self.fg)
+            self.ctx.fill()
         self.ctx.restore()
 
-    def draw_path(self, path=list()):
+    def draw_path(self, path=list(), stroke=False):
         if not path:
             return
 
@@ -786,12 +804,38 @@ class PowerLineDecoration(_Decoration):
         # operate on a copy
         path = path.copy()
 
+        if stroke:
+            if path[:2] == [(0, 0), (1, 0)]:
+                path.pop(0)
+
+            if path[-2:] == [(1, 1), (0, 1)]:
+                path.pop(-1)
+
+            # We need to extend line above and below bar to prevent clipping
+
+            # Get 2 points at start and end
+            (x1, y1), (x2, y2) = path[:2]
+            (x3, y3), (x4, y4) = path[-2:]
+
+            # Calculate gradient of each line
+            m1 = (y2 - y1) / (x2 - x1)
+            m2 = (y4 - y3) / (x4 - x3)
+
+            # Calculate constant for each line
+            c1 = y1 - m1 * x1
+            c2 = y3 - m2 * x3
+
+            # Insert extra points
+            path.insert(0, ((-self.stroke_weight - c1) / m1, -self.stroke_weight))
+            path.append(((self.stroke_weight - c2) / m2, self.stroke_weight))
+
         # While not totally necessary to set these as instance variables,
         # it's helpful for testing!
         self.fg = self.parent_background
         self.bg = self.next_background
 
-        self.paint_background(self.fg, self.bg)
+        if not stroke:
+            self.paint_background(self.fg, self.bg)
 
         width = self.size
         height = self.parent.bar.height - 2 * (self.padding_y)
@@ -799,8 +843,13 @@ class PowerLineDecoration(_Decoration):
         self.ctx.save()
         self.ctx.set_operator(cairocffi.OPERATOR_SOURCE)
 
+        # Shift the path back slightly so the right-hand edge is not cut off by the next widget.
+        stroke_shift = self.stroke_weight / 2 if stroke else 0
+
         # Move to the start of the decoration (i.e. the addition area before the next widget)
-        self.ctx.translate(self.parent_length - self.shift + self.extrawidth, self.padding_y)
+        self.ctx.translate(
+            self.parent_length - self.shift + self.extrawidth - stroke_shift, self.padding_y
+        )
 
         # The points are defined between 0 and 1 so they get scaled by width and height.
         x, y = path.pop(0)
@@ -809,9 +858,14 @@ class PowerLineDecoration(_Decoration):
         for x, y in path:
             self.ctx.line_to(x * width, y * height)
 
-        self.ctx.close_path()
-        self.set_source_rgb(self.fg)
-        self.ctx.fill()
+        if stroke:
+            self.ctx.set_line_width(self.stroke_weight)
+            self.set_source_rgb(self.stroke_colour)
+            self.ctx.stroke()
+        else:
+            self.ctx.close_path()
+            self.set_source_rgb(self.fg)
+            self.ctx.fill()
 
         self.ctx.restore()
 
@@ -823,6 +877,8 @@ class PowerLineDecoration(_Decoration):
 
         self.ctx.save()
         self.draw_func()
+        if self.stroke_weight:
+            self.draw_func(stroke=True)
         self.ctx.restore()
 
 
