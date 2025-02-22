@@ -723,7 +723,7 @@ class PowerLineDecoration(_Decoration):
         self.ctx.rectangle(
             0,
             self.padding_y,
-            self.parent_length - self.shift,
+            self.parent_length - self.shift + self.extrawidth,
             self.parent.bar.height - 2 * self.padding_y,
         )
         self.set_source_rgb(background)
@@ -731,7 +731,7 @@ class PowerLineDecoration(_Decoration):
 
         # ...and fill the extra bit (i.e. between the widgets) with the foreground colour.
         self.ctx.rectangle(
-            self.parent_length - self.shift,
+            self.parent_length - self.shift + self.extrawidth,
             self.padding_y,
             self.size,
             self.parent.bar.height - 2 * self.padding_y,
