@@ -147,13 +147,18 @@ class AgentManager(ServiceInterface):
         pass
 
 
+class IWDRoot(ServiceInterface):
+    def __init__(self):
+        super().__init__("test.qtile_extras.root")
+
+
 class IWDService(Thread):
     """Class that runs fake IWD service in a thread."""
 
     async def start_server(self):
         """Connects to the bus and publishes 3 interfaces."""
         bus = await MessageBus().connect()
-        root = ServiceInterface("test.qtile_extras.root")
+        root = IWDRoot()
         bus.export("/", root)
 
         iwd_root = "/net/connman/iwd"
