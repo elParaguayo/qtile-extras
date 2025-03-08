@@ -604,9 +604,19 @@ class GraphicalWifiMixin(_BaseMixin):
     def __init__(self):
         self.wifi_width = 0
 
+    def _find_padding(self, attr):
+        pad = getattr(self, attr, None)
+        if pad is None:
+            pad = getattr(self, "padding", 0)
+
+        if not isinstance(pad, int):
+            pad = 0
+
+        return pad
+
     def set_wifi_sizes(self):
-        self.wifi_padding_x = getattr(self, "padding_x", getattr(self, "padding", 0))
-        self.wifi_padding_y = getattr(self, "padding_y", getattr(self, "padding", 0))
+        self.wifi_padding_x = self._find_padding("padding_x")
+        self.wifi_padding_y = self._find_padding("padding_y")
         self.wifi_height = self.bar.height - (self.wifi_padding_y * 2)
         width_ratio = math.sin(to_rads(self.wifi_arc / 2))
         if self.wifi_shape == "arc":
