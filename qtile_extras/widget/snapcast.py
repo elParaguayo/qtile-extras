@@ -36,9 +36,12 @@ from qtile_extras.resources.snapcast.snapcontrol import (
     CLIENT_ONCONNECT,
     CLIENT_ONDISCONNECT,
     GROUP_ONSTREAMCHANGED,
+    GROUP_SETCLIENTS,
+    GROUP_SETSTREAM,
     SERVER_GETSTATUS,
     SERVER_ONDISCONNECT,
 )
+from qtile_extras.widget.mixins import MenuMixin
 
 SNAPCAST_ICON = Path(__file__).parent / ".." / "resources" / "snapcast-icons" / "snapcast.svg"
 
@@ -57,6 +60,9 @@ class SnapGroup:
     def inactive(self):
         return not self.clients
 
+    def __contains__(self, other):
+        return any(other in c.id for c in self.clients)
+
 
 class SnapStream:
     @classmethod
@@ -71,13 +77,21 @@ class SnapClient:
     def from_json(cls, data):
         obj = cls()
         obj.id = data["id"]
-        obj.name = data["config"]["name"]
+        obj.name = data["config"]["name"] or data["host"]["name"]
         obj.mac = data["host"]["mac"]
         obj.inactive = (int(time.time()) - data["lastSeen"]["sec"]) > 30
         return obj
 
+    def __eq__(self, other):
+        if isinstance(other, SnapClient):
+            return self.id == other.id
+        elif isinstance(other, str):
+            return self.id == other
 
-class SnapCast(base._Widget):
+        return False
+
+
+class SnapCast(base._Widget, MenuMixin):
     """
     A widget to run a snapclient instance in the background.
 
@@ -85,8 +99,9 @@ class SnapCast(base._Widget):
     is set to ``True``. Playback control may also be available if supported by the current
     stream.
 
-    This is a work in progress. The plan is to add the ability for the client
-    to change groups from widget.
+    Right-clicking on the widget will toggle the player while left-clicking will open a
+    menu to provide additional control. Users can move the client between groups and change
+    the group's stream.
     """
 
     _experimental = True
@@ -119,8 +134,11 @@ class SnapCast(base._Widget):
     def __init__(self, **config):
         base._Widget.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(SnapCast.defaults)
+        self.add_defaults(MenuMixin.defaults)
+        MenuMixin.__init__(self, **config)
         self.add_callbacks(
             {
+                "Button1": self.show_stream_options,
                 "Button3": self.toggle_state,
             }
         )
@@ -149,10 +167,10 @@ class SnapCast(base._Widget):
 
     async def _config_async(self):
         self.control = SnapControl(self.server_address, self.server_port)
-        self.control.subscribe(CLIENT_ONCONNECT, self.on_client_connection_event)
-        self.control.subscribe(CLIENT_ONDISCONNECT, self.on_client_connection_event)
         self.control.subscribe(SERVER_ONDISCONNECT, self.on_server_connection_lost)
-        self.control.subscribe(GROUP_ONSTREAMCHANGED, self.on_client_connection_event)
+        self.control.subscribe(CLIENT_ONCONNECT, self.on_update)
+        self.control.subscribe(CLIENT_ONDISCONNECT, self.on_update)
+        self.control.subscribe(GROUP_ONSTREAMCHANGED, self.on_update)
         await self.control.start()
         if self.enable_mpris2:
             self.mpris = SnapMprisPlayer(
@@ -162,7 +180,7 @@ class SnapCast(base._Widget):
     def on_server_connection_lost(self, _params):
         pass
 
-    def on_client_connection_event(self, _params):
+    def on_update(self, _params):
         self._check_server()
 
     def _load_icon(self):
@@ -273,3 +291,108 @@ class SnapCast(base._Widget):
         if self._proc:
             self._proc.terminate()
         base._Widget.finalize(self)
+
+    @expose_command
+    def show_stream_options(
+        self,
+        x=None,
+        y=None,
+        centered=False,
+        warp_pointer=False,
+        relative_to=1,
+        relative_to_bar=False,
+        hide_on_timeout=None,
+    ):
+        """Show a menu to change group/stream."""
+        if not (self.snapclient_id and self.stream):
+            return
+
+        item = self.create_menu_item
+        sep = self.create_menu_separator
+
+        current_group = [g for g in self.groups if self.snapclient_id in g]
+        other_groups = [g for g in self.groups if self.snapclient_id not in g]
+
+        if not current_group:
+            return
+        menu = []
+
+        cg = current_group[0]
+        other_clients = [c for c in cg.clients if c != self.snapclient_id]
+        menu.append(item(text=f"Currently listening to:\n{cg.stream}", row_span=4))
+        if other_clients:
+            menu.append(
+                item(
+                    text=("Synced with:\n" f"{', '.join(c.name for c in other_clients)}"),
+                    row_span=4,
+                )
+            )
+        menu.append(sep())
+
+        if other_groups:
+            menu.append(item(text="Join other group:"))
+            for group in other_groups:
+                menu.append(
+                    item(
+                        text=(
+                            f"Listening to:\n{group.stream}\n"
+                            f"Synced with {', '.join(c.name for c in group.clients)}"
+                        ),
+                        row_span=5,
+                        mouse_callbacks={"Button1": lambda g=group: self._switch_group(g)},
+                    )
+                )
+
+        if len(cg.clients) > 1:
+            menu.append(
+                item(
+                    text="Move client to new group",
+                    mouse_callbacks={"Button1": lambda g=cg: self._move_to_new_group(g)},
+                )
+            )
+
+        menu.append(sep())
+
+        other_streams = [s for s in self.streams if s.id != self.stream]
+        if other_streams:
+            menu.append(item(text="Change group stream:"))
+            for stream in other_streams:
+                menu.append(
+                    item(
+                        text=stream.id,
+                        mouse_callbacks={
+                            "Button1": lambda s=stream, g=current_group[0]: self._switch_stream(
+                                s, g
+                            )
+                        },
+                    )
+                )
+
+        self.display_menu(
+            menu,
+            x=x,
+            y=y,
+            centered=centered,
+            warp_pointer=warp_pointer,
+            relative_to=relative_to,
+            relative_to_bar=relative_to_bar,
+            hide_on_timeout=hide_on_timeout,
+        )
+
+    def _switch_group(self, group):
+        params = {"clients": [c.id for c in group.clients] + [self.snapclient_id], "id": group.id}
+        self.control.send(GROUP_SETCLIENTS, params=params)
+        self._check_server()
+
+    def _move_to_new_group(self, current_group):
+        params = {
+            "clients": [c.id for c in current_group.clients if c.id != self.snapclient_id],
+            "id": current_group.id,
+        }
+        self.control.send(GROUP_SETCLIENTS, params=params)
+        self._check_server()
+
+    def _switch_stream(self, stream, group):
+        params = {"stream_id": stream.id, "id": group.id}
+        self.control.send(GROUP_SETSTREAM, params=params)
+        self._check_server()
