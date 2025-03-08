@@ -98,7 +98,7 @@ class SnapMprisPlayer(ServiceInterface):
         self.stream_props = {}
 
         self._metadata = {}
-        self._playbackstatus = "Stopped"
+        self._playbackstatus = "Playing"
 
     @property
     def metadata(self):
@@ -220,7 +220,7 @@ class SnapMprisPlayer(ServiceInterface):
 
     @dbus_property(access=PropertyAccess.READ)
     def PlaybackStatus(self) -> s:  # noqa: N802, F821
-        return "Playing"
+        return self.playback_status
 
     @dbus_property()
     def LoopStatus(self) -> s:  # noqa: N802, F821
@@ -248,7 +248,7 @@ class SnapMprisPlayer(ServiceInterface):
 
     @dbus_property(access=PropertyAccess.READ)
     def Metadata(self) -> "a{sv}":  # noqa: N802, F821, F722
-        return {}
+        return self.metadata
 
     @dbus_property()
     def Volume(self) -> d:  # noqa: N802, F821
