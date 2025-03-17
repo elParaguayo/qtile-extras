@@ -152,6 +152,8 @@ class SnapCast(base._Widget, MenuMixin):
         self.streams = []
         self.snapclient_id = self.client_id or self.mac
         self.stream = None
+        self.mpris = None
+        self.finalising = False
 
         if "client_name" in config:
             logger.warning("The 'client_name' option is deprecated.")
@@ -161,9 +163,10 @@ class SnapCast(base._Widget, MenuMixin):
         self._cmd = [self.snapclient]
         if self.options:
             self._cmd.extend(shlex.split(self.options))
+        if self.server_address:
+            self._cmd.extend(["-h", self.server_address])
         self._cmd.extend(["--hostID", self.snapclient_id])
         self._load_icon()
-        self.timeout_add(1, self._check_server)
 
     async def _config_async(self):
         self.control = SnapControl(self.server_address, self.server_port)
@@ -171,14 +174,29 @@ class SnapCast(base._Widget, MenuMixin):
         self.control.subscribe(CLIENT_ONCONNECT, self.on_update)
         self.control.subscribe(CLIENT_ONDISCONNECT, self.on_update)
         self.control.subscribe(GROUP_ONSTREAMCHANGED, self.on_update)
-        await self.control.start()
+
+        await self._start_control()
+
+    async def _start_control(self):
+        connected = await self.control.start()
+        if not connected:
+            self.qtile.call_later(1, create_task, self._start_control())
+            return
+
+        self._check_server()
+
         if self.enable_mpris2:
             self.mpris = SnapMprisPlayer(
                 "org.mpris.MediaPlayer2.QtileSnapcastWidget", self.control, self
             )
+            if self._proc is not None:
+                self.start_mpris2()
 
     def on_server_connection_lost(self, _params):
-        pass
+        self.stop_mpris2()
+        if not self.finalising:
+            create_task(self._start_control())
+            self.draw()
 
     def on_update(self, _params):
         self._check_server()
@@ -232,7 +250,7 @@ class SnapCast(base._Widget, MenuMixin):
         if not self._proc:
             return self.inactive_colour
 
-        if self.stream:
+        if self.stream and (self.control is not None and self.control.connected):
             return self.active_colour
 
         return self.error_colour
@@ -263,6 +281,9 @@ class SnapCast(base._Widget, MenuMixin):
             self.toggle_state()
 
     def start_mpris2(self):
+        if self.mpris is None:
+            return
+
         task = create_task(self.mpris.start())
         task.add_done_callback(self._mpris_started)
 
@@ -271,7 +292,8 @@ class SnapCast(base._Widget, MenuMixin):
             logger.warning("Could not start mpris interface for snapcast.")
 
     def stop_mpris2(self):
-        self.mpris.stop()
+        if self.mpris is not None:
+            self.mpris.stop()
 
     def calculate_length(self):
         if self.img is None:
@@ -288,6 +310,7 @@ class SnapCast(base._Widget, MenuMixin):
         self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
 
     def finalize(self):
+        self.finalising = True
         if self._proc:
             self._proc.terminate()
         base._Widget.finalize(self)
