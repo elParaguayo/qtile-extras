@@ -1,3 +1,4 @@
+2025-03-20: [BUGFIX] Better handling of connection errors for `SnapCast` widget
 2025-03-08: [FEATURE] Add ability to switch streams/groups in `SnapCast` widget
 2025-03-07: [RELEASE] v0.31.0 release - compatible with qtile 0.31.0
 2025-03-07: [FEATURE] Add Mpris2 support to `SnapCast` widget

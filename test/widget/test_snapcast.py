@@ -164,7 +164,8 @@ def wait_for_poll(manager):
 
 
 async def control_start(self):
-    pass
+    self.connected = True
+    return True
 
 
 @pytest.fixture
@@ -257,10 +258,10 @@ def test_snapcast_icon_colour(snapcast_manager, expected):
 def test_snapcast_http_error(snapcast_manager, logger):
     @Retry(ignore_exceptions=(AssertionError,))
     def wait_for_logs():
-        assert logger.get_records("call")
+        assert logger.get_records("setup")
 
     wait_for_logs()
-    recs = logger.get_records("call")
+    recs = logger.get_records("setup")
     assert recs[0].levelname == "WARNING"
     assert recs[0].msg == "Error received when checking server status: 401 Error."
 

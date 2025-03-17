@@ -142,6 +142,7 @@ class SnapControl:
         task.add_done_callback(self._connection_ended)
 
     def _connection_ended(self, task):
+        self.connected = False
         self.process_notification(SERVER_DISCONNECT_MESSAGE)
 
     async def listen(self):
