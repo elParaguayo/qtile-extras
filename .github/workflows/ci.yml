@@ -8,7 +8,7 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         name: "python ${{ matrix.python-version }}"
         strategy:
             matrix:
@@ -23,10 +23,11 @@ jobs:
               run: |
                 sudo apt update
                 sudo apt install --no-install-recommends \
-                  libdbus-1-dev libgirepository1.0-dev gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-gudev-1.0 \
+                  libdbus-1-dev libgirepository-2.0-dev gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-gudev-1.0 \
                   imagemagick libpulse-dev git xserver-xephyr xterm xvfb dbus-x11 libnotify-bin \
                   libxcb-composite0-dev libxcb-icccm4-dev libxcb-res0-dev libxcb-render0-dev libxcb-res0-dev \
-                  libxcb-xfixes0-dev libiw-dev fonts-noto zenity
+                  libxcb-xfixes0-dev libiw-dev fonts-noto zenity libxkbcommon-dev python-gi-dev tox libcairo2-dev \
+                  gir1.2-gdkpixbuf-2.0 librsvg2-dev
                 pip -q install "tox<4" tox-gh-actions
             - name: Build wayland
               run:  bash -x ./scripts/ubuntu_wayland_setup
