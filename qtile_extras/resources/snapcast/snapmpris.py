@@ -20,11 +20,12 @@
 # SOFTWARE.
 from __future__ import annotations
 
-from dbus_fast import Variant
+from dbus_fast import NameFlag, RequestNameReply, Variant
 from dbus_fast.aio import MessageBus
 from dbus_fast.constants import PropertyAccess
 from dbus_fast.errors import DBusError
 from dbus_fast.service import ServiceInterface, dbus_property, method, signal
+from libqtile.log_utils import logger
 
 from qtile_extras.resources.snapcast.snapcontrol import GROUP_ONSTREAMCHANGED, STREAM_ONPROPERTIES
 
@@ -100,6 +101,8 @@ class SnapMprisPlayer(ServiceInterface):
         self._metadata = {}
         self._playbackstatus = "Playing"
 
+        self._request_name_warned = False
+
     @property
     def metadata(self):
         return self._metadata
@@ -132,11 +135,21 @@ class SnapMprisPlayer(ServiceInterface):
             self._error = e
             return False
 
-        self.control.subscribe(STREAM_ONPROPERTIES, self._on_properties)
-        self.control.subscribe(GROUP_ONSTREAMCHANGED, self._on_stream_change)
         self.bus.export("/org/mpris/MediaPlayer2", SnapMpris(self.widget))
         self.bus.export("/org/mpris/MediaPlayer2", self)
-        await self.bus.request_name(self.service_name)
+
+        reply = await self.bus.request_name(self.service_name, flags=NameFlag.DO_NOT_QUEUE)
+        if reply is RequestNameReply.EXISTS:
+            if not self._request_name_warned:
+                logger.warning("Unable to request dbus service name.")
+                self._request_name_warned = True
+            self.bus.disconnect()
+            self.bus = None
+            return False
+
+        self.control.subscribe(STREAM_ONPROPERTIES, self._on_properties)
+        self.control.subscribe(GROUP_ONSTREAMCHANGED, self._on_stream_change)
+
         return True
 
     def stop(self):
