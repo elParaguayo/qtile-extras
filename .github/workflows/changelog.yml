@@ -5,7 +5,7 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-24.04
         name: "Check CHANGELOG"
         steps:
             - uses: actions/checkout@v4
