@@ -228,6 +228,13 @@ class SnapCast(base._Widget, MenuMixin):
             break
 
         self.stream = stream
+
+        # Sometimes we get a client connect event but client doesn't appear in list of
+        # groups. Therefore, there won't always be a new notification so, if we can't find
+        # our client, we should poll intermittently to check if it appears in a group.
+        if stream is None:
+            self.timeout_add(self.server_reconnect_interval, self._check_server)
+
         self.draw()
 
     def _check_server(self):
