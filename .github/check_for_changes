@@ -5,5 +5,5 @@ if [ $? -eq 0 ]; then
    echo "CHANGELOG_MESSAGE=CHANGELOG has been updated." >> $GITHUB_ENV
 else
    echo "CHANGELOG_STATUS=failure" >> $GITHUB_ENV
-   echo "CHANGELOG_MESSAGE=CHANGELOG has NOT been updated." >> $GITHUB_ENV
+   echo "CHANGELOG_MESSAGE=CHANGELOG has not been updated." >> $GITHUB_ENV
 fi
