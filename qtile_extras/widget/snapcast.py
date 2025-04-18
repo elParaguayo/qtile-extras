@@ -180,7 +180,7 @@ class SnapCast(base._Widget, MenuMixin):
     async def _start_control(self):
         connected = await self.control.start()
         if not connected:
-            self.qtile.call_later(1, create_task, self._start_control())
+            self.timeout_add(1, self._start_control())
             return
 
         self._check_server()
