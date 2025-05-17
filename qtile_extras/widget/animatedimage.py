@@ -56,6 +56,7 @@ class AnimatedImage(base._Widget, base.MarginMixin):
         self._timer = None
         self.loop_index = 0
         self._do_loop = False
+        self.images_loaded = False
 
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
@@ -63,16 +64,19 @@ class AnimatedImage(base._Widget, base.MarginMixin):
         # Make sure we don't have a negative loop count
         self.loop_count = max(self.loop_count, 0)
 
-        self._load_images()
-        if self.images:
-            self.max_width = max(img.width for img in self.images)
-            self.max_height = max(img.height for img in self.images)
+        if not self.images_loaded:
+            self._load_images()
+            if self.images:
+                self.max_width = max(img.width for img in self.images)
+                self.max_height = max(img.height for img in self.images)
 
     def _load_images(self):
         for filename in self.filenames:
             img = self._load_image(filename)
             if img is not None:
                 self.images.append(img)
+
+        self.images_loaded = True
 
     def _load_image(self, filename):
         img = None
