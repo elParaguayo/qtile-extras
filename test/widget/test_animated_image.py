@@ -92,6 +92,7 @@ def widget(request, manager_nospawn):
                 ),
             )
         ]
+        reconfigure_screens = False
 
     manager_nospawn.start(AnimatedImageConfig)
     yield manager_nospawn.c.widget["animatedimage"]
