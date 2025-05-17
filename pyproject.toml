@@ -14,7 +14,8 @@ name = "qtile-extras"
 authors = [
     {name="elParaguayo"}
 ]
-license = {text="MIT"}
+license = "MIT"
+license-files = [ "LICENSE" ]
 description = "Extra items for qtile that are unlikely to be maintained in the main repo."
 dynamic = ["version"]
 readme = "README.md"
