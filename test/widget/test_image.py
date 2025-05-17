@@ -69,6 +69,7 @@ def image_manager(request, manager_nospawn):
                 ),
             )
         ]
+        reconfigure_screens = False
 
     manager_nospawn.start(ImageConfig)
     yield manager_nospawn
