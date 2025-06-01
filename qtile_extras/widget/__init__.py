@@ -50,6 +50,7 @@ widgets = {
     "PulseVolume": "pulse_volume",
     "PulseVolumeExtra": "pulse_extra",
     "ScriptExit": "scriptexit",
+    "Snake": "snake",
     "SnapCast": "snapcast",
     "StatusNotifier": "statusnotifier",
     "StravaWidget": "strava",
