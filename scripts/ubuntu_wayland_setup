@@ -65,9 +65,9 @@ sudo ninja -C build install
 cd ../
 
 # Build libdrm
-wget https://gitlab.freedesktop.org/mesa/drm/-/archive/libdrm-$LIBDRM/drm-libdrm-$LIBDRM.tar.gz
-tar -xzf drm-libdrm-$LIBDRM.tar.gz
-cd drm-libdrm-$LIBDRM
+wget https://gitlab.freedesktop.org/mesa/libdrm/-/archive/libdrm-$LIBDRM/libdrm-libdrm-$LIBDRM.tar.gz
+tar -xzf libdrm-libdrm-$LIBDRM.tar.gz
+cd libdrm-libdrm-$LIBDRM
 meson build --prefix=/usr
 ninja -C build
 sudo ninja -C build install
