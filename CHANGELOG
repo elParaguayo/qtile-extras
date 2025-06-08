@@ -1,4 +1,5 @@
-2026-06-01: [FEATURE] Add `Snake` widget.
+2026-06-08: [FEATURE] Add `Pong` widget
+2026-06-01: [FEATURE] Add `Snake` widget
 2025-03-22: [BUGFIX] Fix `IWD` widget crashing when `padding` is `None`
 2025-03-21: [BUGFIX] Check for existing dbus service name for `SnapCast` widget
 2025-03-20: [BUGFIX] Better handling of connection errors for `SnapCast` widget
