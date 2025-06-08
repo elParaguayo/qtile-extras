@@ -47,6 +47,7 @@ widgets = {
     "Mpris2": "mpris2widget",
     "NetGraph": "graph",
     "QTEMirror": "mirror",
+    "Pong": "pong",
     "PulseVolume": "pulse_volume",
     "PulseVolumeExtra": "pulse_extra",
     "ScriptExit": "scriptexit",
