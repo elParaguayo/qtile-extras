@@ -25,16 +25,15 @@ from libqtile.command.base import expose_command
 from libqtile.widget import base
 
 
-def add_tuples(a, b):
-    return a[0] + b[0], a[1] + b[1]
-
-
 class Velocity:
+    """Class to store x, v velocity"""
+
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
     def normalise(self):
+        """Ensure velocity always has a magnitude of 1."""
         magnitude = (self.x**2 + self.y**2) ** 0.5
         if magnitude != 0:
             self.x /= magnitude
@@ -47,6 +46,8 @@ class Velocity:
 
 
 class _PongObject:
+    """Base class for game objects."""
+
     def __init__(self, x=0, y=0, height=1, width=1, colour="fff"):
         self.x = x
         self.y = y
@@ -56,16 +57,20 @@ class _PongObject:
         self.velocity = Velocity()
 
     def step(self):
+        """Move the object."""
         self.x += self.velocity.x
         self.y += self.velocity.y
 
     def draw(self, drawer):
+        """Draw the object in a widget drawer object."""
         drawer.set_source_rgb(self.colour)
         drawer.ctx.rectangle(self.x, self.y, self.width, self.height)
         drawer.ctx.fill()
 
 
 class Ball(_PongObject):
+    """Pong's ball."""
+
     def __init__(self, x=0, y=0, size=1, colour="fff", max_angle=60):
         super().__init__(x=x, y=y, width=size, height=size, colour=colour)
         self.max_angle = math.sin(math.radians(max_angle))
@@ -79,6 +84,7 @@ class Ball(_PongObject):
             self.velocity.randomise()
 
     def bounce(self, paddles, space):
+        """Checks if ball bounces on paddles or edges."""
         if self.y <= 0 or self.y + self.height >= space.height:
             self.velocity.y *= -1
 
@@ -94,16 +100,20 @@ class Ball(_PongObject):
                 self.clamp()
 
     def clamp(self):
+        """Keeps ball in desired angle range."""
         self.velocity.normalise()
         if abs(self.velocity.y) > math.sin(self.max_angle):
             self.velocity.y = self.max_angle if self.velocity.y > 0 else -self.max_angle
             self.velocity.x = self._max_angle_x if self.velocity.x > 0 else -self._max_angle_x
 
     def is_score(self, space):
+        """Returns true if ball reaches one of the edges."""
         return self.x < 0 or self.x + self.width > space.width
 
 
 class Paddle(_PongObject):
+    """Paddle object."""
+
     def __init__(self, left=True, react_distance=100, **kwargs):
         super().__init__(**kwargs)
         self.left = left
@@ -111,6 +121,7 @@ class Paddle(_PongObject):
         self.velocity = Velocity(y=1)
 
     def move(self, ball):
+        """Basic control to move paddle up or down."""
         if abs(ball.x - self.x) > self.react_distance:
             self.velocity.y = 0
         elif (self.left and ball.x < self.x) or (not self.left and ball.x > self.x + self.width):
@@ -186,7 +197,7 @@ class Pong(base._Widget):
 
     def restart(self):
         if self.width == 0:
-            self.timeout_add(1, self.restart)
+            self.timeout_add(self.restart_interval, self.restart)
             return
         if not self.started:
             self.started = True
