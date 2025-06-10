@@ -1,3 +1,4 @@
+2026-06-10: [RELEASE] v0.32.0 release - compatible with qtile 0.32.0
 2026-06-08: [FEATURE] Add `Pong` widget
 2026-06-01: [FEATURE] Add `Snake` widget
 2025-03-22: [BUGFIX] Fix `IWD` widget crashing when `padding` is `None`
