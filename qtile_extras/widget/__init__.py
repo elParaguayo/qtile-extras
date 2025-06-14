@@ -58,6 +58,7 @@ widgets = {
     "SwapGraph": "graph",
     "Syncthing": "syncthing",
     "Systray": "systray",
+    "Tetris": "tetris",
     "TVHWidget": "tvheadend",
     "UnitStatus": "unitstatus",
     "UPowerWidget": "upower",
