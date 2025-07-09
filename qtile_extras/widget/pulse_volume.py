@@ -73,8 +73,16 @@ class PulseVolume(QPulseVolume, MenuMixin):
                 "mouse_callbacks": {"Button1": lambda sink=sink: create_task(self.set_sink(sink))}
             }
 
+        default_sink_name = (await pulse.pulse.server_info()).default_sink_name
         for sink in sinks:
-            menu_items.append(pmi(text=sink.description, **_callback(sink)))
+            menu_items.append(
+                pmi(
+                    text=sink.description,
+                    toggle_box=True,
+                    toggled=default_sink_name == sink.name,
+                    **_callback(sink),
+                )
+            )
 
         self.display_menu(
             menu_items,
