@@ -33,7 +33,7 @@ widgets = {
     "Bluetooth": "bluetooth",
     "BrightnessControl": "brightnesscontrol",
     "ContinuousPoll": "continuous_poll",
-    "CurrentLayoutIcon": "currentlayout",
+    "CurrentLayout": "currentlayout",
     "CPUGraph": "graph",
     "GithubNotifications": "githubnotifications",
     "GlobalMenu": "globalmenu",
