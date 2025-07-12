@@ -19,20 +19,21 @@
 # SOFTWARE.
 import pytest
 
-from qtile_extras.widget.currentlayout import CurrentLayoutIcon
+from qtile_extras.widget.currentlayout import CurrentLayout
 from test.widget.docs_screenshots.conftest import widget_config
 
 
 @pytest.fixture
 def widget():
-    yield CurrentLayoutIcon
+    yield CurrentLayout
 
 
 @widget_config(
     [
         {},
-        {"use_mask": True, "foreground": "0ff"},
-        {"use_mask": True, "foreground": ["f0f", "00f", "0ff"]},
+        {"icon_first": True},
+        {"use_mask": True, "icon_first": True, "foreground": "0ff"},
+        {"use_mask": True, "icon_first": True, "foreground": ["f0f", "00f", "0ff"]},
     ]
 )
 def ss_currentlayouticon(screenshot_manager):
