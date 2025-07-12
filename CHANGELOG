@@ -1,9 +1,9 @@
-2027-07-12: [BREAKING CHANGE] Qtile has removed `CurrentLayoutIcon` as it is now part of
+2025-07-12: [BREAKING CHANGE] Qtile has removed `CurrentLayoutIcon` as it is now part of
                               `CurrentLayout`. qtile-extras has been updated to match.
-2027-06-15: [FEATURE] Add `Tetris` widget
-2026-06-10: [RELEASE] v0.32.0 release - compatible with qtile 0.32.0
-2026-06-08: [FEATURE] Add `Pong` widget
-2026-06-01: [FEATURE] Add `Snake` widget
+2025-06-15: [FEATURE] Add `Tetris` widget
+2025-06-10: [RELEASE] v0.32.0 release - compatible with qtile 0.32.0
+2025-06-08: [FEATURE] Add `Pong` widget
+2025-06-01: [FEATURE] Add `Snake` widget
 2025-03-22: [BUGFIX] Fix `IWD` widget crashing when `padding` is `None`
 2025-03-21: [BUGFIX] Check for existing dbus service name for `SnapCast` widget
 2025-03-20: [BUGFIX] Better handling of connection errors for `SnapCast` widget
