@@ -19,22 +19,20 @@
 # SOFTWARE.
 import cairocffi
 from libqtile.log_utils import logger
-from libqtile.widget import CurrentLayoutIcon as LayoutIcon
-from libqtile.widget import base
+from libqtile.widget import CurrentLayout as _CurrentLayout
 
 from qtile_extras.images import ImgMask
 
 
-class CurrentLayoutIcon(LayoutIcon):
+class CurrentLayout(_CurrentLayout):
     """
-    A modified version of Qtile's ``CurrentLayoutIcon``.
+    A modified version of Qtile's ``CurrentLayout``.
 
     The default version behaves the same as the main qtile version of the widget.
     However, if you set ``use_mask`` to ``True`` then you can set the colour of
     the icon via the ``foreground`` parameter.
     """
 
-    orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
         (
             "use_mask",
@@ -44,8 +42,8 @@ class CurrentLayoutIcon(LayoutIcon):
     ]
 
     def __init__(self, **config):
-        LayoutIcon.__init__(self, **config)
-        self.add_defaults(CurrentLayoutIcon.defaults)
+        _CurrentLayout.__init__(self, **config)
+        self.add_defaults(CurrentLayout.defaults)
 
         # The original widget calculates a new scale value. We don't want to use that with the ImgMask.
         if self.use_mask:
@@ -56,7 +54,7 @@ class CurrentLayoutIcon(LayoutIcon):
         Loads layout icons.
         """
         if not self.use_mask:
-            LayoutIcon._setup_images(self)
+            _CurrentLayout._setup_images(self)
             return
 
         for names in self._get_layout_names():
@@ -91,21 +89,34 @@ class CurrentLayoutIcon(LayoutIcon):
             size = int((self.bar.height - 1) * self.scale)
             img.resize(size)
 
-            if img.width > self.length:
-                self.length = int(img.width) + self.actual_padding * 2
+            if img.width > self.img_length:
+                self.img_length = int(img.width) + self.actual_padding * 2
 
             self.surfaces[layout_name] = img
 
         self.icons_loaded = True
 
-    def draw(self):
-        if not self.icons_loaded or not self.use_mask or self.current_layout not in self.surfaces:
-            LayoutIcon.draw(self)
+    def draw_icon(self):
+        if not self.icons_loaded:
+            return
+        try:
+            surface = self.surfaces[self.current_layout]
+        except KeyError:
+            logger.error("No icon for layout %s", self.current_layout)
             return
 
-        img = self.surfaces[self.current_layout]
-
         self.drawer.clear(self.background or self.bar.background)
-        offsety = (self.bar.height - img.height) // 2
-        img.draw(colour=self.foreground, x=self.actual_padding, y=offsety)
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.drawer.ctx.save()
+        self.drawer.ctx.translate(
+            (self.width - surface.width) / 2,
+            (self.height - surface.height) / 2,
+        )
+        if self.use_mask:
+            surface.draw(colour=self.foreground)
+        else:
+            self.drawer.ctx.set_source(surface.pattern)
+            self.drawer.ctx.paint()
+        self.drawer.ctx.restore()
+        self.drawer.draw(
+            offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
+        )

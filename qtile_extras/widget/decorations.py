@@ -598,7 +598,7 @@ class PowerLineDecoration(_Decoration):
             Screen(
                 top=Bar(
                     [
-                        widget.CurrentLayoutIcon(background="000000", **powerline),
+                        widget.CurrentLayout(icon_first=True, background="000000", **powerline),
                         widget.WindowName(background="222222", **powerline),
                         widget.Clock(background="444444", **powerline),
                         widget.QuickExit(background="666666")
