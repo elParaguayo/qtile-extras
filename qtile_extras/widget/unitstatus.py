@@ -100,6 +100,11 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
     def _configure(self, qtile, bar):
         base._Widget._configure(self, qtile, bar)
 
+        # Set fontsize
+        if self.fontsize is None:
+            calc = self.bar.height - self.margin * 2
+            self.fontsize = max(calc, 1)
+
         self.layout = self.drawer.textlayout(
             self.label, self.foreground, self.font, self.fontsize, None, wrap=False
         )
@@ -113,11 +118,6 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
             self.indicator_size = max_indicator
         else:
             self.indicator_size = min(max_indicator, self.indicator_size)
-
-        # # Set fontsize
-        # if self.fontsize is None:
-        #     calc = self.bar.height - self.margin * 2
-        #     self.fontsize = max(calc, 1)
 
         self.layout.width = self.text_width()
 
