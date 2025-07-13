@@ -441,7 +441,7 @@ class Box:
     def size(self) -> int:
         """Returns the size of the box."""
         self._prepare()
-        del self.layout.width
+        self.layout.reset_width()
         self.layout.text = self.text
 
         if not self.horizontal:

@@ -110,7 +110,7 @@ class TooltipMixin(_BaseMixin):
         self._tooltip = Popup(
             self.qtile,
             font=self.tooltip_font,
-            font_size=self.tooltip_fontsize,
+            fontsize=self.tooltip_fontsize,
             foreground=self.tooltip_color,
             background=self.tooltip_background,
             vertical_padding=self._tooltip_padding[0],
