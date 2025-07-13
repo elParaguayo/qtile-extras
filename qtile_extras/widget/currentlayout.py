@@ -120,3 +120,17 @@ class CurrentLayout(_CurrentLayout):
         self.drawer.draw(
             offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
         )
+
+
+class CurrentLayoutIcon(CurrentLayout):
+    """
+    Helper class to avoid breakages in users' config.
+
+    In qtile, the ``CurrentLayoutIcon`` widget was removed and combined with ``CurrentLayout``.
+
+    This class just passes the necessary arguments to ``CurrentLayout`` to result in the widget
+    displaying an icon.
+    """
+
+    def __init__(self, *args, **config):
+        CurrentLayout.__init__(self, *args, icon_first=True, **config)

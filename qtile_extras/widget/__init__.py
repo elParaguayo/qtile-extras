@@ -34,6 +34,7 @@ widgets = {
     "BrightnessControl": "brightnesscontrol",
     "ContinuousPoll": "continuous_poll",
     "CurrentLayout": "currentlayout",
+    "CurrentLayoutIcon": "currentlayout",
     "CPUGraph": "graph",
     "GithubNotifications": "githubnotifications",
     "GlobalMenu": "globalmenu",
