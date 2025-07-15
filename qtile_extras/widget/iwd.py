@@ -563,9 +563,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         if self.show_text:
             self.layout.draw(offset, int(self.bar.height / 2.0 - self.layout.height / 2.0) + 1)
 
-        self.drawer.draw(
-            offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
-        )
+        self.draw_at_default_position()
 
     def _get_menu_items(self):
         menu_items = []

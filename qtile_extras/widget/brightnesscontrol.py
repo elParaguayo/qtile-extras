@@ -321,7 +321,7 @@ class BrightnessControl(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
         self.draw_bar(bar_colour=bar_colour, bar_text=bar_text, bar_value=value)
 
         # Redraw the bar
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     def set_timer(self):
         # Cancel old timer

@@ -997,9 +997,7 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
             box.draw((offset, 0) if self.bar.horizontal else (0, offset))
             offset += box.size
 
-        self.drawer.draw(
-            offsetx=self.offsetx, offsety=self.offsety, height=self.height, width=self.width
-        )
+        self.draw_at_default_position()
 
     def button_press(self, x, y, button):
         self.click_pos = x, y

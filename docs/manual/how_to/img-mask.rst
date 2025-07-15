@@ -47,11 +47,7 @@ The example below shows a simple widget using this class to display three icons.
                 self.img.draw(colour=col, x=offset)
                 offset += self.img.width
 
-            self.drawer.draw(
-                offsetx=self.offset,
-                offsety=self.offsety,
-                width=self.length
-            )
+            self.draw_at_default_position()
 
 Placing an instance of ``MaskWidget()`` in your bar will then give you something like this:
 

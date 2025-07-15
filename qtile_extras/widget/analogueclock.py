@@ -174,6 +174,6 @@ class AnalogueClock(base._Widget):
         if self.second_size:
             self.draw_seconds()
 
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
         self.previous_clock = self.clock_string

@@ -173,7 +173,7 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
             item.draw(offset, int(self.bar.height / 2.0 - self.layout.height / 2.0) + 1)
             offset += item.width + padding
 
-        self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.width)
+        self.draw_at_default_position()
 
     def calculate_length(self):
         if not self.items:

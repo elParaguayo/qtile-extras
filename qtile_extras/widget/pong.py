@@ -286,9 +286,7 @@ class Pong(base._Widget):
 
             self.ball.draw(self.drawer)
 
-        self.drawer.draw(
-            offsetx=self.offsetx, offsety=self.offsety, height=self.height, width=self.width
-        )
+        self.draw_at_default_position()
 
     @expose_command
     def start(self):

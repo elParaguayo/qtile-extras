@@ -385,7 +385,7 @@ class UPowerWidget(base._Widget):
                 offset += layout.width
 
         # Redraw the bar
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     def secs_to_hm(self, secs):
         # Basic maths to convert seconds to h:mm format
