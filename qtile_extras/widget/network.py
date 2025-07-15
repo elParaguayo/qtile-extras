@@ -133,7 +133,7 @@ class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin, ConnectionCh
         )
         if self._show_text:
             self.draw_wifi_text()
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     def get_wifi_text(self, size_only=False):
         text = f"{self.essid} ({self.percent * 100:.0f}%)"

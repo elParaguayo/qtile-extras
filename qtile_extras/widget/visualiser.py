@@ -231,7 +231,7 @@ class Visualiser(base._Widget):
         # If the processes aren't running, trying to access the shared memory will fail.
         if not self._procs_started:
             self.drawer.clear(self.background or self.bar.background)
-            self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+            self.draw_at_default_position()
             return
 
         # We need to lock the redraw to our set framerate. We can't rely solely on timers
@@ -256,7 +256,7 @@ class Visualiser(base._Widget):
         self.drawer.clear(self.background or self.bar.background)
         self.drawer.ctx.set_source_surface(surface, 0, self.y_offset)
         self.drawer.ctx.paint()
-        self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
         self._timer = self.timeout_add(self._interval, self.loop)
 

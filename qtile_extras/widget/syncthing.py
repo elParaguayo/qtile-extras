@@ -195,4 +195,4 @@ class Syncthing(base._Widget, ProgressBarMixin):
                 x_offset=x_offset, bar_text=self.bar_text_format.format(percentage=self.bar_value)
             )
 
-        self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()

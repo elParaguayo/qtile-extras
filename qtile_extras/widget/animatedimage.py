@@ -121,11 +121,7 @@ class AnimatedImage(base._Widget, base.MarginMixin):
         self.drawer.ctx.set_source(img.pattern)
         self.drawer.ctx.paint()
         self.drawer.ctx.restore()
-
-        if self.bar.horizontal:
-            self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
-        else:
-            self.drawer.draw(offsety=self.offset, offsetx=self.offsetx, height=self.width)
+        self.draw_at_default_position()
 
         if self._do_loop and (self._timer is None or not self._timer._scheduled):
             self._queue_next()

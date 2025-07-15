@@ -516,7 +516,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
                     self.draw_underline(m)
 
         # # Redraw the bar
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     def draw_goal(self, home):
         offset = 0 if home else (self.calculate_length() - 2)

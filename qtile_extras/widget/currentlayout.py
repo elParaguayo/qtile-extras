@@ -117,9 +117,7 @@ class CurrentLayout(_CurrentLayout):
             self.drawer.ctx.set_source(surface.pattern)
             self.drawer.ctx.paint()
         self.drawer.ctx.restore()
-        self.drawer.draw(
-            offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
-        )
+        self.draw_at_default_position()
 
 
 class CurrentLayoutIcon(CurrentLayout):

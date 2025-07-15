@@ -341,7 +341,7 @@ class _Volume(base._Widget, ExtendedPopupMixin, ProgressBarMixin):
 
             self.set_hide_timer()
 
-        self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     def refresh(self):
         # Check the volume levels to see if they've changed

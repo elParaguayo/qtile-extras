@@ -226,9 +226,7 @@ class Snake(base._Widget):
         self._finish_draw()
 
     def _finish_draw(self):
-        self.drawer.draw(
-            offsetx=self.offsetx, offsety=self.offsety, height=self.height, width=self.width
-        )
+        self.draw_at_default_position()
 
     @expose_command
     def start(self):

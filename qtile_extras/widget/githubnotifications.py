@@ -178,7 +178,7 @@ class GithubNotifications(base._Widget):
         self.drawer.clear(self.background or self.bar.background)
         offsety = (self.bar.height - self.img.height) // 2
         self.img.draw(colour=self.icon_colour, x=self.padding, y=offsety)
-        self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     @expose_command()
     def reload_token(self):

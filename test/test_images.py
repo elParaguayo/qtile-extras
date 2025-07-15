@@ -58,7 +58,7 @@ def test_draw(minimal_conf_noscreen, manager_nospawn):
         def draw(self):
             self.drawer.clear(self.background or self.bar.background)
             self.img.draw()
-            self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.length)
+            self.draw_at_default_position()
 
     config = minimal_conf_noscreen
     config.screens = [libqtile.config.Screen(top=bar.Bar([MaskWidget()], 10))]

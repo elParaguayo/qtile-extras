@@ -106,10 +106,7 @@ class Image(QtileImage):
             self.drawer.ctx.paint()
         self.drawer.ctx.restore()
 
-        if self.bar.horizontal:
-            self.drawer.draw(offsetx=self.offset, offsety=self.offsety, width=self.width)
-        else:
-            self.drawer.draw(offsety=self.offset, offsetx=self.offsetx, height=self.width)
+        self.draw_at_default_position()
 
     def calculate_length(self):
         if self.img is None:

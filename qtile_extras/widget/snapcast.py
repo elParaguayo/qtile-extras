@@ -314,7 +314,7 @@ class SnapCast(base._Widget, MenuMixin):
 
         offsety = (self.bar.height - self.img.height) // 2
         self.img.draw(colour=self.status_colour, x=self.padding, y=offsety)
-        self.drawer.draw(offsetx=self.offsetx, offsety=self.offsety, width=self.length)
+        self.draw_at_default_position()
 
     def finalize(self):
         self.finalising = True
