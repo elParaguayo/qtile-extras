@@ -20,6 +20,7 @@
 import cairocffi
 from libqtile.log_utils import logger
 from libqtile.widget import CurrentLayout as _CurrentLayout
+from libqtile.widget import base
 
 from qtile_extras.images import ImgMask
 
@@ -90,7 +91,7 @@ class CurrentLayout(_CurrentLayout):
             img.resize(size)
 
             if img.width > self.img_length:
-                self.img_length = int(img.width) + self.actual_padding * 2
+                self.img_length = int(img.width)
 
             self.surfaces[layout_name] = img
 
@@ -107,9 +108,53 @@ class CurrentLayout(_CurrentLayout):
 
         self.drawer.clear(self.background or self.bar.background)
         self.drawer.ctx.save()
+        self.rotate_drawer()
+
+        translatex, translatey = self.width, self.height
+
+        if self.mode == "both":
+            if self.bar.horizontal:
+                height = self.bar.height
+                if self.icon_first:
+                    # padding - icon - padding - text - padding
+                    x = self.actual_padding + self.img_length + self.actual_padding
+                    translatex -= base._TextBox.calculate_length(self) - self.actual_padding
+                else:
+                    # padding - text - padding - icon - padding
+                    x = self.actual_padding
+                    translatex += base._TextBox.calculate_length(self) - self.actual_padding
+            elif self.rotate:
+                height = self.bar.width
+                if self.icon_first:
+                    # padding - icon - padding - text - padding
+                    x = self.actual_padding + self.img_length + self.actual_padding
+                    translatey -= base._TextBox.calculate_length(self) - self.actual_padding
+                else:
+                    # padding - text - padding - icon - padding
+                    x = self.actual_padding
+                    translatey += base._TextBox.calculate_length(self) - self.actual_padding
+            else:
+                x = 0
+                if self.icon_first:
+                    # padding - icon - padding - text - padding
+                    height = self.actual_padding + self.img_length + self.actual_padding
+                    translatey -= base._TextBox.calculate_length(self) - self.actual_padding
+                else:
+                    # padding - text - padding - icon - padding
+                    height = self.actual_padding
+                    translatey += base._TextBox.calculate_length(self) - self.actual_padding
+                # neutralize all math in the layout.draw() below
+                # to simulate starting height from zero
+                height = (height * 2) + self.layout.height - 2
+
+            self.layout.draw(x, int(height / 2 - self.layout.height / 2) + 1)
+
+        if not self.bar.horizontal and self.rotate:
+            translatex, translatey = translatey, translatex
+
         self.drawer.ctx.translate(
-            (self.width - surface.width) / 2,
-            (self.height - surface.height) / 2,
+            (translatex - surface.width) / 2,
+            (translatey - surface.height) / 2,
         )
         if self.use_mask:
             surface.draw(colour=self.foreground)
@@ -117,9 +162,7 @@ class CurrentLayout(_CurrentLayout):
             self.drawer.ctx.set_source(surface.pattern)
             self.drawer.ctx.paint()
         self.drawer.ctx.restore()
-        self.drawer.draw(
-            offsetx=self.offsetx, offsety=self.offsety, width=self.width, height=self.height
-        )
+        self.draw_at_default_position()
 
 
 class CurrentLayoutIcon(CurrentLayout):
@@ -133,4 +176,4 @@ class CurrentLayoutIcon(CurrentLayout):
     """
 
     def __init__(self, *args, **config):
-        CurrentLayout.__init__(self, *args, icon_first=True, **config)
+        CurrentLayout.__init__(self, *args, mode="icon", **config)

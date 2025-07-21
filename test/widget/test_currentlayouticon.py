@@ -27,6 +27,7 @@ import pytest
 from pytest_lazyfixture import lazy_fixture
 
 import qtile_extras.widget.currentlayout
+from test.helpers import BareConfig
 
 BAR_SIZE = 50
 PADDING = 3
@@ -61,19 +62,12 @@ def temp_icons(layout_list):
 @pytest.fixture(scope="function")
 def currentlayout_manager(request, layout_list, manager_nospawn):
     # We need to enable the mask here otherwise the widget is just the default qtile one.
-    widget = qtile_extras.widget.currentlayout.CurrentLayout(
-        **{"use_mask": True, "icon_first": True, **getattr(request, "param", dict())}
+    widget = qtile_extras.widget.currentlayout.CurrentLayoutIcon(
+        **{"use_mask": True, **getattr(request, "param", dict())}
     )
 
-    class CurrentLayoutConfig(libqtile.confreader.Config):
-        auto_fullscreen = True
-        keys = []
-        mouse = []
-        groups = [
-            libqtile.config.Group("a"),
-        ]
+    class CurrentLayoutConfig(BareConfig):
         layouts = layout_list
-        floating_layout = libqtile.resources.default_config.floating_layout
         screens = [
             libqtile.config.Screen(
                 top=libqtile.bar.Bar(
@@ -98,7 +92,7 @@ def currentlayout_manager(request, layout_list, manager_nospawn):
     indirect=["currentlayout_manager"],
 )
 def test_currentlayouticon_icon_size(currentlayout_manager, expected):
-    info = currentlayout_manager.c.widget["currentlayout"].info()
+    info = currentlayout_manager.c.widget["currentlayouticon"].info()
     assert info["length"] == expected
 
 
