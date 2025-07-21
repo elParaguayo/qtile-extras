@@ -31,9 +31,16 @@ def widget():
 @widget_config(
     [
         {},
-        {"icon_first": True},
-        {"use_mask": True, "icon_first": True, "foreground": "0ff"},
-        {"use_mask": True, "icon_first": True, "foreground": ["f0f", "00f", "0ff"]},
+        {"mode": "icon"},
+        {"use_mask": True, "mode": "icon", "foreground": "0ff"},
+        {"use_mask": True, "icon_first": True, "mode": "both", "foreground": "0ff"},
+        {
+            "use_mask": True,
+            "icon_first": False,
+            "mode": "both",
+            "foreground": ["f0f", "00f", "0ff"],
+        },
+        {"use_mask": False, "icon_first": True, "mode": "both", "foreground": "f0f"},
     ]
 )
 def ss_currentlayout(screenshot_manager):
