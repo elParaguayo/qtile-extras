@@ -113,41 +113,37 @@ class CurrentLayout(_CurrentLayout):
         translatex, translatey = self.width, self.height
 
         if self.mode == "both":
+            y = (self.bar.size - self.layout.height) / 2 + 1
             if self.bar.horizontal:
-                height = self.bar.height
                 if self.icon_first:
                     # padding - icon - padding - text - padding
-                    x = self.actual_padding + self.img_length + self.actual_padding
-                    translatex -= base._TextBox.calculate_length(self) - self.actual_padding
+                    x = self.padding + self.img_length + self.padding
+                    translatex -= base._TextBox.calculate_length(self) - self.padding
                 else:
                     # padding - text - padding - icon - padding
-                    x = self.actual_padding
-                    translatex += base._TextBox.calculate_length(self) - self.actual_padding
+                    x = self.padding
+                    translatex += base._TextBox.calculate_length(self) - self.padding
             elif self.rotate:
-                height = self.bar.width
                 if self.icon_first:
                     # padding - icon - padding - text - padding
-                    x = self.actual_padding + self.img_length + self.actual_padding
-                    translatey -= base._TextBox.calculate_length(self) - self.actual_padding
+                    x = self.padding + self.img_length + self.padding
+                    translatey -= base._TextBox.calculate_length(self) - self.padding
                 else:
                     # padding - text - padding - icon - padding
-                    x = self.actual_padding
-                    translatey += base._TextBox.calculate_length(self) - self.actual_padding
+                    x = self.padding
+                    translatey += base._TextBox.calculate_length(self) - self.padding
             else:
                 x = 0
                 if self.icon_first:
                     # padding - icon - padding - text - padding
-                    height = self.actual_padding + self.img_length + self.actual_padding
-                    translatey -= base._TextBox.calculate_length(self) - self.actual_padding
+                    y = self.padding + self.img_length + self.padding
+                    translatey -= base._TextBox.calculate_length(self) - self.padding
                 else:
                     # padding - text - padding - icon - padding
-                    height = self.actual_padding
-                    translatey += base._TextBox.calculate_length(self) - self.actual_padding
-                # neutralize all math in the layout.draw() below
-                # to simulate starting height from zero
-                height = (height * 2) + self.layout.height - 2
+                    y = self.padding
+                    translatey += base._TextBox.calculate_length(self) - self.padding
 
-            self.layout.draw(x, int(height / 2 - self.layout.height / 2) + 1)
+            self.layout.draw(x, y)
 
         if not self.bar.horizontal and self.rotate:
             translatex, translatey = translatey, translatex
