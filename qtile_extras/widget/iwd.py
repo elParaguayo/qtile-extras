@@ -320,7 +320,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
     def calculate_length(self):
         width = 0
         text_width = base._TextBox.calculate_length(self)
-        image_width = self.wifi_width + 2 * self.actual_padding
+        image_width = self.wifi_width + 2 * self.padding
 
         if self.show_text:
             width += text_width
@@ -328,7 +328,7 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
         if self.show_image:
             width += image_width
             if self.show_text:
-                width -= self.actual_padding
+                width -= self.padding
 
         return width
 
