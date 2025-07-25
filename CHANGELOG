@@ -1,3 +1,4 @@
+2025-07-25: [RELEASE] v0.33.0 release - compatible with qtile 0.33.0
 2025-07-21: [BREAKING CHNAGE] More changes to `CurrentLayout` in qtile so you need latest
                               git version of qtile to be installed.
 2025-07-12: [BREAKING CHANGE] Qtile has removed `CurrentLayoutIcon` as it is now part of
