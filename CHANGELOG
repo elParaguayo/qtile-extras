@@ -1,3 +1,5 @@
+2025-10-25: [BREAKING CHANGE] Updated border decorations to be compatible with new wayland backend.
+                              You must be on latest qtile to use this.
 2025-09-01: [BUGFIX] Fix `TooltipMixin` bug where text could not be set due to change in qtile
 2025-08-31: [BUGFIX] Update `LiveFootballScores` for new(ish) API
 2025-07-27: [BREAKING CHANGE] Drop support for python < 3.12 (following same change in qtile)

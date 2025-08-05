@@ -1,5 +1,5 @@
 # Copyright (c) 2021 Matt Colligan
-# Copyright (c) 2024 elParaguayo
+# Copyright (c) 2024-5 elParaguayo
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from libqtile.backend.wayland.window import SceneRect, Window, _rgb
+from libqtile.backend.wayland._ffi import ffi, lib
+from libqtile.backend.wayland.window import Window
 from libqtile.log_utils import logger
+from libqtile.utils import rgb
 
-from qtile_extras.layout.decorations.borders import ConditionalBorder, _BorderStyle
+from qtile_extras.layout.decorations.borders import (
+    ConditionalBorder,
+    ConditionalBorderWidth,
+    _BorderStyle,
+)
 
 if TYPE_CHECKING:
     from libqtile.backend.wayland.window import Core, Qtile, S
@@ -41,53 +47,100 @@ def wayland_window_init(self, core: Core, qtile: Qtile, surface: S):
     self._border_styles = {}
 
 
-def wayland_paint_borders(self, colors: ColorsType | None, width: int) -> None:
-    logger.debug("qtile_extras: Running injected wayland paint borders.")
-    if not colors:
-        colors = []
-        width = 0
+def wayland_place(
+    self,
+    x: int | None,
+    y: int | None,
+    width: int | None,
+    height: int | None,
+    b_width: int | None = None,
+    bordercolor: ColorsType | None = None,
+    above: bool = False,
+    margin: int | list[int] | None = None,
+    respect_hints: bool = False,
+) -> None:
+    # START BORDER WIDTH MODIFICATION
+    if isinstance(b_width, ConditionalBorderWidth):
+        old = getattr(self, "_old_bw", b_width.default)
+        assert old is not None
+        borderwidth = b_width.get_border_for_window(self)
+        assert borderwidth is not None
+        if borderwidth != old:
+            width += old * 2
+            width -= borderwidth * 2
+            height += old * 2
+            height -= borderwidth * 2
+    else:
+        borderwidth = b_width
 
-    if not isinstance(colors, list):
-        colors = [colors]
+    self._old_bw = borderwidth
+    # END BORDER WIDTH MODIFICATION
 
-    colors = [c.compare(self) if isinstance(c, ConditionalBorder) else c for c in colors]
+    # Adjust the placement to account for layout margins, if there are any.
+    # TODO: is respect_hints only for X11?
+    assert ffi is not None
+    if x is None:
+        x = self.x
+    if y is None:
+        y = self.y
+    if bordercolor is None:
+        bordercolor = self.bordercolor
+    if borderwidth is None:
+        borderwidth = self._borderwidth
+    if width is None:
+        width = self.width
+    if height is None:
+        height = self.height
+    if margin is not None:
+        if isinstance(margin, int):
+            margin = [margin] * 4
+        x += margin[3]
+        y += margin[0]
+        width -= margin[1] + margin[3]
+        height -= margin[0] + margin[2]
 
-    if self.tree:
-        self.tree.node.set_position(width, width)
-    self.bordercolor = colors
-    self.borderwidth = width
+    # TODO: respect hints
 
-    if width == 0:
-        for rects in self._borders:
-            for rect in rects:
-                rect.node.destroy()
-        self._borders.clear()
-        return
+    if self.group is not None and self.group.screen is not None:
+        self.float_x = x - self.group.screen.x
+        self.float_y = y - self.group.screen.y
 
-    if len(colors) > width:
-        colors = colors[:width]
+    # START BORDER INJECTION
+    if not bordercolor:
+        bordercolor = []
+        borderwidth = 0
 
-    num = len(colors)
-    old_borders = self._borders
-    new_borders = []
-    widths = [width // num] * num
-    for i in range(width % num):
+    if not isinstance(bordercolor, list):
+        bordercolor = [bordercolor]
+
+    bordercolor = [
+        c.compare(self) if isinstance(c, ConditionalBorder) else c for c in bordercolor
+    ]
+
+    if len(bordercolor) > width:
+        bordercolor = bordercolor[:width]
+
+    num = len(bordercolor)
+    widths = [borderwidth // num] * num
+    for i in range(borderwidth % num):
         widths[i] += 1
 
-    outer_w = self.width + width * 2
-    outer_h = self.height + width * 2
+    outer_w = width + borderwidth * 2
+    outer_h = height + borderwidth * 2
     coord = 0
 
-    for i, color in enumerate(colors):
+    border_layers = ffi.new(f"struct qw_border[{num}]")
+
+    for i, color in enumerate(bordercolor):
         bw = widths[i]
         if isinstance(color, _BorderStyle):
             # Tidy up old data
             if color in self._border_styles:
-                _old_buffer, old_surface = self._border_styles.pop(color)
+                old_surface = self._border_styles.pop(color)
                 if old_surface is not None:
                     old_surface.finish()
 
-            scenes, image_buffer, surface = color._wayland_draw(
+            surface, border = color._wayland_draw(
                 self,
                 outer_w,
                 outer_h,
@@ -99,50 +152,17 @@ def wayland_paint_borders(self, colors: ColorsType | None, width: int) -> None:
             )
 
             # Keep reference to border objects
-            self._border_styles[color] = (image_buffer, surface)
-            new_borders.append(scenes)
+            self._border_styles[color] = surface
+            border_layers[i] = border
+
         else:
-            color_ = _rgb(color)
+            color_array = rgb(color)
+            border_layers[i].type = lib.QW_BORDER_RECT
+            border_layers[i].width = bw
+            for side in range(4):
+                for j in range(4):
+                    border_layers[i].rect.color[side][j] = color_array[j]
+    # END BORDER INJECTION
 
-            # [x, y, width, height] for N, E, S, W
-            geometries = (
-                (coord, coord, outer_w - coord * 2, bw),
-                (outer_w - bw - coord, bw + coord, bw, outer_h - bw * 2 - coord * 2),
-                (coord, outer_h - bw - coord, outer_w - coord * 2, bw),
-                (coord, bw + coord, bw, outer_h - bw * 2 - coord * 2),
-            )
-
-            if old_borders:
-                rects = old_borders.pop(0)
-                for (x, y, w, h), rect in zip(geometries, rects):
-                    if isinstance(rect, SceneRect):
-                        rect.set_color(color_)
-                        rect.set_size(w, h)
-                        rect.node.set_position(x, y)
-                        needs_new_rects = False
-                    else:
-                        rect.node.destroy()
-                        needs_new_rects = True
-            else:
-                needs_new_rects = True
-
-            if needs_new_rects:
-                rects = []
-                for x, y, w, h in geometries:
-                    rect = SceneRect(self.container, w, h, color_)
-                    rect.node.set_position(x, y)
-                    rects.append(rect)
-
-            new_borders.append(rects)
-        coord += bw
-
-    for rects in old_borders:
-        for rect in rects:
-            rect.node.destroy()
-
-    # Ensure the window contents and any nested surfaces are drawn above the
-    # borders.
-    if self.tree:
-        self.tree.node.raise_to_top()
-
-    self._borders = new_borders
+    self.bordercolor = bordercolor
+    self._ptr.place(self._ptr, x, y, width, height, border_layers, num, int(above))
