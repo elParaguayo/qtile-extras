@@ -121,7 +121,7 @@ class TooltipMixin(_BaseMixin):
         )
 
         # Size the popup
-        self._tooltip.text = self.tooltip_text
+        self._tooltip.layout.text = self.tooltip_text
 
         height = self._tooltip.layout.height + (2 * self._tooltip.vertical_padding)
         width = self._tooltip.layout.width + (2 * self._tooltip.horizontal_padding)
@@ -173,9 +173,10 @@ class TooltipMixin(_BaseMixin):
             return
 
         else:
-            self._tooltip.hide()
-            self._tooltip.kill()
-            self._tooltip = None
+            if self._tooltip is not None:
+                self._tooltip.hide()
+                self._tooltip.kill()
+                self._tooltip = None
             self._tooltip_timer = None
 
 
