@@ -45,13 +45,13 @@ def inject_border_methods():
         from libqtile.backend.wayland.window import Window
 
         from qtile_extras.layout.decorations.injections_wayland import (
-            wayland_paint_borders,
+            wayland_place,
             wayland_window_init,
         )
 
         logger.debug("qtile_extras: Injecting wayland border methods.")
         Window.__init__ = wayland_window_init
-        Window.paint_borders = wayland_paint_borders
+        Window.place = wayland_place
 
     else:
         from libqtile.backend.x11.window import XWindow
@@ -70,16 +70,7 @@ def inject_border_width_methods():
 
     logger.debug("qtile_extras: Running inject_border_width methods.")
 
-    if qtile.core.name == "wayland":
-        from libqtile.backend.wayland.xdgwindow import XdgWindow
-        from libqtile.backend.wayland.xwindow import XWindow
-
-        logger.debug("qtile_extras: Injecting wayland border width methods.")
-        for base in (XdgWindow, XWindow):
-            base._place = base.place
-            base.place = new_place
-
-    else:
+    if qtile.core.name == "x11":
         from libqtile.backend.x11.window import _Window
 
         logger.debug("qtile_extras: Injecting x11 border methods.")
