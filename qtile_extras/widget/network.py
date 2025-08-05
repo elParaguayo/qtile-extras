@@ -1,4 +1,15 @@
-# Copyright (c) 2021 elParaguayo
+# Copyright (c) 2021-5 elParaguayo
+#
+# `get_status` function copied from qtile. Copyright holders for the wlan widget:
+# Copyright (c) 2012 Sebastian Bechtel
+# Copyright (c) 2013 Tao Sauvage
+# Copyright (c) 2014 Sebastian Kricner
+# Copyright (c) 2014 Sean Vig
+# Copyright (c) 2014 Tycho Andersen
+# Copyright (c) 2014 Craig Barnes
+# Copyright (c) 2015 farebord
+# Copyright (c) 2015 Jörg Thalheim (Mic92)
+# Copyright (c) 2016 Juhani Imberg
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -17,13 +28,22 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import iwlib
 from libqtile import bar
 from libqtile.command.base import expose_command
 from libqtile.log_utils import logger
 from libqtile.widget import base
-from libqtile.widget.wlan import get_status
 
 from qtile_extras.widget.mixins import ConnectionCheckMixin, GraphicalWifiMixin
+
+
+def get_status(interface_name):
+    interface = iwlib.get_iwconfig(interface_name)
+    if "stats" not in interface:
+        return None, None
+    quality = interface["stats"]["quality"]
+    essid = bytes(interface["ESSID"]).decode()
+    return essid, quality
 
 
 class WiFiIcon(base._Widget, base.PaddingMixin, GraphicalWifiMixin, ConnectionCheckMixin):
