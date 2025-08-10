@@ -27,7 +27,7 @@ jobs:
                   imagemagick libpulse-dev git xserver-xephyr xterm xvfb dbus-x11 libnotify-bin \
                   libxcb-composite0-dev libxcb-icccm4-dev libxcb-res0-dev libxcb-render0-dev libxcb-res0-dev \
                   libxcb-xfixes0-dev libiw-dev fonts-noto zenity libxkbcommon-dev python-gi-dev tox libcairo2-dev \
-                  gir1.2-gdkpixbuf-2.0 librsvg2-dev
+                  gir1.2-gdkpixbuf-2.0 librsvg2-dev libxcb-cursor0
                 pip -q install "tox<4" tox-gh-actions
             - name: Build wayland
               run:  bash -x ./scripts/ubuntu_wayland_setup
