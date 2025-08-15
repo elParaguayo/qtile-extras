@@ -29,11 +29,6 @@ from libqtile.utils import rgb
 
 try:
     from libqtile.backend.wayland._ffi import ffi, lib
-    from libqtile.backend.wayland.window import _rgb
-    from wlroots import ffi as wlr_ffi
-    from wlroots import lib as wlr_lib
-    from wlroots.wlr_types import Buffer, SceneBuffer
-    from wlroots.wlr_types.scene import SceneRect
 
     HAS_WAYLAND = True
 except (ImportError, ModuleNotFoundError):
@@ -80,16 +75,6 @@ class _BorderStyle(Configurable):
             self.outer_h,
         )
 
-    def _new_buffer(self):
-        surface = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, self.outer_w, self.outer_h)
-        stride = surface.get_stride()
-        data = cairocffi.cairo.cairo_image_surface_get_data(surface._pointer)
-        image_buffer = lib.cairo_buffer_create(self.outer_w, self.outer_h, stride, data)
-        if image_buffer == ffi.NULL:
-            raise RuntimeError("Couldn't allocate cairo buffer.")
-
-        return image_buffer, surface
-
     def _get_edges(self, bw, x, y, width, height):
         return [
             (x, y, width, bw),
@@ -130,28 +115,17 @@ class _BorderStyle(Configurable):
         self.outer_h = outer_h
         self.rects = self._get_edges(borderwidth, x, y, width, height)
         if self.needs_surface:
-            image_buffer, surface = self._new_buffer()
+            surface = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, self.outer_w, self.outer_h)
+            self.wayland_draw(borderwidth, x, y, width, height, surface)
+            border = ffi.new("struct qw_border *")
+            border.type = lib.QW_BORDER_BUFFER
+            border.width = borderwidth
+            border.buffer.surface = ffi.cast("cairo_surface_t *", surface._pointer)
         else:
-            image_buffer = None
             surface = None
+            border = self.wayland_draw(borderwidth, x, y, width, height, surface)
 
-        scenes = self.wayland_draw(borderwidth, x, y, width, height, surface)
-
-        if self.needs_surface:
-            scenes = []
-            for x, y, w, h in self.rects:
-                scene_buffer = SceneBuffer.create(self.window.container, Buffer(image_buffer))
-                scene_buffer.node.set_position(x, y)
-                wlr_lib.wlr_scene_buffer_set_dest_size(scene_buffer._ptr, w, h)
-                fbox = wlr_ffi.new("struct wlr_fbox *")
-                fbox.x = x
-                fbox.y = y
-                fbox.width = w
-                fbox.height = h
-                wlr_lib.wlr_scene_buffer_set_source_box(scene_buffer._ptr, fbox)
-                scenes.append(scene_buffer)
-
-        return scenes, image_buffer, surface
+        return surface, border[0]
 
     def wayland_draw(self, borderwidth, x, y, width, height, surface):
         self.draw(surface, borderwidth, x, y, width, height)
@@ -423,14 +397,15 @@ class SolidEdge(_BorderStyle):
             self.core.PolyFillRectangle(self.pixmap, self.gc, 1, [rect])
 
     def wayland_draw(self, borderwidth, x, y, width, height, surface):
-        scene_rects = []
-        edges = self._get_edges(borderwidth, x, y, width, height)
-        for (x, y, w, h), c in zip(edges, self.colours):
-            rect = SceneRect(self.window.container, w, h, _rgb(c))
-            rect.node.set_position(x, y)
-            scene_rects.append(rect)
+        border = ffi.new("struct qw_border *")
+        border.type = lib.QW_BORDER_RECT
+        border.width = borderwidth
+        for i, col in enumerate(self.colours):
+            col_array = rgb(col)
+            for j in range(4):
+                border.rect.color[i][j] = col_array[j]
 
-        return scene_rects
+        return border
 
 
 class ConditionalBorder(_BorderStyle):
@@ -673,3 +648,10 @@ class ConditionalBorderWidth(Configurable):
         return other * self.default
 
     __rmul__ = __mul__
+
+
+class TestDecoration(_BorderStyle):
+    def draw(self, surface, bw, x, y, width, height):
+        with cairocffi.Context(surface) as ctx:
+            ctx.set_source_rgb(1, 0, 1)
+            ctx.fill()
