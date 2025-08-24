@@ -265,8 +265,6 @@ class IWD(base._TextBox, base.MarginMixin, MenuMixin, GraphicalWifiMixin, Connec
     NB you cannot join 802.1x networks unless they have already been configured.
     """
 
-    _experimental = True
-
     defaults = [
         (
             "interface",
