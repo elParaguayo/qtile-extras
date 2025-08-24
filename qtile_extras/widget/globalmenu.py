@@ -45,8 +45,6 @@ class GlobalMenu(base._TextBox, DbusMenuMixin):
 
     orientations = base.ORIENTATION_HORIZONTAL
 
-    _experimental = True
-
     defaults = [
         ("padding", 3, "Padding between items in menu bar"),
     ]  # type: list[tuple[str, Any, str]]
