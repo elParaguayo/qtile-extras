@@ -104,7 +104,6 @@ class SnapCast(base._Widget, MenuMixin):
     the group's stream.
     """
 
-    _experimental = True
     orientations = base.ORIENTATION_HORIZONTAL
     defaults = [
         ("client_id", None, "Client id (if blank, will use MAC address)."),
