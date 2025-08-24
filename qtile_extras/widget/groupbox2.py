@@ -873,8 +873,6 @@ class GroupBox2(base._Widget, base.MarginMixin, base.PaddingMixin):
 
     """
 
-    _experimental = True
-
     orientations = base.ORIENTATION_BOTH
 
     defaults: list[tuple[str, Any, str]] = [
