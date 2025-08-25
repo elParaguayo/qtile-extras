@@ -118,6 +118,8 @@ class FootballMatch:
 
         self._clear_flags()
 
+        self.previous_status = None
+
         if data is None:
             self.hasTeamPage = self._find_team_page()
 
@@ -403,7 +405,8 @@ class FootballMatch:
                 self._awayred = True
 
     def _check_status(self, status):
-        self._statuschange = True
+        self._statuschange = self.status != self.previous_status
+        self.previous_status = self.status
 
     def _clear_flags(self):
         self._homegoal = False
@@ -721,7 +724,7 @@ class FootballMatch:
     @property
     @_no_match(False)
     def is_live(self):
-        return self.match.status == "MidEvent"
+        return self.status == self.STATUS_LIVE
 
     @property
     @_no_match(False)
