@@ -175,6 +175,7 @@ class TestManager:
         self._sockfile.close()
 
     def start(self, config_class, no_spawn=False):
+        multiprocessing.set_start_method("fork", force=True)
         rpipe, wpipe = multiprocessing.Pipe()
 
         def run_qtile():

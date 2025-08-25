@@ -12,13 +12,15 @@ jobs:
         name: "python ${{ matrix.python-version }}"
         strategy:
             matrix:
-                python-version: ['3.12', '3.13']
+                python-version: ['3.12', '3.13', '3.14-dev']
         steps:
             - uses: actions/checkout@v4
             - name: Set up python ${{ matrix.python-version }}
               uses: actions/setup-python@v5
               with:
                   python-version: ${{ matrix.python-version }}
+            - name: Install uv
+              run: curl -LsSf https://astral.sh/uv/install.sh | sh
             - name: Install dependencies
               run: |
                 sudo apt update
@@ -26,18 +28,40 @@ jobs:
                   libdbus-1-dev libgirepository-2.0-dev gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-gudev-1.0 \
                   imagemagick libpulse-dev git xserver-xephyr xterm xvfb dbus-x11 libnotify-bin \
                   libxcb-composite0-dev libxcb-icccm4-dev libxcb-res0-dev libxcb-render0-dev libxcb-res0-dev \
-                  libxcb-xfixes0-dev libiw-dev fonts-noto zenity libxkbcommon-dev python-gi-dev tox libcairo2-dev \
+                  libxcb-xfixes0-dev libiw-dev fonts-noto zenity libxkbcommon-dev python-gi-dev libcairo2-dev \
                   gir1.2-gdkpixbuf-2.0 librsvg2-dev libxcb-cursor0
-                pip -q install "tox<4" tox-gh-actions
+            - name: Cache Wayland dependencies
+              uses: actions/cache@v4
+              with:
+                path: cache
+                key: ${{ runner.os }}-wayland-${{ hashFiles('scripts/ubuntu_wayland_setup') }}
+                restore-keys: |
+                  ${{ runner.os }}-wayland-
             - name: Build wayland
               run:  bash -x ./scripts/ubuntu_wayland_setup
+            - name: Clean python version and export to env
+              shell: bash
+              run: |
+                PYTHON_VERSION="${{ matrix.python-version }}"
+                CLEAN_VERSION="${PYTHON_VERSION%-dev}"
+                echo "QTILE_CI_PYTHON=${CLEAN_VERSION}" >> $GITHUB_ENV
             - name: Run test suite
               run: |
-                tox
+                make QTILE_CI_PYTHON=${QTILE_CI_PYTHON} check check-packaging
+                uv run coverage combine
+                uv run coverage report -m
+                uv run coverage xml
+            - name: Push coverage to Coveralls
+              run: |
+                uv run coveralls --service=github
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
+                COVERALLS_PARALLEL: true
             - name: Test widget decoration output
               if: ${{ matrix.python-version == '3.13' }}
               run: |
-                tox -e decorations
+                make check-decorations
             - name: Upload generated images
               if: ${{ always() && matrix.python-version == '3.13' }}
               uses: actions/upload-artifact@v4
@@ -45,15 +69,6 @@ jobs:
                 name: generated-images
                 path: decoration_images/
                 retention-days: 5
-            - name: Push coverage to Coveralls
-              run: |
-                pip -q install coveralls
-                coveralls --service=github
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
-                COVERALLS_PARALLEL: true
-
     coverage:
         name: Finalize Coverage
         needs: build

@@ -18,6 +18,7 @@ license = "MIT"
 license-files = [ "LICENSE" ]
 description = "Extra items for qtile that are unlikely to be maintained in the main repo."
 dynamic = ["version"]
+requires-python = ">=3.12"
 readme = "README.md"
 
 [project.urls]
@@ -76,3 +77,47 @@ default-section = "third-party"
 paths = ["qtile_extras", "whitelist.py"]
 min_confidence = 100
 ignore_decorators = ["@method"]
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+omit = [
+    "test/*",
+]
+
+[project.optional-dependencies]
+dev = [
+    "coverage",
+    "coveralls",
+    "pytest-cov",
+    "pre-commit",
+    "PyGObject",
+    "isort",
+    "pytest < 8.0.0",
+    "mypy",
+    "anyio",
+    "check-manifest",
+    "twine",
+    "build",
+    "pytest-rerunfailures",
+    "pytest-lazy-fixture",
+    "setuptools >= 40.5.0",
+    "xkbcommon < 1.1",
+    "pywayland == 0.4.17",
+    "dbus-fast",
+    "xcffib >= 1.4.0",
+    "cairocffi >= 1.6.0",
+    "wheel"
+]
+widgets = [
+    "requests",
+    "pint",
+    "stravalib <= 1.1.0",
+    "iwlib",
+    "psutil",
+    "pulsectl-asyncio",
+]

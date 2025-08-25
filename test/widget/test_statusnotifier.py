@@ -142,7 +142,7 @@ def test_statusnotifier_dbusmenuitem_repr():
     assert repr(item2) == "<DBusMenuItem (1:'Test item2')>"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_statusnotifier_dbusmenu_errors(monkeypatch, caplog):
     init_log(logging.INFO)
 
