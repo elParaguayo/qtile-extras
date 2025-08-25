@@ -19,6 +19,8 @@ jobs:
               uses: actions/setup-python@v5
               with:
                   python-version: ${{ matrix.python-version }}
+            - name: Install uv
+              run: curl -LsSf https://astral.sh/uv/install.sh | sh
             - name: Install dependencies
               run: |
                 sudo apt update
@@ -26,14 +28,16 @@ jobs:
                   libdbus-1-dev libgirepository-2.0-dev gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-gudev-1.0 \
                   imagemagick libpulse-dev git xserver-xephyr xterm xvfb dbus-x11 libnotify-bin \
                   libxcb-composite0-dev libxcb-icccm4-dev libxcb-res0-dev libxcb-render0-dev libxcb-res0-dev \
-                  libxcb-xfixes0-dev libiw-dev fonts-noto zenity libxkbcommon-dev python-gi-dev tox libcairo2-dev \
+                  libxcb-xfixes0-dev libiw-dev fonts-noto zenity libxkbcommon-dev python-gi-dev libcairo2-dev \
                   gir1.2-gdkpixbuf-2.0 librsvg2-dev libxcb-cursor0
-                pip -q install "tox<4" tox-gh-actions
             - name: Build wayland
               run:  bash -x ./scripts/ubuntu_wayland_setup
             - name: Run test suite
               run: |
-                tox
+                make QTILE_CI_PYTHON=${{ matrix.python-version }} check check-packaging
+                uv run coverage combine -q
+                uv run coverage report -m
+                uv run coverage xml
             - name: Test widget decoration output
               if: ${{ matrix.python-version == '3.13' }}
               run: |
