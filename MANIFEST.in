@@ -6,9 +6,10 @@ include .pre-commit-config.yaml
 include whitelist.py
 
 exclude coverage.xml
-exclude tox.ini
 exclude .readthedocs.yaml
 exclude .git-blame-ignore-revs
+exclude uv.lock
+exclude Makefile
 
 recursive-include qtile_extras *.py
 

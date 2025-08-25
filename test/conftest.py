@@ -187,3 +187,8 @@ def minimal_conf_noscreen():
         screens = []
 
     return MinimalConf
+
+
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"

@@ -38,7 +38,6 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
-.tox/
 .nox/
 .coverage
 .coverage.*
@@ -140,3 +139,6 @@ cython_debug/
 
 # Widgets screenshots
 docs/_static/screenshots/
+
+# uv lock file
+uv.lock
