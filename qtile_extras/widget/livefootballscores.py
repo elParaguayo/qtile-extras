@@ -315,7 +315,7 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
         }
 
         try:
-            # Create foorball match object
+            # Create football match object
             if not self.sources[0]:
                 myteam = FootballMatch(self.team, **kwargs)
                 self.sources[0].append(myteam)
