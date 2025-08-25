@@ -20,6 +20,7 @@ help: ## Show this help
 .PHONY: check
 check: ## Run the test suite on the latest python
 	uv sync $(UV_PYTHON_ARG) --all-extras
+	uv pip install pywlroots==0.17.0 --no-build-isolation
 	uv pip install --config-settings backend=wayland "git+https://github.com/elParaguayo/qtile.git@fix-wayland-builder-v2#egg=qtile[wayland]" -v --no-build-isolation
 	uv run $(UV_PYTHON_ARG) $(TEST_RUNNER) --backend=x11 --backend=wayland
 
