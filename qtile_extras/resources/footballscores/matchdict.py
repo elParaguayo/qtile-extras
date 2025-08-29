@@ -32,7 +32,7 @@ class MatchDictKeys:
     MINS_EXTRA_TIME = "minutesIntoAddedTime"
     OFFICIALS = "officials"
     OUTCOME_TYPE = "eventOutcomeType"
-    PROGRESS = "eventProgress"
+    PROGRESS = "periodLabel"
     SERIES_WINNER = "seriesWinner"
     START_TIME = "startTime"
     START_TIME_UKHHMM = "startTimeInUKHHMM"
