@@ -77,6 +77,7 @@ class FootballMatch:
     ACTION_RED_CARD = "card"
 
     STATUS_LIVE = "LIVE"
+    STATUS_PENALTIES = "PENALLTIES"
     STATUS_POSTPONED = "POSTPONED"
     STATUS_HALF_TIME = "HALFTIME"
     STATUS_FULL_TIME = "FULLTIME"
@@ -639,6 +640,24 @@ class FootballMatch:
         return self.match.away.score
 
     @property
+    @_no_match(0)
+    @_override_none(0)
+    def home_score_penalties(self):
+        """Returns the number of goals scored by the home team"""
+        if not self.is_penalty_shootout:
+            return None
+        return self.match.home.runningScores.penaltyShootout
+
+    @property
+    @_no_match(0)
+    @_override_none(0)
+    def away_score_penalties(self):
+        """Returns the number of goals scored by the away team"""
+        if not self.is_penalty_shootout:
+            return None
+        return self.match.away.runningScores.penaltyShootout
+
+    @property
     @_no_match("")
     def competition(self):
         """Returns the name of the competition to which the match belongs
@@ -663,6 +682,8 @@ class FootballMatch:
         elif status == "MidEvent":
             if self.long_status == "Half time":
                 return self.STATUS_HALF_TIME
+            elif self.long_status == "Penalty shootout":
+                return self.STATUS_PENALTIES
             else:
                 return self.STATUS_LIVE
         elif status == "PostEvent":
@@ -747,6 +768,11 @@ class FootballMatch:
         # return self.match.minutesIntoAddedTime > 0
         # TO FIX
         return False
+
+    @property
+    @_no_match(False)
+    def is_penalty_shootout(self):
+        return self.status == self.STATUS_PENALTIES
 
     @property
     @_no_match(list())
