@@ -124,19 +124,8 @@ class MatchFlags:
 
 class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, MenuMixin):
     """
-    .. important::
-
-      This widget is currently broken due to some API changes on the BBC website. I do not know
-      when/if I will have time to update this.
-
-      The widget will report fixtures but will not update scores once the match is in progress
-      (which was the whole point of the widget!).
-
     The module uses a module I wrote a number of years ago that parses
     data from the BBC Sport website.
-
-    The underlying module needs work so it will probably only work if
-    you pick a "big" team.
 
     You can select more than one team and league. Scores can be scrolled
     by using the mousewheel over the widget.
@@ -155,7 +144,6 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
     """
 
     orientations = base.ORIENTATION_HORIZONTAL
-    _experimental = True
 
     defaults = [
         ("font", "sans", "Default font"),
