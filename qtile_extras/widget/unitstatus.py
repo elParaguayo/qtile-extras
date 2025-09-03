@@ -20,7 +20,6 @@
 
 # type: ignore
 
-import asyncio
 import math
 
 from dbus_fast.aio import MessageBus
@@ -121,8 +120,8 @@ class UnitStatus(base._Widget, base.PaddingMixin, base.MarginMixin):
 
         self.layout.width = self.text_width()
 
-    def _config_async(self):
-        asyncio.create_task(self._connect_dbus())
+    async def _config_async(self):
+        await self._connect_dbus()
 
     async def _connect_dbus(self):
         self.bus = await MessageBus(bus_type=self.bus_type).connect()
