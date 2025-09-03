@@ -20,7 +20,6 @@
 
 # type: ignore
 
-import asyncio
 import math
 
 from dbus_fast.aio import MessageBus
