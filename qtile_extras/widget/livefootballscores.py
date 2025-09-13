@@ -544,15 +544,18 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             self.drawer.fillrect(offset, self.height - 2, width, 2, 2)
 
     @expose_command
-    def loop_match_info(self):
+    def loop_match_info(self, step: int = 1):
+        """Show text info on match."""
         self.set_default_timer()
-        self.screen_index = (self.screen_index + 1) % len(self.screens)
+        self.screen_index = (self.screen_index + step) % len(self.screens)
         self.bar.draw()
 
     def scroll_up(self):
+        """Move to next match."""
         self.change_match(1)
 
     def scroll_down(self):
+        """Move to previous match."""
         self.change_match(-1)
 
     def change_match(self, step):
