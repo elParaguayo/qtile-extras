@@ -7,9 +7,6 @@ UV_PYTHON_ARG = --python=$(QTILE_CI_PYTHON)
 endif
 
 TEST_RUNNER = python3 -m pytest
-ifeq ($(GITHUB_ACTIONS),true)
-TEST_RUNNER = coverage run --concurrency=multiprocessing -m pytest
-endif
 
 QTILE_PATH := ".venv/lib/python3.11/site-packages"
 
