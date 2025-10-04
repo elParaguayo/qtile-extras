@@ -48,16 +48,6 @@ jobs:
             - name: Run test suite
               run: |
                 make QTILE_CI_PYTHON=${QTILE_CI_PYTHON} check check-packaging
-                uv run coverage combine
-                uv run coverage report -m
-                uv run coverage xml
-            - name: Push coverage to Coveralls
-              run: |
-                uv run coveralls --service=github
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
-                COVERALLS_PARALLEL: true
             - name: Test widget decoration output
               if: ${{ matrix.python-version == '3.13' }}
               run: |
@@ -69,13 +59,3 @@ jobs:
                 name: generated-images
                 path: decoration_images/
                 retention-days: 5
-    coverage:
-        name: Finalize Coverage
-        needs: build
-        runs-on: ubuntu-22.04
-        steps:
-            - name: Coveralls Finished
-              uses: coverallsapp/github-action@master
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                parallel-finished: true
