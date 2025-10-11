@@ -75,6 +75,10 @@ class PulseVolumeExtra(_Volume, PulseVolume):
     def no_op(self):
         pass
 
+    async def a_no_op(self):
+        pass
+
     get_vals = _Volume.status_change
     set_refresh_timer = no_op
     refresh = no_op
+    do_volume = a_no_op
