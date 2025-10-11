@@ -21,7 +21,9 @@ import asyncio
 import json
 from collections import defaultdict
 from enum import Enum, auto
+from socket import gaierror
 
+from libqtile.log_utils import logger
 from libqtile.utils import create_task
 
 # Snapcast JSONRPC: https://github.com/badaix/snapcast/blob/develop/doc/json_rpc_api/control.md
@@ -110,6 +112,7 @@ class SnapControl:
         self.writer = None
         self.subscriptions = defaultdict(list)
         self.request_queue = {}
+        self.connect_error = False
 
     def subscribe(self, method, callback):
         self.subscriptions[method].append(callback)
@@ -117,6 +120,13 @@ class SnapControl:
     def unsubscribe(self, method, callback):
         while callback in self.subscriptions[method]:
             self.subscriptions[method].remove(callback)
+
+    def _connect_error(self, message):
+        if not self.connect_error:
+            logger.error(message)
+            self.connect_error = True
+
+        return False
 
     async def start(self):
         if self.connected:
@@ -127,9 +137,16 @@ class SnapControl:
                 host=self.uri, port=self.port
             )
         except ConnectionRefusedError:
-            return False
+            return self._connect_error("Connection refused — port is closed.")
+        except asyncio.TimeoutError:
+            return self._connect_error("Connection attempt timed out.")
+        except gaierror:
+            return self._connect_error("Hostname could not be resolved.")
+        except OSError:
+            return self._connect_error("Connection error.")
 
         self.connected = True
+        self.connect_error = False
         self.start_listener()
         await asyncio.sleep(0)
         return True
