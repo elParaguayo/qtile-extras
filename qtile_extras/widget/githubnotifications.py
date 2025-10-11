@@ -138,12 +138,12 @@ class GithubNotifications(base._Widget):
         return requests.get(NOTIFICATIONS, headers=headers)
 
     def _read_data(self, reply):
-        self.error = True
         self._polling = False
 
         # Check if an exception was raised when trying to retrieve data
         exc = reply.exception()
         if exc:
+            self.error = True
             if isinstance(exc, ConnectionError):
                 logger.error("Unable to connect to Github API.")
             else:
@@ -156,7 +156,9 @@ class GithubNotifications(base._Widget):
             r = reply.result()
 
             if r.status_code != 200:
-                logger.warning("Github returned a %d status code.", r.status_code)
+                if not self.error:
+                    logger.warning("Github returned a %d status code.", r.status_code)
+                self.error = True
 
             else:
                 self.error = False
