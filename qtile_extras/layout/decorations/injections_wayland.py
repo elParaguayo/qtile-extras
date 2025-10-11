@@ -106,62 +106,62 @@ def wayland_place(
         self.float_y = y - self.group.screen.y
 
     # START BORDER INJECTION
-    if not bordercolor:
-        bordercolor = []
-        borderwidth = 0
+    border_layers = ffi.NULL
+    num = 0
 
-    if not isinstance(bordercolor, list):
-        bordercolor = [bordercolor]
+    if bordercolor is not None:
+        if not isinstance(bordercolor, list):
+            bordercolor = [bordercolor]
 
-    bordercolor = [
-        c.compare(self) if isinstance(c, ConditionalBorder) else c for c in bordercolor
-    ]
+        bordercolor = [
+            c.compare(self) if isinstance(c, ConditionalBorder) else c for c in bordercolor
+        ]
 
-    if len(bordercolor) > width:
-        bordercolor = bordercolor[:width]
+        if len(bordercolor) > width:
+            bordercolor = bordercolor[:width]
 
-    num = len(bordercolor)
-    widths = [borderwidth // num] * num
-    for i in range(borderwidth % num):
-        widths[i] += 1
+        num = len(bordercolor)
+        widths = [borderwidth // num] * num
+        for i in range(borderwidth % num):
+            widths[i] += 1
 
-    outer_w = width + borderwidth * 2
-    outer_h = height + borderwidth * 2
-    coord = 0
+        outer_w = width + borderwidth * 2
+        outer_h = height + borderwidth * 2
+        coord = 0
 
-    border_layers = ffi.new(f"struct qw_border[{num}]")
+        border_layers = ffi.new(f"struct qw_border[{num}]")
 
-    for i, color in enumerate(bordercolor):
-        bw = widths[i]
-        if isinstance(color, _BorderStyle):
-            # Tidy up old data
-            if color in self._border_styles:
-                old_surface = self._border_styles.pop(color)
-                if old_surface is not None:
-                    old_surface.finish()
+        for i, color in enumerate(bordercolor):
+            bw = widths[i]
+            if isinstance(color, _BorderStyle):
+                # Tidy up old data
+                if color in self._border_styles:
+                    old_surface = self._border_styles.pop(color)
+                    if old_surface is not None:
+                        old_surface.finish()
 
-            surface, border = color._wayland_draw(
-                self,
-                outer_w,
-                outer_h,
-                bw,
-                coord,
-                coord,
-                outer_w - coord * 2,
-                outer_h - coord * 2,
-            )
+                surface, border = color._wayland_draw(
+                    self,
+                    outer_w,
+                    outer_h,
+                    bw,
+                    coord,
+                    coord,
+                    outer_w - coord * 2,
+                    outer_h - coord * 2,
+                )
 
-            # Keep reference to border objects
-            self._border_styles[color] = surface
-            border_layers[i] = border
+                # Keep reference to border objects
+                self._border_styles[color] = surface
+                border_layers[i] = border
 
-        else:
-            color_array = rgb(color)
-            border_layers[i].type = lib.QW_BORDER_RECT
-            border_layers[i].width = bw
-            for side in range(4):
-                for j in range(4):
-                    border_layers[i].rect.color[side][j] = color_array[j]
+            else:
+                color_array = rgb(color)
+                border_layers[i].type = lib.QW_BORDER_RECT
+                border_layers[i].width = bw
+                for side in range(4):
+                    for j in range(4):
+                        border_layers[i].rect.color[side][j] = color_array[j]
     # END BORDER INJECTION
 
     self.bordercolor = bordercolor
