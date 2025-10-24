@@ -137,7 +137,8 @@ def camera(manager_nospawn, request, temp_images):
         def wayland_screenshot(self, name):
             """Dumps Wayland Drawer to png file."""
             # Much easier: Wayland has an ImageSurface which we can access directly
-            self.drawer._win.surface.write_to_png(name)
+            surface = cairocffi.Surface._from_pointer(self.drawer._win.surface, True)
+            surface.write_to_png(name)
 
         @expose_command
         def take_screenshot(self, name):
