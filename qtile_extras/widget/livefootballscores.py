@@ -251,6 +251,8 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
 
         self.popup = None
 
+        self._connection_error_warned = False
+
         self.add_callbacks(
             {
                 "Button1": self.loop_match_info,
@@ -321,9 +323,12 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             self.get_matches()
             self.set_refresh_timer()
             self.queue_update()
+            self._connection_error_warned = False
 
         except FSConnectionError:
-            logger.info("Unable to get football scores data.")
+            if not self._connection_error_warned:
+                logger.info("Unable to get football scores data.")
+                self._connection_error_warned = True
 
             # Check if we managed to create all teams and leagues objects
             if len(self.sources[1]) != len(self.teams):
@@ -389,9 +394,13 @@ class LiveFootballScores(base._Widget, base.MarginMixin, ExtendedPopupMixin, Men
             self.queue_update()
 
             success = True
+            self._connection_error_warned = False
 
         except FSConnectionError:
-            logger.info("Unable to refresh football scores data.")
+            if not self._connection_error_warned:
+                logger.info("Unable to refresh football scores data.")
+                self._connection_error_warned = True
+
             if self.queue_timer:
                 self.queue_timer.cancel()
 
