@@ -330,22 +330,22 @@ class _PopupLayout(configurable.Configurable):
 
             if relative_to_bar:
                 if relative_to in [0, 1, 2, 3] and scr.top:
-                    y = scr.top.size if y < scr.top.size else y
+                    y = scr.top.fullsize if y < scr.top.fullsize else y
 
                 elif relative_to in [0, 3, 6, 9] and scr.right:
                     # get x value of left edge of the bar
-                    bar_x = scr.width - scr.right.size
+                    bar_x = scr.width - scr.right.fullsize
                     # now if right of popup is higher than bar_x, set right of popup to bar_x
                     x = (bar_x - self.popup.width) if x + self.popup.width > bar_x else x
 
                 elif relative_to in [0, 7, 8, 9] and scr.bottom:
                     # get y value of top edge of the bar
-                    bar_y = scr.height - scr.bottom.size
+                    bar_y = scr.height - scr.bottom.fullsize
                     # now if bottom of popup is higher than bar_y, set bottom of popup to bar_y
                     y = (bar_y - self.popup.height) if y + self.popup.height > bar_y else y
 
                 elif relative_to in [0, 1, 4, 7] and scr.left:
-                    x = scr.left.size if x < scr.left.size else x
+                    x = scr.left.fullsize if x < scr.left.fullsize else x
 
         self.popup.x = x
         self.popup.y = y
