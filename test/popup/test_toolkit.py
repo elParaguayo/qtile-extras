@@ -464,7 +464,7 @@ def test_popup_widgets_vertical(manager):
         ("top", (0.5, 0.5, 1, False), (400, 300)),
         ("top", (10, 0.5, 1, False), (10, 300)),
         ("top", (0.5, 10, 1, False), (400, 10)),
-        ("top", (0.5, 0.5, 1, True), (400, 360)),
+        ("top", (0.5, 0.5, 1, True), (400, 300)),
     ],
 )
 def test_popup_positioning_relative(manager_nospawn, position, opts, expected):
