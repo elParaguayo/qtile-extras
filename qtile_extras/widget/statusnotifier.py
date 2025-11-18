@@ -115,18 +115,23 @@ class StatusNotifier(QtileStatusNotifier, DbusMenuMixin):
         self.selected_item.get_menu(callback=self.display_menu)
 
     def _draw_icon(self, icon, x, y):
+        # If the bar's Wayland window has a HiDPI scale factor, scale the icon
+        # down before compositing so it appears at the correct size
+        scale = 1 / getattr(self.bar.window, "scale", 1)
+
         ctx = self.drawer.ctx
         ctx.save()
 
+        ctx.translate(x, y)
+        ctx.scale(scale, scale)
         if self.mask:
-            ctx.translate(x, y)
             self.drawer.set_source_rgb(self.foreground)
             ctx.set_operator(cairocffi.OPERATOR_SOURCE)
             ctx.mask(cairocffi.SurfacePattern(icon))
             ctx.fill()
 
         else:
-            ctx.set_source_surface(icon, x, y)
+            ctx.set_source_surface(icon, 0, 0)
             ctx.paint()
 
         ctx.restore()
