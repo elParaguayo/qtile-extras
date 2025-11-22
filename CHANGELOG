@@ -1,3 +1,4 @@
+2025-11-22: [RELEASE] v0.34.0 release - compatible with qtile 0.34.0
 2025-10-25: [BREAKING CHANGE] Updated border decorations to be compatible with new wayland backend.
                               You must be on latest qtile to use this.
 2025-09-01: [BUGFIX] Fix `TooltipMixin` bug where text could not be set due to change in qtile
