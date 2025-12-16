@@ -167,11 +167,11 @@ def test_pong_game(pmanager):
         pong.eval("self.paddle_step()")
 
     def ball_position():
-        _, pos = pong.eval("(self.ball.x, self.ball.y)")
+        pos = pong.eval("(self.ball.x, self.ball.y)")
         return pos
 
     def paddles_positions():
-        _, pos = pong.eval("[(p.x, p.y) for p in self.paddles]")
+        pos = pong.eval("[(p.x, p.y) for p in self.paddles]")
         return pos
 
     pong.start()

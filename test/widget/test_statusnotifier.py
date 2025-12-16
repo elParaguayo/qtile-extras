@@ -100,7 +100,7 @@ def test_statusnotifier_menu(sni_manager):
     # Hacky way to press menu item. Last item is "Quit"
     widget.eval("self.menu.controls[-1].button_press(0, 0, 1)")
     wait_for_icon(widget, hidden=True)
-    _, killed = sni_manager.c.eval("self.popup.killed")
+    killed = sni_manager.c.eval("self.popup.killed")
     assert killed == "True"
 
 
@@ -113,7 +113,7 @@ def test_statusnotifier_menu(sni_manager):
 def test_statusnotifier_menu_positions(sni_manager, coords, backend_name):
     """Check menu positioning."""
     widget = sni_manager.c.widget["statusnotifier"]
-    _, position = sni_manager.c.eval("self.config.bar_position")
+    position = sni_manager.c.eval("self.config.bar_position")
 
     # Launch window and wait for icon to appear
     try:

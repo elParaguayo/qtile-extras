@@ -150,11 +150,11 @@ def test_game_logic(smanager):
         snake.eval("self.step()")
 
     def get_snake():
-        _, s = snake.eval("self.snake")
+        s = snake.eval("self.snake")
         return s
 
     def get_snake_len():
-        _, l = snake.eval("len(self.snake)")
+        l = snake.eval("len(self.snake)")
         return int(l)
 
     snake.start()

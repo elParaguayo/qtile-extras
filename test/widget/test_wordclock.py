@@ -41,7 +41,7 @@ def test_wordclock_language(manager_nospawn, minimal_conf_noscreen, language):
         manager_nospawn.start(config)
 
         # Check that language loaded ok
-        _, response = manager_nospawn.c.widget["wordclock"].eval("self.language")
+        response = manager_nospawn.c.widget["wordclock"].eval("self.language")
         assert response == language
 
         # Check that file is saved

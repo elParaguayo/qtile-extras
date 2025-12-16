@@ -44,10 +44,10 @@ def widget():
 @widget_config([{}, {"blockify": True}, {"cell_size": 3}])
 def ss_tetris(screenshot_manager):
     tetris = screenshot_manager.c.widget["tetris"]
-    _, autostart = tetris.eval("self.autostart")
+    autostart = tetris.eval("self.autostart")
 
     def blocks_placed():
-        _, val = tetris.eval("self._place_count")
+        val = tetris.eval("self._place_count")
         return int(val)
 
     @Retry(ignore_exceptions=(AssertionError,), tmax=30)

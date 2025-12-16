@@ -45,7 +45,7 @@ class TooltipAdjust:
         self.add = add
 
     def __call__(self, widget):
-        _, val = widget.eval(f"self._tooltip.{self.dimension}")
+        val = widget.eval(f"self._tooltip.{self.dimension}")
         val = int(val)
         if not self.add:
             val *= -1
@@ -100,7 +100,7 @@ def test_tooltip_display(tooltip_manager, backend_name):
 
     # No tooltip_text so this won't start timer
     widget.eval("self.mouse_enter(0, 0)")
-    _, timer = widget.eval("self._tooltip_timer")
+    timer = widget.eval("self._tooltip_timer")
     assert timer == "None"
 
     widget.eval("self.tooltip_text='running test'")
@@ -134,8 +134,8 @@ def test_tooltip_position(tooltip_manager, pos, expected):
     widget.eval(f"self.mouse_enter({x}, {y})")
     assert_window_count(tooltip_manager, number + 1)
 
-    _, pos_x = widget.eval("self._tooltip.x")
-    _, pos_y = widget.eval("self._tooltip.y")
+    pos_x = widget.eval("self._tooltip.x")
+    pos_y = widget.eval("self._tooltip.y")
 
     assert pos_x == ex(widget) if isinstance(ex, TooltipAdjust) else ex
     assert pos_y == ey(widget) if isinstance(ex, TooltipAdjust) else ey
@@ -160,7 +160,7 @@ def test_tooltip_padding(tooltip_manager, expected):
     widget.eval("self.mouse_enter(0, 0)")
     assert_window_count(tooltip_manager, number + 1)
 
-    _, padding = widget.eval("self._tooltip_padding")
+    padding = widget.eval("self._tooltip_padding")
 
     assert padding == str(expected)
 
@@ -172,7 +172,7 @@ def test_tooltip_cancel_timer(tooltip_manager):
     number = len(tooltip_manager.c.internal_windows())
 
     def get_timer():
-        _, timer = widget.eval("self._tooltip_timer")
+        timer = widget.eval("self._tooltip_timer")
         return timer
 
     assert get_timer() == "None"

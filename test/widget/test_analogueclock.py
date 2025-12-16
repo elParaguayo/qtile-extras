@@ -104,7 +104,7 @@ def test_analogueclock_hand_angles():
 @clock_config
 def test_analogueclock_unknown_face(logger, manager):
     clock = manager.c.widget["bad_shape"]
-    _, shape = clock.eval("self.face_shape")
+    shape = clock.eval("self.face_shape")
     assert shape == "None"
 
     records = logger.get_records("setup")
@@ -120,9 +120,9 @@ def test_analogueclock_unknown_face(logger, manager):
 def test_analogueclock_loop(manager):
     @Retry(ignore_exceptions=(AssertionError,))
     def count_seconds(widget, start):
-        _, secs = widget.eval("self.seconds")
+        secs = widget.eval("self.seconds")
         assert secs != start
 
     clock = manager.c.widget["analogueclock"]
-    _, secs = clock.eval("self.seconds")
+    secs = clock.eval("self.seconds")
     count_seconds(clock, secs)

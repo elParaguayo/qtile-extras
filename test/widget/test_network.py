@@ -45,7 +45,7 @@ def get_status(interface):
 
 @Retry(ignore_exceptions=(AssertionError,))
 def assert_connected(widget, state):
-    _, connected = widget.eval("self.is_connected")
+    connected = widget.eval("self.is_connected")
     assert connected == state
 
 

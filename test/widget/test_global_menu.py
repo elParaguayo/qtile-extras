@@ -92,5 +92,5 @@ def test_global_menu(manager, backend_name):
 
     # Hacky way to press menu item. Last item is "Quit"
     manager.c.widget["globalmenu"].eval("self.menu.controls[-1].button_press(0, 0, 1)")
-    _, killed = manager.c.eval("self.popup.killed")
+    killed = manager.c.eval("self.popup.killed")
     assert killed == "True"

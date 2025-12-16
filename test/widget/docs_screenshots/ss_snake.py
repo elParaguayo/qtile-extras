@@ -36,10 +36,10 @@ def widget():
 )
 def ss_snake(screenshot_manager):
     snake = screenshot_manager.c.widget["snake"]
-    _, autostart = snake.eval("self.autostart")
+    autostart = snake.eval("self.autostart")
 
     def snake_length():
-        _, val = snake.eval("len(self.snake)")
+        val = snake.eval("len(self.snake)")
         return int(val)
 
     @Retry(ignore_exceptions=(AssertionError,), tmax=30)

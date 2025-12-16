@@ -90,7 +90,7 @@ def test_decorations(manager_nospawn, minimal_conf_noscreen):
 
     manager_nospawn.start(config)
 
-    _, decs = manager_nospawn.c.widget["scriptexit"].eval("len(self.decorations)")
+    decs = manager_nospawn.c.widget["scriptexit"].eval("len(self.decorations)")
     assert int(decs) == 3
 
 
@@ -124,8 +124,8 @@ def test_rect_decoration_using_widget_background(manager_nospawn, minimal_conf_n
 
     manager_nospawn.c.bar["top"].eval("self.draw()")
 
-    _, one = manager_nospawn.c.widget["one"].eval("self.decorations[0].fill_colour")
-    _, two = manager_nospawn.c.widget["two"].eval("self.decorations[0].fill_colour")
+    one = manager_nospawn.c.widget["one"].eval("self.decorations[0].fill_colour")
+    two = manager_nospawn.c.widget["two"].eval("self.decorations[0].fill_colour")
 
     # First widget's decoration is drawn using the decoration's colour
     assert one == "00ff00"
@@ -185,15 +185,15 @@ def test_powerline_decoration(manager_nospawn, minimal_conf_noscreen):
     # Second widget should have a length of 50 (widget) + 5 (decoration - shift) = 55
     assert manager_nospawn.c.widget["two"].info()["length"] == 55
 
-    _, fg = manager_nospawn.c.widget["one"].eval("self.decorations[0].fg")
-    _, bg = manager_nospawn.c.widget["one"].eval("self.decorations[0].bg")
+    fg = manager_nospawn.c.widget["one"].eval("self.decorations[0].fg")
+    bg = manager_nospawn.c.widget["one"].eval("self.decorations[0].bg")
 
     # Widget one has a 'forwards' decoration so the background is the current widget and background is the next
     assert fg == "ff0000"  # widget one's background
     assert bg == "0000ff"  # widget two's background
 
-    _, fg = manager_nospawn.c.widget["four"].eval("self.decorations[0].fg")
-    _, bg = manager_nospawn.c.widget["four"].eval("self.decorations[0].bg")
+    fg = manager_nospawn.c.widget["four"].eval("self.decorations[0].fg")
+    bg = manager_nospawn.c.widget["four"].eval("self.decorations[0].bg")
 
     # Widget four has a 'backwards' decoration so the background is the next widget and background is the current
     assert fg == "ffffff"  # widget five's background
@@ -245,9 +245,8 @@ def test_decoration_extrawidth(manager_nospawn, minimal_conf_noscreen):
 )
 def test_decoration_grouping(manager_nospawn, minimal_conf_noscreen, dec_class, dec_config):
     def assert_first_last(widget, first, last):
-        _, ft = widget.eval("self.decorations[0].is_first")
-        _, lt = widget.eval("self.decorations[0].is_last")
-        _, gp = widget.eval("self.decorations[0]._get_parent_group()")
+        ft = widget.eval("self.decorations[0].is_first")
+        lt = widget.eval("self.decorations[0].is_last")
         assert ft == str(first)
         assert lt == str(last)
 
@@ -329,7 +328,7 @@ def test_image_decoration(
     manager_nospawn.start(config)
 
     tb = manager_nospawn.c.widget["textbox"]
-    _, ox = tb.eval("self.decorations[0]._xoffset")
-    _, oy = tb.eval("self.decorations[0]._yoffset")
+    ox = tb.eval("self.decorations[0]._xoffset")
+    oy = tb.eval("self.decorations[0]._yoffset")
     assert int(ox) == xoffset
     assert int(oy) == yoffset
