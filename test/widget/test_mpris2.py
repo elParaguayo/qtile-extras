@@ -248,10 +248,10 @@ def test_mpris2_popup(mpris_manager):
     ]
 
     for name, expected in control_test:
-        _, value = widget.eval(f"self.extended_popup._updateable_controls['{name}'].text")
+        value = widget.eval(f"self.extended_popup._updateable_controls['{name}'].text")
         assert value == expected
 
-    _, position = widget.eval("self.extended_popup._updateable_controls['progress'].value")
+    position = widget.eval("self.extended_popup._updateable_controls['progress'].value")
     assert position == "0"
 
     assert_is_playing(widget)

@@ -47,7 +47,7 @@ def widget():
 def ss_globalmenu(screenshot_manager):
     @Retry(ignore_exceptions=(AssertionError,))
     def wait_for_text():
-        _, val = screenshot_manager.c.widget["globalmenu"].eval("self._menu_drawn")
+        val = screenshot_manager.c.widget["globalmenu"].eval("self._menu_drawn")
         assert val == "True"
 
     @Retry(ignore_exceptions=(AssertionError,))

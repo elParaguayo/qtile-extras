@@ -37,19 +37,19 @@ from test.widget.resources import lfs_data
 
 @Retry(ignore_exceptions=(AssertionError,))
 def matches_loaded(manager):
-    _, output = manager.c.widget["livefootballscores"].eval("self.matches")
+    output = manager.c.widget["livefootballscores"].eval("self.matches")
     assert output != "[]"
 
 
 @Retry(ignore_exceptions=(AssertionError,))
 def restore_default_screen(manager):
-    _, output = manager.c.widget["livefootballscores"].eval("self.screen_index")
+    output = manager.c.widget["livefootballscores"].eval("self.screen_index")
     assert int(output) == 0
 
 
 @Retry(ignore_exceptions=(AssertionError,))
 def check_timer(manager):
-    _, output = manager.c.widget["livefootballscores"].eval("self.refresh_timer")
+    output = manager.c.widget["livefootballscores"].eval("self.refresh_timer")
     # Ugly but it works!
     assert output.startswith("<TimerHandle")
 
@@ -143,7 +143,7 @@ def test_scores_display_and_navigation(lfs_manager, manager_nospawn):
 
     # There should be 10 matches (1x "team", 1x "teams" and
     # 4 in "leagues")
-    _, output = manager_nospawn.c.widget["livefootballscores"].eval("len(self.matches)")
+    output = manager_nospawn.c.widget["livefootballscores"].eval("len(self.matches)")
     assert int(output) == 6
 
     # Default display is "team"
@@ -267,22 +267,22 @@ def test_widget_popup(lfs_manager, manager_nospawn):
 
     for i, (is_text, match, enabled) in enumerate(items):
         if is_text:
-            _, text = manager_nospawn.c.widget["livefootballscores"].eval(
+            text = manager_nospawn.c.widget["livefootballscores"].eval(
                 f"self.menu.controls[{i}].text"
             )
             assert text == match
-            _, is_enabled = manager_nospawn.c.widget["livefootballscores"].eval(
+            is_enabled = manager_nospawn.c.widget["livefootballscores"].eval(
                 f"self.menu.controls[{i}].enabled"
             )
             assert str(enabled) == is_enabled
         else:
-            _, class_type = manager_nospawn.c.widget["livefootballscores"].eval(
+            class_type = manager_nospawn.c.widget["livefootballscores"].eval(
                 f"type(self.menu.controls[{i}])"
             )
             assert "PopupMenuSeparator" in class_type
 
     manager_nospawn.c.widget["livefootballscores"].popup()
-    _, popup = manager_nospawn.c.widget["livefootballscores"].eval("self.popup")
+    popup = manager_nospawn.c.widget["livefootballscores"].eval("self.popup")
     assert popup == "None"
 
 

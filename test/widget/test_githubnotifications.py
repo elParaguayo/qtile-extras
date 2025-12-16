@@ -44,7 +44,7 @@ REPLIES = [[], [{"message": "Dummy message"}]]
 
 @Retry(ignore_exceptions=(AssertionError,))
 def wait_for_poll(manager):
-    _, state = manager.c.widget["githubnotifications"].eval("self._polling")
+    state = manager.c.widget["githubnotifications"].eval("self._polling")
     assert state == "False"
 
 
@@ -126,9 +126,7 @@ def githubnotification_manager(token_file, response, request, manager_nospawn, m
 def test_githubnotifications_colours(githubnotification_manager, expected):
     githubnotification_manager.c.widget["githubnotifications"].eval("self.update()")
     wait_for_poll(githubnotification_manager)
-    _, colour = githubnotification_manager.c.widget["githubnotifications"].eval(
-        "self.icon_colour"
-    )
+    colour = githubnotification_manager.c.widget["githubnotifications"].eval("self.icon_colour")
     assert colour == expected
 
 

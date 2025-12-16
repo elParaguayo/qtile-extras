@@ -36,7 +36,7 @@ from test.helpers import Retry  # noqa: I001
 @Retry(ignore_exceptions=(AssertionError,))
 def battery_found(manager):
     """Waits for widget to report batteries."""
-    _, output = manager.c.widget["upowerwidget"].eval("len(self.batteries)")
+    output = manager.c.widget["upowerwidget"].eval("len(self.batteries)")
     while int(output) == 0:
         # If there are no batteries (shouldn't happen) try looking again.
         manager.c.widget["upowerwidget"].eval(

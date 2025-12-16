@@ -383,7 +383,7 @@ def test_group_name(gbmanager):
 
 def test_buttons(gbmanager):
     def current_group():
-        _, txt = gbmanager.c.eval("self.current_group.name")
+        txt = gbmanager.c.eval("self.current_group.name")
         return txt
 
     assert current_group() == "a"

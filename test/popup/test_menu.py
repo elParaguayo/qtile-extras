@@ -21,7 +21,7 @@ import textwrap
 
 
 def test_popup_menu_from_dbus(manager):
-    success, msg = manager.c.eval(
+    manager.c.eval(
         textwrap.dedent(
             """
         from qtile_extras.popup.menu import PopupMenu
@@ -91,7 +91,6 @@ def test_popup_menu_from_dbus(manager):
     """
         )
     )
-    assert success, msg
 
     layout = manager.c.internal_windows()[0]
     assert layout["name"] == "popupmenu"

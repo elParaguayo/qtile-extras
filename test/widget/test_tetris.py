@@ -128,11 +128,11 @@ def test_tetris_game_steps(tmanager):
         tetris.eval("self.step()")
 
     def assert_eval(statement):
-        _, result = tetris.eval(statement)
+        result = tetris.eval(statement)
         assert result == "True"
 
     def get_grid():
-        _, grid = tetris.eval("self.grid")
+        grid = tetris.eval("self.grid")
         return grid
 
     assert_eval("self.shape is None")
@@ -153,10 +153,10 @@ def test_tetris_game_steps(tmanager):
     grid2 = get_grid()
     assert grid1 == grid2
 
-    _, fall_grid1 = tetris.eval("self.fall_grid")
+    fall_grid1 = tetris.eval("self.fall_grid")
 
     step()
-    _, fall_grid2 = tetris.eval("self.fall_grid")
+    fall_grid2 = tetris.eval("self.fall_grid")
     assert fall_grid1 != fall_grid2
 
     count = 0

@@ -141,7 +141,7 @@ def test_tvh_widget_recording(tvh_manager):
 def test_tvh_widget_popup(tvh_manager):
     """Test the popup displays the correct information."""
     tvh_manager.c.bar["top"].fake_button_press(0, 0, 1)
-    _, text = tvh_manager.c.widget["tvhwidget"].eval("self.popup.text")
+    text = tvh_manager.c.widget["tvhwidget"].eval("self.popup.text")
     assert text == (
         "Upcoming recordings:\n"
         "Fri 26 Nov 18:55: TVH Widget Test 1\n"
@@ -150,7 +150,7 @@ def test_tvh_widget_popup(tvh_manager):
 
     # Popup hides when clicked again.
     tvh_manager.c.bar["top"].fake_button_press(0, 0, 1)
-    _, result = tvh_manager.c.widget["tvhwidget"].eval("self.popup is None")
+    result = tvh_manager.c.widget["tvhwidget"].eval("self.popup is None")
     assert result == "True"
 
 

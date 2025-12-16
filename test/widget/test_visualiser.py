@@ -50,7 +50,7 @@ def visualiser(monkeypatch):
 def assert_length(manager, width):
     assert manager.c.widget["visualiser"].info()["width"] == width
 
-    _, out = manager.c.widget["visualiser"].eval("self._toggling")
+    out = manager.c.widget["visualiser"].eval("self._toggling")
     assert out == "False"
 
 

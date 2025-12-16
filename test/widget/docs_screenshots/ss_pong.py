@@ -44,7 +44,7 @@ def ss_pong(screenshot_manager):
     pong = screenshot_manager.c.widget["pong"]
 
     def step_count():
-        _, val = pong.eval("self.step_count")
+        val = pong.eval("self.step_count")
         return int(val)
 
     @Retry(ignore_exceptions=(AssertionError,), tmax=30)

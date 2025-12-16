@@ -159,7 +159,7 @@ REPLIES = [
 
 @Retry(ignore_exceptions=(AssertionError,))
 def wait_for_poll(manager):
-    _, streams = manager.c.widget["snapcast"].eval("len(self.streams) > 0")
+    streams = manager.c.widget["snapcast"].eval("len(self.streams) > 0")
     assert streams == "True"
 
 
@@ -240,17 +240,17 @@ def test_snapcast_icon_colour(snapcast_manager, expected):
     widget = snapcast_manager.c.widget["snapcast"]
     wait_for_poll(snapcast_manager)
 
-    _, colour = widget.eval("self.status_colour")
+    colour = widget.eval("self.status_colour")
     assert colour == COLOUR_INACTIVE
 
     widget.toggle_state()
 
-    _, colour = widget.eval("self.status_colour")
+    colour = widget.eval("self.status_colour")
     assert colour == expected
 
     widget.toggle_state()
 
-    _, colour = widget.eval("self.status_colour")
+    colour = widget.eval("self.status_colour")
     assert colour == COLOUR_INACTIVE
 
 

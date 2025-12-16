@@ -133,7 +133,7 @@ def test_absolute_layout(manager):
     """
     )
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     control = info["controls"][0]
     assert control["x"] == 10
@@ -164,7 +164,7 @@ def test_relative_layout(manager):
     """
     )
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     control = info["controls"][0]
     assert control["x"] == 20
@@ -197,7 +197,7 @@ def test_grid_layout(manager):
     """
     )
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     control = info["controls"][0]
     assert control["x"] == 50
@@ -272,7 +272,7 @@ def test_multiple_screens(manager):
 
     # Show popup on screen 0 which is at (0, 0) and has dimensions of (400, 600)
     manager.c.eval("self.popup.show(centered=True)")
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["width"] == 200
     assert info["height"] == 200
@@ -284,7 +284,7 @@ def test_multiple_screens(manager):
     manager.c.eval("self.popup.hide()")
     manager.c.to_screen(1)
     manager.c.eval("self.popup.show(centered=True)")
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["width"] == 200
     assert info["height"] == 200
@@ -296,7 +296,7 @@ def test_multiple_screens(manager):
     manager.c.eval("self.popup.hide()")
     manager.c.to_screen(0)
     manager.c.eval("self.popup.show()")
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["width"] == 200
     assert info["height"] == 200
@@ -308,7 +308,7 @@ def test_multiple_screens(manager):
     manager.c.eval("self.popup.hide()")
     manager.c.to_screen(1)
     manager.c.eval("self.popup.show()")
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["width"] == 200
     assert info["height"] == 200
@@ -319,7 +319,7 @@ def test_multiple_screens(manager):
     manager.c.eval("self.popup.hide()")
     manager.c.to_screen(0)
     manager.c.eval("self.popup.show(x=500, y=200)")
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["width"] == 200
     assert info["height"] == 200
@@ -364,7 +364,7 @@ def test_popup_widgets(manager):
     """
     )
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
 
     for control in info["controls"]:
@@ -411,7 +411,7 @@ def test_popup_widgets_vertical(manager):
     """
     )
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
 
     for control in info["controls"]:
@@ -503,7 +503,7 @@ def test_popup_positioning_relative(manager_nospawn, position, opts, expected):
     )
 
     manager_nospawn.c.eval(layout)
-    _, info = manager_nospawn.c.eval("self.popup.info()")
+    info = manager_nospawn.c.eval("self.popup.info()")
     info = eval(info)
 
     assert (info["x"], info["y"]) == expected
@@ -525,7 +525,7 @@ def test_popup_positioning_centered(manager):
     """
     )
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
 
     assert (info["x"], info["y"]) == (300, 200)
@@ -578,17 +578,15 @@ def test_popup_update_controls(manager):
     )
 
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["controls"][0]["text"] == "Original Text"
     assert info["controls"][1]["value"] == 0.5
     assert info["controls"][2]["value"] == 0.25
 
     # Update controls
-    _, out = manager.c.eval(
-        "self.popup.update_controls(textbox1='New Text', slider1=0.8, progress1=1)"
-    )
-    _, info = manager.c.eval("self.popup.info()")
+    manager.c.eval("self.popup.update_controls(textbox1='New Text', slider1=0.8, progress1=1)")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["controls"][0]["text"] == "New Text"
     assert info["controls"][1]["value"] == 0.8
@@ -637,20 +635,20 @@ def test_bind_callbacks_and_overlap(manager):
     )
 
     manager.c.eval(layout)
-    _, info = manager.c.eval("self.popup.info()")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["controls"][0]["value"] == 0.5
     assert info["controls"][1]["value"] == 0.25
 
     # Update controls
-    _, out = manager.c.eval(
+    manager.c.eval(
         "self.popup.bind_callbacks("
         "slider1={'Button1': lambda p=self.popup: p.update_controls(slider1=0.1)},"
         "progress1={'Button1': lambda p=self.popup: p.update_controls(progress1=0.9)}"
         ")"
     )
-    _, out = manager.c.eval("self.popup.process_button_click(110, 20, 1)")
-    _, info = manager.c.eval("self.popup.info()")
+    manager.c.eval("self.popup.process_button_click(110, 20, 1)")
+    info = manager.c.eval("self.popup.info()")
     info = eval(info)
     assert info["controls"][0]["value"] == 0.1
     assert info["controls"][1]["value"] == 0.9

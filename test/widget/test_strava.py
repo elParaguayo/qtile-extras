@@ -103,7 +103,7 @@ def strava(stravawidget):
 
 @Retry(ignore_exceptions=(AssertionError,))
 def data_parsed(manager):
-    _, output = manager.c.widget["stravawidget"].eval("self.display_text")
+    output = manager.c.widget["stravawidget"].eval("self.display_text")
     assert output != ""
 
 
@@ -119,7 +119,7 @@ def test_strava_widget_popup(manager_nospawn, strava):
     manager_nospawn.c.bar["top"].fake_button_press(0, 0, 1)
     assert len(manager_nospawn.c.internal_windows()) == 2
 
-    _, text = manager_nospawn.c.widget["stravawidget"].eval("self.popup.text")
+    text = manager_nospawn.c.widget["stravawidget"].eval("self.popup.text")
     assert text == (
         " Date         Title            km       time     pace \n"
         "20 Nov: Test Activity 1         10.0    0:45:00   4:30\n"
