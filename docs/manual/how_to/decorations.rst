@@ -67,7 +67,25 @@ Adding decorations to user-defined widgets
 
 You can also add the ability to draw decorations to your own widgets.
 
-First, you need to import ``modify`` from ``qtile_extras.widget`` and use this to
+If you are creating a widget than inherits from an existing widget then all you
+need to do is import that widget class from ``qtile_extras.widget``. As a result, the
+decoration code will already be imported.
+
+If you are creating a new widget from scratch, there are two ways to add support for decorations:
+
+The first, and preferred method, is to add a decorator to the class definition as follows:
+
+.. code:: python
+
+    from libqtile.widget.base import _TextBox
+
+    from qtile_extras.widget import add_decoration_support
+
+    @add_decoration_support
+    class MyTextWidget(_TextBox):
+        pass
+
+Alternatively, you can import ``modify`` from ``qtile_extras.widget`` and use this to
 wrap your widget class and its configuration parameters. i.e. calling ``modify(WidgetClass,
 *args, **kwargs)`` will return ``WidgetClass(*args, **kwargs)``.
 
@@ -101,3 +119,8 @@ wrap your widget class and its configuration parameters. i.e. calling ``modify(W
             )
         )
     ]
+
+.. note::
+
+    To be honest, the ``modify`` method only really exists because I didn't think about using a decorator!
+    I'll leave it in the code so it doesn't break anything...
