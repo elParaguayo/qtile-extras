@@ -19,10 +19,37 @@
 # SOFTWARE.
 from libqtile.widget.base import _TextBox
 
-from qtile_extras.widget import modify
+from qtile_extras.widget import add_decoration_support, modify
 
 
-def test_no_initialise():
+def test_decorator_no_initialise():
+    class MyUndecoratedTextWidget(_TextBox):
+        pass
+
+    @add_decoration_support
+    class MyDecoratedTextWidget(_TextBox):
+        pass
+
+    # undecorated class should have same dir() contents
+    assert dir(_TextBox) == dir(MyUndecoratedTextWidget)
+
+    # new methods have been injected so dir() should be different
+    assert dir(_TextBox) != dir(MyDecoratedTextWidget)
+
+
+def test_decorator_initialise():
+    @add_decoration_support
+    class MyTextWidget(_TextBox):
+        pass
+
+    txt = MyTextWidget(text="Test Widget", test_parameter=True)
+
+    assert isinstance(txt, MyTextWidget)
+    assert txt._text == "Test Widget"
+    assert txt.test_parameter
+
+
+def test_modify_no_initialise():
     class MyTextWidget(_TextBox):
         pass
 
@@ -39,7 +66,7 @@ def test_no_initialise():
     assert pre_dir != dir(wrapped)
 
 
-def test_initialise():
+def test_modify_initialise():
     class MyTextWidget(_TextBox):
         pass
 

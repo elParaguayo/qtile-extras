@@ -70,6 +70,12 @@ widgets = {
 }
 
 
+def add_decoration_support(classdef):
+    """Decorator to add decorator support to custom widgets."""
+    inject_decorations(classdef)
+    return classdef
+
+
 def modify(classdef, *args, initialise=True, **config):
     """
     Function to add additional code needed by widgets to use mods
