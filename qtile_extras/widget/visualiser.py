@@ -267,7 +267,7 @@ class Visualiser(base._Widget):
 
     def finalize(self):
         self._stop()
-        Path(self.config_file.name).unlink()
+        Path(self.config_file.name).unlink(missing_ok=True)
         base._Widget.finalize(self)
 
     @expose_command()
