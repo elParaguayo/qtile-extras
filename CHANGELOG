@@ -1,3 +1,4 @@
+2025-12-30: [BUGFIX] Fix `UPower` widget crash on finalisation
 2025-12-14: [RELEASE] v0.31.1 release - compatible with qtile 0.34.1
 2025-11-22: [RELEASE] v0.34.0 release - compatible with qtile 0.34.0
 2025-10-25: [BREAKING CHANGE] Updated border decorations to be compatible with new wayland backend.

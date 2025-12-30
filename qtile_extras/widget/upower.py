@@ -427,6 +427,7 @@ class UPowerWidget(base._Widget):
 
     def finalize(self):
         self.props.off_properties_changed(self.upower_change)
-        self.bus.disconnect()
-        self.bus = None
+        if self.bus is not None:
+            self.bus.disconnect()
+            self.bus = None
         base._Widget.finalize(self)
