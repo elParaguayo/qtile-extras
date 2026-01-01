@@ -165,4 +165,5 @@ def wayland_place(
     # END BORDER INJECTION
 
     self.bordercolor = bordercolor
+    self.borderwidth = borderwidth
     self._ptr.place(self._ptr, x, y, width, height, border_layers, num, int(above))
