@@ -33,6 +33,8 @@ from libqtile.popup import Popup
 from qtile_extras.popup.menu import PopupMenu, PopupMenuItem, PopupMenuSeparator
 from qtile_extras.resources.dbusmenu import DBusMenuItem
 
+from libqtile import qtile
+
 if TYPE_CHECKING:
     from collections.abc import Callable  # noqa: F401
     from typing import Any  # noqa: F401
@@ -129,24 +131,37 @@ class TooltipMixin(_BaseMixin):
         self._tooltip.height = height
         self._tooltip.width = width
 
+        # get bar of widget or mirror the tooltip should be displayed
+        global_x, global_y = self.qtile.core.get_mouse_position()
+        for mirror in [*self._mirrors, self]:
+            if (mirror.bar.screen.x <= global_x <= mirror.bar.screen.x + mirror.bar.screen.width
+                and mirror.bar.screen.y <= global_y <= mirror.bar.screen.y + mirror.bar.screen.height
+                and mirror.bar.screen.x + mirror.offsetx <= global_x <= mirror.bar.screen.x + mirror.offsetx + mirror.width
+                and mirror.bar.screen.y + mirror.offsety <= global_y <= mirror.bar.screen.y + mirror.offsety + mirror.height                
+                ):
+                break
+        
+        bar = mirror.bar
+        screen = bar.screen
+        # raise Exception(s)
+        
         # Position the tooltip depending on bar position and orientation
-        screen = self.bar.screen
 
-        if screen.top == self.bar:
-            x = min(self.offsetx, self.bar.width - width)
-            y = self.bar.height
+        if screen.top == bar:
+            x = min(mirror.offsetx, bar.width - width)
+            y = bar.height
 
-        elif screen.bottom == self.bar:
-            x = min(self.offsetx, self.bar.width - width)
-            y = screen.height - self.bar.height - height
+        elif screen.bottom == bar:
+            x = min(mirror.offsetx, bar.width - width)
+            y = screen.height - bar.height - height
 
-        elif screen.left == self.bar:
-            x = self.bar.width
-            y = min(self.offsety + self.bar.window.y, screen.height - height)
+        elif screen.left == bar:
+            x = bar.width
+            y = min(mirror.offsety + bar.window.y, screen.height - height)
 
         else:
-            x = screen.width - self.bar.width - width
-            y = min(self.offsety + self.bar.window.y, screen.height - height)
+            x = screen.width - bar.width - width
+            y = min(mirror.offsety + bar.window.y, screen.height - height)
 
         x += screen.x
         y += screen.y
