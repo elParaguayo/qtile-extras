@@ -7,3 +7,4 @@ dbus-fast
 pulsectl-asyncio
 pytest
 PyGObject
+aiohttp
