@@ -10,6 +10,7 @@ exclude .readthedocs.yaml
 exclude .git-blame-ignore-revs
 exclude uv.lock
 exclude Makefile
+exclude Dockerfile
 
 recursive-include qtile_extras *.py
 
