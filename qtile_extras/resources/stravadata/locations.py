@@ -1,5 +1,5 @@
 import json
-import os
+from pathlib import Path
 
 RECORDS_FILE = "records.json"
 CREDS_FILE = "strava.json"
@@ -7,20 +7,20 @@ AUTH_FILE = "auth.json"
 TIMESTAMP_FILE = "timestamp"
 CACHE_FILE = "data.pickle"
 
-STRAVA_DIR = os.path.join("~", ".cache", "stravawidget")
-STRAVA_DIR = os.path.expanduser(STRAVA_DIR)
+CONFIG_DIR = Path("~/.config/stravawidget").expanduser()
+CACHE_DIR = Path("~/.cache/stravawidget").expanduser()
 
-if not os.path.isdir(STRAVA_DIR):
-    os.makedirs(STRAVA_DIR)
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-RECORDS = os.path.join(STRAVA_DIR, RECORDS_FILE)
-CREDS = os.path.join(STRAVA_DIR, CREDS_FILE)
-TIMESTAMP = os.path.join(STRAVA_DIR, TIMESTAMP_FILE)
-AUTH_JSON = os.path.join(STRAVA_DIR, AUTH_FILE)
-CACHE = os.path.join(STRAVA_DIR, CACHE_FILE)
+AUTH_JSON = CONFIG_DIR / AUTH_FILE
+CREDS = (CONFIG_DIR / CREDS_FILE).as_posix()
+RECORDS = (CACHE_DIR / RECORDS_FILE).as_posix()
+TIMESTAMP = (CACHE_DIR / TIMESTAMP_FILE).as_posix()
+CACHE = (CACHE_DIR / CACHE_FILE).as_posix()
 
 try:
-    with open(AUTH_JSON) as authfile:
+    with AUTH_JSON.open() as authfile:
         AUTH = json.load(authfile)
 except FileNotFoundError:
     AUTH = {}

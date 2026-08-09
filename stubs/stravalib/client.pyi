@@ -1,11 +1,11 @@
 from _typeshed import Incomplete
 from stravalib import exc as exc
 from stravalib import model as model
-from stravalib import unithelper as unithelper
+from stravalib import unit_helper as unit_helper
 from stravalib.exc import warn_param_deprecation as warn_param_deprecation
 from stravalib.exc import warn_param_unofficial as warn_param_unofficial
 from stravalib.protocol import ApiV3 as ApiV3
-from stravalib.unithelper import is_quantity_type as is_quantity_type
+from stravalib.unit_helper import is_quantity_type as is_quantity_type
 from stravalib.util import limiter as limiter
 
 class Client:

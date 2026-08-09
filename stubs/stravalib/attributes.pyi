@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from _typeshed import Incomplete
-from stravalib.unithelper import is_quantity_type as is_quantity_type
+from stravalib.unit_helper import is_quantity_type as is_quantity_type
 
 META: int
 SUMMARY: int
