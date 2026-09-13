@@ -107,7 +107,6 @@ dev = [
     "pytest-lazy-fixture",
     "setuptools >= 40.5.0",
     "xkbcommon < 1.1",
-    "pywayland == 0.4.17",
     "dbus-fast",
     "xcffib >= 1.4.0",
     "cairocffi >= 1.6.0",
